@@ -1,0 +1,201 @@
+\ProvidesPackage{numbers}[1999/07/07]
+% number.sty by Thomas Schmidt, LE-TeX GbR, www.le-tex.de
+
+% USER INTERFACE
+
+\xdef\EXPONENTMARK{E}
+\xdef\DECIMALPOINTMARK{.}
+
+\newcount\THOUSANDSEPMINLENGTH
+\newif\ifSEPARATETHOUSANDS
+
+\def\newnumberstyle#1#2#3#4#5#6#7{%
+  \expandafter\ifx\csname ns@#1\endcsname\relax
+  \else
+    \PackageError{number}{Number style #1 already defined}
+      {Choose an other name for your number style}
+  \fi
+  \expandafter\gdef\csname ns@#1\endcsname{%
+    \gdef\DECIMALPOINTSEPARATOR{#2}%
+    \gdef\THOUSANDSSEPARATOR{#3}%
+    \gdef\EXPONENTSEPARATOR{#4}%
+    \gdef\RADIX{#5}%
+    \global\THOUSANDSEPMINLENGTH=#6%
+    \expandafter\global\csname SEPARATETHOUSANDS#7\endcsname}}
+\def\numberstyle#1{\csname ns@#1\endcsname}
+
+\newnumberstyle{plain}{.}{}{E}{10^}{5}{false}
+\newnumberstyle{english}{.}{{,}}{\times\!}{10^}{5}{true}
+\newnumberstyle{french}{{,}}{\:}{\cdot\!}{10^}{5}{true}
+\newnumberstyle{german}{{,}}{\:}{\cdot}{10^}{5}{true}
+\newnumberstyle{dottedgerman}{{,}}{.}{\cdot}{10^}{4}{true}
+
+\numberstyle{english}
+
+\def\saved@DECIMALPOINTSEPARATOR{}
+\def\saved@THOUSANDSSEPARATOR{}
+\def\saved@EXPONENTSEPARATOR{}
+\def\save@numberstyle{%
+  \xdef\saved@DECIMALPOINTSEPARATOR{\DECIMALPOINTSEPARATOR}%
+  \xdef\saved@THOUSANDSSEPARATOR{\THOUSANDSSEPARATOR}%
+  \xdef\saved@EXPONENTSEPARATOR{\EXPONENTSEPARATOR}%
+}
+\def\restore@numberstyle{%
+  \xdef\DECIMALPOINTSEPARATOR{\saved@DECIMALPOINTSEPARATOR}%
+  \xdef\THOUSANDSSEPARATOR{\saved@THOUSANDSSEPARATOR}%
+  \xdef\EXPONENTSEPARATOR{\saved@EXPONENTSEPARATOR}%
+}
+
+%------------------------------------------------------------------------------
+% \@number#1
+%
+% Formats #1 as a pretty looking number
+%
+% Syntax: \@number{WFN}
+%
+% (WFN = well formed number :)
+%
+% WFN      :== MANTISSE[EXPONENT]|EXPONENT
+% EXPONENT :== EXPONENSEPARATOR SFLOAT
+% MANTISSE :== SFLOAT
+% SFLOAT   :== [SIGN]FLOAT
+% SIGN     :== [+|-|\pm]
+% FLOAT    :== [INTEGER DECIMALPOINTMARK]INTEGER
+% INTEGER  :== [INTEGER]DIGIT
+% DIGIT    :== 0|1|2|3|4|5|6|7|8|9
+%
+% The \ifSEPARATETHOUSANDS flag decides whether the\THOUSANDSSEPARATOR
+% should be inserted every 3 digits of the INTEGERs or not.
+%
+%------------------------------------------------------------------------------
+
+% MACROCODE
+
+\RequirePackage{register}
+\RequirePackage{parser}
+
+\def\Number#1{\ensuremath{\@NUMBER{#1}}}
+  
+\def\@NUMBER#1{%
+  \edef\@tempa{#1}%
+  \strpos{\@tempa}{\EXPONENTMARK}{\temp@counta}%
+  \ifnum\temp@counta=0 % no \EXPONENTMARK
+    \@@number{\@tempa}%
+  \else
+    \ifnum\temp@counta=1 % \EXPONENTMARK is first char of #1
+       \strlen{\@tempa}{\temp@counta}%
+       \substring{\@tempa}{2}{\temp@counta}{\@tempc}%
+       \RADIX{\@@number{\@tempc}}%
+    \else
+       \advance\temp@counta-1
+       \substring{\@tempa}{1}{\temp@counta}{\@tempc}%
+       \@@number{\@tempc}%
+       \advance\temp@counta2
+       \strlen{\@tempa}{\temp@countb}%
+       \substring{\@tempa}{\temp@counta}{\temp@countb}{\@tempc}%
+       \EXPONENTSEPARATOR\RADIX{\@@number{\@tempc}}%
+    \fi
+  \fi}%
+
+\def\@@number#1{%
+  \strpos{#1}{\DECIMALPOINTMARK}{\temp@countc}%
+  \ifnum\temp@countc>0 % there is a \DECIMALPOINTMARK
+    \advance\temp@countc-1
+    \substring{#1}{1}{\temp@countc}{\@tempd} % integer part -> \@tempd
+    \sep@thousands@left{\@tempd}\DECIMALPOINTSEPARATOR%
+    \advance\temp@countc2
+    \strlen{#1}{\temp@counte}%
+    \substring{#1}{\temp@countc}{\temp@counte}{\@tempd}% % fractional part -> \@tempd
+    \sep@thousands@right{\@tempd}
+  \else % no \DECIMALPOINTMARK
+    \sep@thousands@left#1%
+  \fi
+}
+
+\def\sep@thousands@right#1{% 
+%  \ifSEPARATETHOUSANDS
+%    \loop
+%      \strlen{#1}{\temp@countd}%
+%      \ifnum\temp@countd>4
+%        \substring{#1}{1}{3}{\@tempe}%
+%        \@tempe\THOUSANDSSEPARATOR
+%        \substring{#1}{4}{\temp@countd}{\@tempe}%
+%        \xdef#1{\@tempe}%
+%    \repeat
+%  \fi
+  #1}
+
+\def\sep@thousands@left#1{%
+  \ifSEPARATETHOUSANDS
+    \@eat@char{-}{#1}%
+    \@eat@char{+}{#1}%
+    \@eat@char{\pm}{#1}%
+    \strlen{#1}{\temp@countd}%
+    \temp@counte\temp@countd
+    \advance\temp@counte+1
+    \ifnum\temp@counte>\THOUSANDSEPMINLENGTH
+      \temp@counte\temp@countd
+      \divide\temp@counte by3
+      \multiply\temp@counte by3
+      \advance\temp@countd-\temp@counte
+      \ifnum\temp@countd>0
+        \substring{#1}{1}{\temp@countd}{\@tempe}%
+        \@tempe\THOUSANDSSEPARATOR
+        \advance\temp@countd1
+        \strlen{#1}{\temp@counte}%
+        \substring{#1}{\temp@countd}{\temp@counte}{\@tempe}%
+        \edef#1{\@tempe}%
+      \fi
+      \loop
+        \strlen{#1}{\temp@countd}%
+        \ifnum\temp@countd>4
+          \substring{#1}{1}{3}{\@tempe}%
+          \@tempe\THOUSANDSSEPARATOR
+          \substring{#1}{4}{\temp@countd}{\@tempe}%
+          \edef#1{\@tempe}%
+      \repeat
+    \fi
+  \fi
+  #1%
+}
+
+\def\@eat@char#1#2{%
+  \strpos{#2}{#1}{\temp@countd}%
+  \ifnum\temp@countd=1
+    #1%
+    \strlen{#2}{\temp@counte}%
+    \substring{#2}{2}{\temp@counte}{\@tempe}%
+    \edef#2{\@tempe}%
+  \fi
+  \ifnum\temp@countd>1
+    \PackageError{numbers}{Wrong format} 
+      {I read #2 and didn't expect any character before #1.}%
+  \fi}
+    
+\let\val=\Number
+
+\def\Val{%
+  \@ifnextchar[%]
+    {\@Valopt}
+    {\@Valnorm}%
+}
+
+\def\@Valnorm#1#2{%
+  \@Valopt[]{#1}{#2}%
+}
+
+
+\def\@ifnotempty#1#2{%
+  \def\@tempa{#1}%
+  \ifx\empty\@tempa\relax\relax
+  \else
+    #2{\@tempa}%
+  \fi
+}
+
+\def\@Valopt[#1]#2#3{%
+  \@ifnotempty{#2}{\val}%
+  \@ifnotempty{#1}{\ensuremath}%
+  &
+  \@ifnotempty{#3}{\val}%
+}

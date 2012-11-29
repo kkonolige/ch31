@@ -1,0 +1,244 @@
+%!PS-Adobe-2.0 EPSF-2.0
+%%Title: spher.fig
+%%Creator: fig2dev Version 3.2 Patchlevel 4
+%%CreationDate: Tue Apr 18 10:36:31 2006
+%%For: rbf@bourges.inf.ed.ac.uk (Bob Fisher)
+%%BoundingBox: 0 0 352 211
+%%Magnification: 1.0000
+%%EndComments
+/$F2psDict 200 dict def
+$F2psDict begin
+$F2psDict /mtrx matrix put
+/col-1 {0 setgray} bind def
+/col0 {0.000 0.000 0.000 srgb} bind def
+/col1 {0.000 0.000 1.000 srgb} bind def
+/col2 {0.000 1.000 0.000 srgb} bind def
+/col3 {0.000 1.000 1.000 srgb} bind def
+/col4 {1.000 0.000 0.000 srgb} bind def
+/col5 {1.000 0.000 1.000 srgb} bind def
+/col6 {1.000 1.000 0.000 srgb} bind def
+/col7 {1.000 1.000 1.000 srgb} bind def
+/col8 {0.000 0.000 0.560 srgb} bind def
+/col9 {0.000 0.000 0.690 srgb} bind def
+/col10 {0.000 0.000 0.820 srgb} bind def
+/col11 {0.530 0.810 1.000 srgb} bind def
+/col12 {0.000 0.560 0.000 srgb} bind def
+/col13 {0.000 0.690 0.000 srgb} bind def
+/col14 {0.000 0.820 0.000 srgb} bind def
+/col15 {0.000 0.560 0.560 srgb} bind def
+/col16 {0.000 0.690 0.690 srgb} bind def
+/col17 {0.000 0.820 0.820 srgb} bind def
+/col18 {0.560 0.000 0.000 srgb} bind def
+/col19 {0.690 0.000 0.000 srgb} bind def
+/col20 {0.820 0.000 0.000 srgb} bind def
+/col21 {0.560 0.000 0.560 srgb} bind def
+/col22 {0.690 0.000 0.690 srgb} bind def
+/col23 {0.820 0.000 0.820 srgb} bind def
+/col24 {0.500 0.190 0.000 srgb} bind def
+/col25 {0.630 0.250 0.000 srgb} bind def
+/col26 {0.750 0.380 0.000 srgb} bind def
+/col27 {1.000 0.500 0.500 srgb} bind def
+/col28 {1.000 0.630 0.630 srgb} bind def
+/col29 {1.000 0.750 0.750 srgb} bind def
+/col30 {1.000 0.880 0.880 srgb} bind def
+/col31 {1.000 0.840 0.000 srgb} bind def
+
+end
+save
+newpath 0 211 moveto 0 0 lineto 352 0 lineto 352 211 lineto closepath clip newpath
+-29.3 320.4 translate
+1 -1 scale
+
+/cp {closepath} bind def
+/ef {eofill} bind def
+/gr {grestore} bind def
+/gs {gsave} bind def
+/sa {save} bind def
+/rs {restore} bind def
+/l {lineto} bind def
+/m {moveto} bind def
+/rm {rmoveto} bind def
+/n {newpath} bind def
+/s {stroke} bind def
+/sh {show} bind def
+/slc {setlinecap} bind def
+/slj {setlinejoin} bind def
+/slw {setlinewidth} bind def
+/srgb {setrgbcolor} bind def
+/rot {rotate} bind def
+/sc {scale} bind def
+/sd {setdash} bind def
+/ff {findfont} bind def
+/sf {setfont} bind def
+/scf {scalefont} bind def
+/sw {stringwidth} bind def
+/tr {translate} bind def
+/tnt {dup dup currentrgbcolor
+  4 -2 roll dup 1 exch sub 3 -1 roll mul add
+  4 -2 roll dup 1 exch sub 3 -1 roll mul add
+  4 -2 roll dup 1 exch sub 3 -1 roll mul add srgb}
+  bind def
+/shd {dup dup currentrgbcolor 4 -2 roll mul 4 -2 roll mul
+  4 -2 roll mul srgb} bind def
+ /DrawEllipse {
+	/endangle exch def
+	/startangle exch def
+	/yrad exch def
+	/xrad exch def
+	/y exch def
+	/x exch def
+	/savematrix mtrx currentmatrix def
+	x y tr xrad yrad sc 0 0 1 startangle endangle arc
+	closepath
+	savematrix setmatrix
+	} def
+
+/$F2psBegin {$F2psDict begin /$F2psEnteredState save def} def
+/$F2psEnd {$F2psEnteredState restore end} def
+
+$F2psBegin
+10 setmiterlimit
+0 slj 0 slc
+ 0.06000 0.06000 sc
+%
+% Fig objects follow
+%
+% 
+% here starts figure with depth 55
+% Ellipse
+7.500 slw
+n 2409 3740 672 1319 0 360 DrawEllipse gs col0 s gr
+
+% here ends figure;
+% 
+% here starts figure with depth 50
+% Arc
+7.500 slw
+ [15 45] 45 sd
+n 4807.5 2732.5 1184.5 118.2 61.8 arcn
+gs col0 s gr
+ [] 0 sd
+% Arc
+gs  clippath
+2420 2408 m 2374 2446 l 2472 2563 l 2418 2452 l 2518 2524 l cp
+eoclip
+ [15 45] 45 sd
+n 970.5 3739.6 1937.8 41.7 -42.2 arcn
+gs col0 s gr
+ gr
+ [] 0 sd
+% arrowhead
+n 2518 2524 m 2418 2452 l 2472 2563 l  col0 s
+% Arc
+gs  clippath
+2955 4400 m 3015 4407 l 3032 4257 l 2989 4373 l 2972 4250 l cp
+eoclip
+ [15 45] 45 sd
+n 1962.1 4206.8 1041.0 10.1 -99.1 arcn
+gs col0 s gr
+ gr
+ [] 0 sd
+% arrowhead
+n 2972 4250 m 2989 4373 l 3032 4257 l  col0 s
+% Ellipse
+ [60] 0 sd
+n 913 3735 50 50 0 360 DrawEllipse gs 0.00 setgray ef gr gs col0 s gr
+ [] 0 sd
+% Ellipse
+ [60] 0 sd
+n 4789 3234 50 50 0 360 DrawEllipse gs 0.00 setgray ef gr gs col0 s gr
+ [] 0 sd
+% Ellipse
+n 4808 3776 562 561 0 360 DrawEllipse gs col0 s gr
+
+% Ellipse
+ [60] 0 sd
+n 2887 3469 58 58 0 360 DrawEllipse gs 0.00 setgray ef gr gs col0 s gr
+ [] 0 sd
+% Ellipse
+n 2867 3750 150 300 0 360 DrawEllipse gs col0 s gr
+
+% Polyline
+ [60] 0 sd
+gs  clippath
+932 3718 m 923 3777 l 1073 3799 l 959 3752 l 1082 3740 l cp
+eoclip
+n 4803 4327 m
+ 943 3750 l gs col0 s gr gr
+ [] 0 sd
+% arrowhead
+n 1082 3740 m 959 3752 l 1073 3799 l  col0 s
+% Polyline
+ [60] 0 sd
+gs  clippath
+924 3677 m 931 3736 l 1081 3717 l 959 3703 l 1074 3658 l cp
+eoclip
+n 4783 3225 m
+ 943 3705 l gs col0 s gr gr
+ [] 0 sd
+% arrowhead
+n 1074 3658 m 959 3703 l 1081 3717 l  col0 s
+% Polyline
+ [15 45] 45 sd
+gs  clippath
+2404 5290 m 2446 5248 l 2339 5141 l 2403 5247 l 2296 5183 l cp
+eoclip
+n 900 3750 m
+ 2415 5259 l gs 0.00 setgray ef gr gs col0 s gr gr
+ [] 0 sd
+% arrowhead
+n 2296 5183 m 2403 5247 l 2339 5141 l  col0 s
+% Polyline
+ [15 45] 45 sd
+gs  clippath
+930 2385 m 870 2385 l 870 2537 l 900 2417 l 930 2537 l cp
+eoclip
+n 900 3750 m
+ 900 2400 l gs 0.00 setgray ef gr gs col0 s gr gr
+ [] 0 sd
+% arrowhead
+n 930 2537 m 900 2417 l 870 2537 l  col0 s
+% Polyline
+ [15 45] 45 sd
+gs  clippath
+6015 3780 m 6015 3720 l 5863 3720 l 5983 3750 l 5863 3780 l cp
+eoclip
+n 900 3750 m
+ 6000 3750 l gs 0.00 setgray ef gr gs col0 s gr gr
+ [] 0 sd
+% arrowhead
+n 5863 3780 m 5983 3750 l 5863 3720 l  col0 s
+/Times-Roman ff 180.00 scf sf
+4810 3035 m
+gs 1 -1 sc (\(x,y,z\)) dup sw pop 2 div neg 0 rm  col0 sh gr
+/Times-Roman ff 180.00 scf sf
+750 4050 m
+gs 1 -1 sc (\(0,0,0\)) dup sw pop 2 div neg 0 rm  col0 sh gr
+/Times-Roman ff 180.00 scf sf
+900 2250 m
+gs 1 -1 sc (+Y) dup sw pop 2 div neg 0 rm  col0 sh gr
+/Times-Roman ff 180.00 scf sf
+6225 3825 m
+gs 1 -1 sc (+Z) dup sw pop 2 div neg 0 rm  col0 sh gr
+/Times-Roman ff 180.00 scf sf
+2370 2310 m
+gs 1 -1 sc (+J) dup sw pop 2 div neg 0 rm  col0 sh gr
+/Times-Roman ff 180.00 scf sf
+3239 3601 m
+gs 1 -1 sc (\(i,j\)) dup sw pop 2 div neg 0 rm  col0 sh gr
+/Times-Roman ff 180.00 scf sf
+3898 3231 m
+gs 1 -1 sc (d\(i,j\)) dup sw pop 2 div neg 0 rm  col0 sh gr
+/Times-Roman ff 180.00 scf sf
+3170 4575 m
+gs 1 -1 sc (+I) dup sw pop 2 div neg 0 rm  col0 sh gr
+/Times-Roman ff 180.00 scf sf
+2590 5340 m
+gs 1 -1 sc (+X) dup sw pop 2 div neg 0 rm  col0 sh gr
+/Times-Roman ff 360.00 scf sf
+3250 2085 m
+gs 1 -1 sc (IMAGE SURFACE) dup sw pop 2 div neg 0 rm  col0 sh gr
+% here ends figure;
+$F2psEnd
+rs
+showpage

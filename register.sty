@@ -1,0 +1,68 @@
+\ProvidesPackage{register}[1997/01/08]
+% register.sty by Thomas Schmidt, LE-TeX GbR, www.le-tex.de
+\expandafter\ifx\csname @package@known@register\endcsname\relax
+\expandafter\edef\csname @package@known@register\endcsname{Yep}
+\newcount\temp@counta
+\newcount\temp@countb
+\newcount\temp@countc
+\newcount\temp@countd
+\newcount\temp@counte
+\newcount\temp@countf
+\newdimen\temp@dimena
+\newdimen\temp@dimenb
+\newdimen\temp@dimenc
+\newdimen\temp@dimend
+\newdimen\temp@dimene
+\newdimen\temp@dimenf
+\newskip\temp@skipa
+\newskip\temp@skipb
+\newskip\temp@skipc
+\newskip\temp@skipd
+\newskip\temp@skipe
+\newskip\temp@skipf
+\newbox\temp@boxa
+\newbox\temp@boxb
+\newbox\temp@boxc
+\newbox\temp@boxd
+\newbox\temp@boxe
+\newbox\temp@boxf
+\newinsert\temp@inserta
+\newinsert\temp@insertb
+\newinsert\temp@insertc
+\newinsert\temp@insertd
+\newinsert\temp@inserte
+\newinsert\temp@insertf
+\newtoks\temp@toksa
+\newtoks\temp@toksb
+\newif\if@tempa
+\newread\temp@reada
+
+
+% \RequireIf[#1]{#2}
+% Introduce a new \if... macro (if it isn't defined yet).
+% #1 (optional): true|false; 
+% #2: Name 
+% Example:
+% \RequireIf[true]{@color}
+% introduces \if@color (id it doesn't exist) and sets \@colortrue
+% 
+\def\RequireIf{%
+  \@ifnextchar[%]
+    {\@RequireIf}
+    {\@RequireIf[true]}%
+}
+
+\def\@RequireIf[#1]#2{%
+  \expandafter\ifx\csname if#2\endcsname\relax
+    \expandafter\newif\csname if#2\endcsname
+    \csname #2#1\endcsname
+  \else
+    \def\@tempa{#1}%
+    \ifx\empty\@tempa\relax\relax
+    \else
+      \csname #2#1\endcsname
+    \fi
+  \fi
+}
+
+\else\message{Package register already loaded.}\fi

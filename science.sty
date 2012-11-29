@@ -1,0 +1,321 @@
+\ProvidesPackage{science}[1999/07/07]
+% version 0.8
+% science.sty by Thomas Schmidt, LE-TeX GbR, www.le-tex.de
+\RequirePackage{numbers}
+\RequirePackage{register}
+
+\newdimen\unitkern
+\unitkern0.18em
+
+\def\val#1{%
+  \ifmmode
+    \edef\@tempa{bold}%
+    \ifx\math@version\@tempa
+      \mathbf{\@NUMBER{#1}}%
+    \else
+      \@NUMBER{#1}%
+    \fi
+  \else
+    \ensuremath{\@NUMBER{#1}}%
+  \fi}
+
+\def\unit{\bgroup\catcode`\ =13{}\@unit}
+\def\@unit#1{%
+  \ifmmode
+    \edef\@tempb{bold}%
+    \ifx\math@version\@tempb
+      \mathbf{#1}%
+    \else
+      \mathrm{#1}%
+    \fi
+  \else
+    \ensuremath{\mathrm{#1}}%
+  \fi
+  \egroup}
+\def\unit@kern{\kern\unitkern}
+\def\upto{\unit@kern\ifmmode{-}\else--\fi\unit@kern}
+
+\def\valrange{\@ifnextchar[{\@expvalrange}{\@valrange}}%]
+  \def\@expvalrange[#1]#2#3{\ensuremath{(\val{#2}{\upto}\val{#3})%
+    \EXPONENTSEPARATOR\val{E#1}}}
+  \def\@valrange#1#2{\val{#1}{\upto}\val{#2}}
+
+\def\valtol{\@ifnextchar[{\@expvaltol}{\@@@valtol}}
+  \def\@@@valtol#1{\@ifnextchar({\@valtol{#1}}{\@@valtol{#1}}}%)
+  \def\@valtol#1(#2){%
+    \ensuremath{\val{#1}\unit@kern(\pm\val{#2})}}
+  \def\@@valtol#1#2{\val{#1}\val{\pm#2}}
+  \def\@expvaltol[#1]#2{\@ifnextchar({\@@expvaltol[#1]{#2}}{\@@@expvaltol[#1]{#2}}}
+  \def\@@expvaltol[#1]#2(#3){%
+    \ensuremath{\valtol{#2}(#3)\EXPONENTSEPARATOR\val{E#1}}}
+  \def\@@@expvaltol[#1]#2#3{%
+    \ensuremath{(\valtol{#2}{#3})\EXPONENTSEPARATOR\val{E#1}}}
+
+{\catcode`\ =13\gdef {\unit@kern}}
+
+\def\valunit{\@ifnextchar-{\@@valunit}{\@valunit}}
+  \def\@valunit#1{\val{#1}\unit@kern\unit}
+  \def\@@valunit#1{\val{#1}-\unit}
+
+\def\valtolunit{\@ifnextchar[{\@expvaltolunit}{\@valtolunit}}%]
+  \def\@valtolunit#1{\@ifnextchar({\@@valtolunit{#1}}{\@@@valtolunit{#1}}}%)
+  \def\@@valtolunit#1(#2)#3{%
+    \@valtol{#1}(#2)\unit@kern\unit{#3}}
+  \def\@@@valtolunit#1#2#3{%
+    (\val{#1}\val{\pm#2})\unit@kern\unit{#3}}
+  \def\@expvaltolunit[#1]#2{\@ifnextchar({\@@expvaltolunit[#1]{#2}}{\@@@expvaltolunit[#1]{#2}}}%)
+  \def\@@expvaltolunit[#1]#2(#3)#4{%
+    \@@expvaltol[#1]{#2}(#3)\unit@kern\unit{#4}}
+  \def\@@@expvaltolunit[#1]#2#3#4{%
+    \@@@expvaltol[#1]{#2}{#3}\unit@kern\unit{#4}}
+
+\def\valrangeunit{\@ifnextchar[{\@valrangeunit}{\@@valrangeunit}}%]
+  \def\@valrangeunit[#1]#2#3#4{%
+    \ensuremath{(\valrange{#2}{#3})\EXPONENTSEPARATOR\val{E#1}\unit@kern\unit{#4}}}
+  \def\@@valrangeunit#1#2#3{\valrange{#1}{#2}\unit@kern\unit{#3}}
+
+\def\degval#1{\ensuremath{\val{#1}^{\circ}}}
+\def\degvalrange#1#2{\ensuremath{\val{#1}\upto\val{#2}^{\circ}}}
+\def\degvaltol#1{\@ifnextchar({\@degvaltol{#1}}{\@@degvaltol{#1}}}%)
+  \def\@degvaltol#1(#2){\ensuremath{\valtol{#1}(#2)^{\circ}}}
+  \def\@@degvaltol#1#2{(\ensuremath{\valtol{#1}{#2})^{\circ}}}
+\def\minuteval#1{\ensuremath{\val{#1}^{\prime}}}
+\def\minutevalrange#1#2{\ensuremath{\val{#1}\upto\val{#2}^{\prime}}}
+\def\minutevaltol#1{\@ifnextchar({\@minutevaltol{#1}}{\@@minutevaltol{#1}}}%)
+  \def\@minutevaltol#1(#2){\val{#1}(\val{#2})^{\prime}}
+  \def\@minutevaltol#1#2{(\val{#1}\val{\pm#2})^{\prime}}
+\def\secondval#1{\ensuremath{\val{#1}^{\prime\prime}}}
+\def\secondvalrange#1#2{\ensuremath{\val{#1}\upto\val{#2}^{\prime\prime}}}
+\def\secondvaltol#1{\@ifnextchar({\@secondvaltol{#1}}{\@@secondvaltol{#1}}}%)
+  \def\@secondvaltol#1(#2){\val{#1}(\val{\pm#2})^{\prime\prime}}
+  \def\@secondvaltol#1#2{(\val{#1}\val{\pm#2})^{\prime\prime}}
+\def\percentval{\@ifnextchar-{\@percentval}{\@@percentval}}%]
+  \def\@percentval{\@ifnextchar[{\@@@percentval}{\@@@@percentval}}%]
+  \def\@@@percentval[#1]#2{\val{#2}-\unit{#1\unit@kern\%}}
+  \def\@@@@percentval#1{\val{#1}-\%}
+  \def\@@percentval{\@ifnextchar[{\@@@@@percentval}{\@@@@@@percentval}}%]
+  \def\@@@@@percentval[#1]#2{\valunit{#2}{#1\unit@kern\%}}
+  \def\@@@@@@percentval#1{\val{#1}\%}
+\def\percentvalrange#1#2{\valrange{#1}{#2}\%}
+
+\def\permilleval#1{\val{#1}\permille}
+\def\permillevalrange#1#2{\valrange{#1}{#2}\permille}
+
+\def\permille{\%\lower0.15ex\hbox{\fontsize{6pt}{6pt}\selectfont0}}
+\def\Angstrom{\AA}
+\newcommand{\celsius}{{}^{\circ}C}
+\newcommand{\fahrenheit}{{}^{\circ}F}
+\newcommand{\eV}{e\mskip-2mu V}
+\newcommand{\liter}{\ell}
+\def\Ohm{\unit{\Omega}}
+
+\def\math@version@font#1{%
+  \edef\@tempb{normal}%
+  \ifx\math@version\@tempb
+%    \mathvar{#1}
+    \mathrm{#1}
+  \else
+    \edef\@tempb{bold}%
+    \ifx\math@version\@tempb
+%      \mathvarb{#1}
+      \mathbf{#1}
+    \else
+      \PackageError{lscience}{mathversion \math@version unknown}
+        {Please check the definition of \string\math@version@font.}
+    \fi
+  \fi}
+
+% MultiIndex (mmode)
+%
+% #2  #5
+%   #3
+% #1  #4
+\def\@MultiIndex#1#2#3#4#5{%
+  \setbox\temp@boxa=\hbox{$\math@version@font{#1}$}%
+  \setbox\temp@boxb=\hbox{$\math@version@font{#2}$}%
+  \ifdim\wd\temp@boxa>\wd\temp@boxb
+    \setbox\temp@boxb=\hbox to\wd\temp@boxa{\hfil$\math@version@font{#2}$}%
+  \fi
+  \ifdim\wd\temp@boxb>\wd\temp@boxa
+    \setbox\temp@boxa=\hbox to\wd\temp@boxb{\hfil$\math@version@font{#1}$}%
+  \fi
+  {}_{{\box\temp@boxa}}^{{\box\temp@boxb}}
+  \math@version@font{#3}_{\math@version@font{#4}}^{\math@version@font{#5}}}
+
+\def\MultiIndex#1#2#3#4#5{%
+  \mathchoice
+    {\@MultiIndex{\scriptstyle#1}{\scriptstyle#2}{#3}{\scriptstyle#4}{\scriptstyle#5}}%
+    {\@MultiIndex{\scriptstyle#1}{\scriptstyle#2}{#3}{\scriptstyle#4}{\scriptstyle#5}}%
+    {\@MultiIndex{\scriptscriptstyle#1}{\scriptscriptstyle#2}{\scriptstyle#3}%
+      {\scriptscriptstyle#4}{\scriptscriptstyle#5}}%
+    {\hbox{\string\MultiIndex not allowed in \string\scripscripttstyle}}}
+\def\TinyScriptsMultiIndex#1#2#3#4#5{%
+  \mathchoice
+    {\MultiIndex{#1}{#2}{#3}{#4}{#5}}%
+    {\@MultiIndex{\scriptscriptstyle#1}{\scriptscriptstyle#2}
+      {#3}{\scriptscriptstyle#4}{\scriptscriptstyle#5}}%
+    {\@MultiIndex{\scriptscriptstyle#1}{\scriptscriptstyle#2}
+      {\scriptstyle#3}{\scriptscriptstyle#4}{\scriptscriptstyle#5}}%
+    {\hbox{\string\TinyScriptsMultiIndex not allowed in \string\scripscripttstyle}}}
+
+
+\def\@mathop#1{\mathop{\math@version@font{#1}}}
+
+
+\def\abs#1{%
+  \mathchoice%
+    {\left| #1\right|}%
+    {|#1|}%
+    {|#1|}%
+    {|#1|}%
+}
+\def\norm#1{%
+  \mathchoice%
+    {\left\|#1\right\|}%
+    {\|#1\|}%
+    {\|#1\|}%
+    {\|#1\|}%
+}
+\def\angles#1{\ensuremath{%
+  \mathchoice%
+    {\left\langle#1\right\rangle}%
+    {\langle#1\rangle}%
+    {\langle#1\rangle}%
+    {\langle#1\rangle}%
+}}
+\let\anglemean=\angles
+\let\barmean=\overline
+\def\mean{\@ifstar\barmean\anglemean}
+\def\bra#1{%
+  \mathchoice%
+    {\left\langle#1\right|}%
+    {\langle#1|}%
+    {\langle#1|}%
+    {\langle#1|}%
+}
+\def\ket#1{%
+  \mathchoice%
+    {\left|#1\right\rangle}%
+    {|#1\rangle}%
+    {|#1\rangle}%
+    {|#1\rangle}%
+}
+\def\braket#1#2{\left\langle#1\vphantom{#2}\right.\!\!\left|\vphantom{#1}#2\right\rangle}
+
+\def\kB{k_{\unit{B}}}
+\def\pH{pH}
+\def\Ry{Ry}
+\def\muB{\mu_{\unit{B}}}
+
+\def\artanh{\@mathop{artanh}}
+\def\const{\mathrm{const}}
+\def\curl{\@mathop{curl}}
+\def\Def{\@mathop{Def}}
+\def\Div{\@mathop{div}}
+\def\grad{\mathop{\mathbf{grad}}}
+\def\idop{\mathcal{I}}
+\def\Im{\@mathop{Im}}
+\def\Laplace{\mathrm{\Delta}}
+\def\Re{\@mathop{Re}}
+\def\sech{\@mathop{sech}}
+\def\sinc{\@mathop{sinc}}
+\def\trace{\@mathop{tr}}
+
+\def\vector#1{\mathchoice
+  {\hbox{\mathversion{bold}$\displaystyle#1$}}
+  {\hbox{\mathversion{bold}$\textstyle#1$}}
+  {\hbox{\mathversion{bold}$\scriptstyle#1$}}
+  {\hbox{\mathversion{bold}$\scriptscriptstyle#1$}}}
+
+\def\d{\mskip2mu\mathrm{d}}
+\let\D=\d
+\def\e{\mskip2mu\mathrm{e}}
+\let\E=\e
+\def\i{\mathrm{i}}
+\let\I=\i
+\def\diffDelta{\math@version@font{\Delta}}
+\def\diffdelta{\math@version@font{\delta}}
+\def\entspricht{\mathrel{\mathop{\widehat{=}}}}
+\def\entsprichtetwa{\mathrel{\mathop{\widehat{\approx}}}}
+\def\nullvector{{\mathbf{0}}}
+\def\hateq{\overset{\wedge}{=}}
+
+\def\aboverightarrow#1{\mathrel{\mathop{\setbox0\hbox{$-$}
+  \copy0\mkern-6mu\cleaders
+  \hbox{$\mkern-2mu\box0\mkern-2mu$}\hfill
+  \mkern-6mu\mathord\rightarrow}\limits^%
+    {\vbox{\vskip0.4ex\hbox{$\mkern12mu{\scriptstyle #1}\mkern12mu$}\vskip-0.4ex}}}}
+\def\belowrightarrow#1{\mathrel{\mathop{\setbox0\hbox{$-$}
+  \copy0\mkern-6mu\cleaders
+  \hbox{$\mkern-2mu\box0\mkern-2mu$}\hfill
+  \mkern-6mu\mathord\rightarrow}\limits_%
+    {\mkern10mu{\scriptstyle #1}\mkern14mu}}}
+
+% adapting \frac:
+% in display style a fraction (a over b), elsewhere a/b
+\def\Frac#1#2{%
+  \mathchoice
+    {\frac{#1}{#2}}%
+    {#1/#2}%
+    {#1/#2}%
+    {#1/#2}}
+
+% generic differential fraction:
+% e.g., \diffq[\partial]{f}{z}: partial derivation of f wrt z
+%       \diffq{f}{x}: derivation of f wrt x
+%       \diffq{}{x}: d/dx
+\def\diffq{\@ifnextchar[{\@diffq}{\@diffq[\D]}}%]
+\def\@diffq[#1]#2#3{\Frac{#1#2}{#1#3}}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% Chemistry
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\def\chem#1{{%
+  \def\binding##1##2{\mathchoice%
+    {\raise##1ex\hbox{$\displaystyle{##2}$}}
+    {\raise##1ex\hbox{$\textstyle{##2}$}}
+    {\raise##1ex\hbox{$\scriptstyle{##2}$}}
+    {\raise##1ex\hbox{$\scriptscriptstyle{##2}$}}}
+  \def\single{\binding{0.1}{-}}%
+  \def\double{\binding{0.1}{=}}%
+  \def\triple{\binding{0.1}{\equiv}}%
+  \def\radical{\binding{0.4}{{\ensuremath{\scriptscriptstyle\bullet}}}}%
+  \setbox\temp@boxa\hbox{\ensuremath{\math@version@font{#1}}}%
+  \ht\temp@boxa0pt%
+  \dp\temp@boxa0pt%
+  \box\temp@boxa}}
+
+\def\chemvar#1{\mathchoice%
+  {\hbox{$\displaystyle#1$}}
+  {\hbox{$\textstyle#1$}}
+  {\hbox{$\scriptstyle#1$}}
+  {\hbox{$\scriptscriptstyle#1$}}}
+
+\def\isotope#1#2#3{\ensuremath{\MultiIndex{#1}{#2}{\chem{#3}}{}{}}}
+\def\orbital#1#2#3#4{\ensuremath{\smash{{#1}{\chem{#2}}^{#3}_{#4}}}}
+
+\def\particle{\@ifstar\@antiparticle\@particle}
+\def\@antiparticle#1{\chem{\overline{#1}}}
+\def\@particle#1{\chem{#1}}
+
+\def\varrightarrow#1#2{%
+  \setbox\temp@boxa\hbox{$\scriptstyle #2$}%
+  \setbox\temp@boxb\hbox{$\scriptstyle #1$}%
+  \ifdim\wd\temp@boxa>\wd\temp@boxb
+    \temp@dimena\wd\temp@boxa
+  \else
+    \temp@dimena\wd\temp@boxb
+  \fi
+  \advance\temp@dimena1em
+  \setbox\temp@boxa\hbox{$\rightarrow$}%
+  \loop
+    \ifdim\wd\temp@boxa<\temp@dimena
+      \setbox\temp@boxa\hbox{$-\!\!\!$\unhbox\temp@boxa}%
+  \repeat
+  \mathop{\box\temp@boxa}\limits_{\hbox
+    to\temp@dimena{\hfil$\scriptstyle #1$\hfil}}^{\hbox
+    to\temp@dimena{\hfil$\scriptstyle #2$\hfil}}}

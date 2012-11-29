@@ -1,0 +1,215 @@
+\ProvidesPackage{parser}[1997/01/08]
+% parser.sty by Thomas Schmidt, LE-TeX GbR, www.le-tex.de
+\expandafter\ifx\csname @package@known@parser\endcsname\relax
+\expandafter\edef\csname @package@known@parser\endcsname{Yep}
+\newcount\tracingcolumns\tracingcolumns0000
+\newcount\DEBUG@LEVEL\DEBUG@LEVEL0
+\def\dmessage#1{\message{#1}}
+\def\@trdebug#1#2#3{%
+   {{\ifnum\tracingcolumns>#1%
+      \temp@counta0 
+      \temp@countb17 \advance\temp@countb by-\temp@counta
+      \temp@counta2 \multiply\temp@counta by\DEBUG@LEVEL
+      \advance\temp@countb by\temp@counta
+      {\aftergroup\edef\aftergroup\spaces\aftergroup{\loop%
+            \ifnum\temp@countb>0 \aftergroup\space
+            \advance\temp@countb by-1 \repeat \aftergroup}}%
+      \message{DEBUG(#2):\spaces #3^^J}\fi}}}
+
+\def\begin@trdebug#1#2#3{%
+   {{\ifnum\tracingcolumns>#1%
+      \temp@counta0 
+      \temp@countb17 \advance\temp@countb by-\temp@counta
+      \temp@counta2 \multiply\temp@counta by\DEBUG@LEVEL
+      \advance\temp@countb by\temp@counta
+      {\aftergroup\edef\aftergroup\spaces\aftergroup{\loop%
+            \ifnum\temp@countb>0 \aftergroup\space
+            \advance\temp@countb by-1 \repeat \aftergroup}}%
+      \message{DEBUG(#2):\spaces|--> #3^^J}\global\advance\DEBUG@LEVEL1 \fi}}}
+\def\end@trdebug#1#2#3{%
+  {{\ifnum\tracingcolumns>#1\global\advance\DEBUG@LEVEL-1
+      \temp@counta0
+      \temp@countb17 \advance\temp@countb by-\temp@counta
+      \temp@counta2 \multiply\temp@counta by\DEBUG@LEVEL
+      \advance\temp@countb by\temp@counta
+      {\aftergroup\edef\aftergroup\spaces\aftergroup{\loop%
+            \ifnum\temp@countb>0 \aftergroup\space
+            \advance\temp@countb by-1 \repeat\aftergroup}}%
+      \message{DEBUG(#2):\spaces #3 -->|^^J}\fi}}}
+
+
+\def\parsefor#1#2{\gdef\parser@eat#2{}%
+  \def\parser@temp##1#2##2#2{\ifx##2\relax\relax
+    \gdef\parser@eat{}\gdef\parser@first{}\gdef\parser@second{##1}%
+    \else\gdef\parser@first{##1}\gdef\parser@second{##2}\fi
+  \parser@eat}%
+  \parser@temp#1#2#2}
+
+%\def\strlen#1{\temp@counta0\def\tempa{#1}\def\tempb{<}%
+%   \ifx\tempa\empty\else\Strlen#1<$$>\fi}
+%\def\Strlen#1#2<$$>{\advance\temp@counta by1\def\tempa{#2}\ifx\tempa\empty%
+%   \else\Strlen#2<$$>\fi}
+\def\Spell#1#2<$$>{\message{#1}\def\tempa{#2}\ifx\tempa\empty%
+   \else\Spell#2<$$>\fi}
+\def\Spellto#1#2<$$>{\def\tempa{#1}\ifx\tempa\tempb\edef\parser@second{#2}%
+   \else \edef\parser@first{\parser@first #1}\def\tempa{#2}\ifx\tempa\empty\else\Spellto#2<$$>\fi\fi}
+\def\spell#1{%
+   \def\tempa{#1}\ifx\tempa\empty\else\Spell#1<$$>\fi}
+\def\spellto#1#2{%
+   \edef\parser@second{}\edef\parser@first{}\def\tempa{#1}\def\tempb{#2}\ifx\tempa\empty\else%
+      \Spellto#1<$$>\fi}
+
+\newcount\columns@float@startcolumn
+\newcount\columns@float@endcolumn
+\newcount\columns@float@part
+
+\catcode`\^=11
+
+\newcount\temp^counta
+\newcount\temp^countb
+\newcount\temp^countc
+
+\def\^^loop#1\^^repeat{\def\^^body{#1}\^^iterate}
+\def\^^iterate{\^^body\let\^^next=\^^iterate\else\let\^^next=\relax\fi\^^next}
+
+\def\pool#1\cancel{\def\@@body{#1}\@@iterate}
+\def\@@iterate{\@@body\let\@@next=\relax\else\let\@@next=\@@iterate\fi\@@next}
+
+\newif\if^tempa
+
+%
+% substring #1#2#3#4
+%
+% define #4 as substring of #1 with start position #2 and end position #3
+%
+
+\def\substring#1#2#3#4{\temp^counta1 \temp^countb#2\temp^countc#3\relax
+   \edef\^tempa{#1}\edef#4{}%
+   \ifnum\temp^countb>\temp^countc
+   \else\ifx\^tempa\empty\else
+      {\aftergroup\edef\aftergroup#4\aftergroup{%
+         \edef#4{\^tempa}\advance\temp^countc1
+         \^^loop\expandafter\^substring#4^#4\advance\temp^counta1 
+            \ifnum\temp^counta<\temp^countc\^^repeat\aftergroup}}%
+   \fi\fi}
+
+\def\^substring#1#2^#3{\ifnum\temp^counta<\temp^countb
+   \else\ifnum\temp^counta>\temp^countc
+      \else\aftergroup#1\fi\fi
+   \edef#3{#2}\ifx#3\empty\temp^counta\temp^countc\fi}
+
+%
+% strpos #1#2#3
+%
+% set counter #3 to the position of the first occurence of character #2
+% within string #1
+%
+
+\def\strpos#1#2#3{#3 0
+   \edef\^tempa{#1}\edef\^tempb{#2}\^tempatrue
+   \ifx\^tempa\empty\else
+   \^^loop\expandafter\^strpos\^tempa ^#3\if^tempa\^^repeat\fi
+   \ifx\^tempa\empty#3 0 \fi}
+
+\def\^strpos#1#2^#3{\edef\^tempc{#1}\advance#3 1
+   \ifx\^tempb\^tempc\^tempafalse
+   \else\edef\^tempa{#2}\fi\ifx\^tempa\empty\^tempafalse\fi}
+
+%
+% strlen #1#2
+%
+% set counter #2 to the length of string #1
+%
+
+\def\strlen#1#2{#2 0
+   \edef\^tempa{#1}\ifx\^tempa\empty\else\^tempatrue
+   \^^loop\expandafter\^strlen\^tempa ^#2\if^tempa\^^repeat\fi}
+
+\def\^strlen#1#2^#3{\advance#31
+   \edef\^tempa{#2}\ifx\^tempa\empty\^tempafalse\fi}
+
+\catcode`\^=7
+
+\def\@pos@error#1{%
+  \PackageError{parser}{Wrong float position}%
+     {The syntax is [PAGEPART.][[COLUMNS@FLOAT@STARTCOLUMNCOLUMN-]ENDCOLUMN][t|b].^^J
+     You typed additional characters after "#1". Please remove
+     them.}}
+
+\def\columns@parselegend#1{%
+  \edef\@tempa{#1}%
+  \strlen{\@tempa}{\temp@counta}%
+  \strpos{\@tempa}{t}{\temp@countb}%
+  \ifnum\temp@countb=0
+    \strpos{\@tempa}{b}{\temp@countb}%
+    \ifnum\temp@countb=0
+      \strpos{\@tempa}{m}{\temp@countb}%
+      \ifnum\temp@countb=0
+        \edef\columns@float@position{t}%
+      \else
+        \ifnum\temp@countb<\temp@counta
+          \@pos@error{m}%
+        \else
+          \edef\columns@float@position{m}%
+          \advance\temp@counta-1
+          \substring{\@tempa}{1}{\temp@counta}{\@tempa}%
+        \fi
+      \fi
+    \else
+      \ifnum\temp@countb<\temp@counta
+        \@pos@error{b}%
+      \else
+        \edef\columns@float@position{b}%
+        \advance\temp@counta-1
+        \substring{\@tempa}{1}{\temp@counta}{\@tempa}%
+      \fi
+    \fi
+  \else
+    \ifnum\temp@countb<\temp@counta
+      \@pos@error{t}%
+    \else
+      \edef\columns@float@position{t}%
+      \advance\temp@counta-1
+      \substring{\@tempa}{1}{\temp@counta}{\@tempa}%
+    \fi
+  \fi
+   \@trdebug{20}{parser}{^^J Input: #1, Pos: \columns@float@position}%
+   \strpos{\@tempa}{.}{\temp@counta}%
+   \ifnum\temp@counta=0
+      \columns@float@part=1
+   \else
+      \advance\temp@counta-1
+      \substring{\@tempa}{1}{\temp@counta}{\@tempb}%
+      \expandafter\columns@float@part\@tempb
+      \advance\temp@counta2
+      \strlen{\@tempa}{\temp@countb}%
+      \substring{\@tempa}{\temp@counta}{\temp@countb}{\@tempa}%
+   \fi
+   \ifx\empty\@tempa\relax
+      \columns@float@startcolumn1 \columns@float@endcolumn\columns@columnnumber
+   \else
+      \strpos{\@tempa}{-}{\temp@counta}%
+      \ifnum\temp@counta=0
+         \expandafter\columns@float@startcolumn\@tempa\relax
+         \ifnum\columns@float@startcolumn=0
+            \columns@float@endcolumn0
+         \else
+            \columns@float@endcolumn\columns@float@startcolumn
+         \fi
+      \else
+         \advance\temp@counta-1
+         \substring{\@tempa}{1}{\temp@counta}{\@tempb}%
+         \expandafter\columns@float@startcolumn\@tempb
+         \advance\temp@counta1
+         \strlen{\@tempa}{\temp@countb}%
+         \ifnum\temp@counta=\temp@countb
+            \columns@float@endcolumn\columns@columnnumber
+         \else
+            \advance\temp@counta1
+            \substring{\@tempa}{\temp@counta}{\temp@countb}{\@tempa}%
+            \expandafter\columns@float@endcolumn\@tempa
+         \fi
+      \fi
+   \fi
+   \@trdebug{20}{parser}{^^J columns@float@startcolumn=\the\columns@float@startcolumn, end=\the\columns@float@endcolumn, part=\the\columns@float@part.}}
+\fi

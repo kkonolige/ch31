@@ -1,0 +1,2389 @@
+\documentclass[twocolumn,oneside]{book}
+
+\usepackage{epsf}
+\usepackage{amsmath}
+\usepackage{amstext}
+\usepackage{amssymb}
+\usepackage{science}
+\bibliographystyle{handbook}
+
+%\setlength{\textwidth}{86mm}
+\setlength{\textwidth}{175.5mm}
+\setlength{\textheight}{212mm}
+
+\newenvironment{pbox}[1]{\begin{parbox}[t]{6.25cm}{#1\\}}{\end{parbox}}
+
+\newcommand{\valpha}{\vector{\alpha}}
+\newcommand{\vlambda}{\vector{\lambda}}
+\newcommand{\vomega}{\vector{\omega}}
+\newcommand{\vPhi}{\vector{\Phi}}
+\newcommand{\vPsi}{\vector{\Psi}}
+\newcommand{\btau}{\mbox{\boldmath$\tau$}}
+\newcommand{\vtau}{\vector{\tau}}
+
+\newcommand{\vzero}{\vector{0}}
+\newcommand{\vone}{\vector{1}}
+
+\newcommand{\ba}{{\bf a}}
+\newcommand{\va}{\vector{a}}
+\newcommand{\vc}{\vector{c}}
+\newcommand{\vC}{\vector{C}}
+\newcommand{\Bf}{{\bf f}}
+\newcommand{\vf}{\vector{f}}
+\newcommand{\vH}{\vector{H}}
+\newcommand{\vI}{\vector{I}}
+\newcommand{\vJ}{\vector{J}}
+\newcommand{\vn}{\vector{n}}
+\newcommand{\vO}{\vector{O}}
+\newcommand{\vp}{\vector{p}}
+\newcommand{\bq}{{\bf q}}
+\newcommand{\vq}{\vector{q}}
+\newcommand{\vqd}{\dot{\vector{q}}}
+\newcommand{\vqdd}{\ddot{\vector{q}}}
+\newcommand{\bqd}{\dot{\bf q}}
+\newcommand{\bqdd}{\ddot{\bf q}}
+\newcommand{\vR}{\vector{R}}
+\newcommand{\vS}{\vector{S}}
+\newcommand{\vT}{\vector{T}}
+\newcommand{\vu}{\vector{u}}
+\newcommand{\bv}{{\bf v}}
+\newcommand{\vv}{\vector{v}}
+\newcommand{\vX}{\vector{X}}
+\newcommand{\vx}{\vector{x}}
+\newcommand{\vy}{\vector{y}}
+\newcommand{\vz}{\vector{z}}
+\newcommand{\hx}{\hat{\vx}}
+\newcommand{\hy}{\hat{\vy}}
+\newcommand{\hz}{\hat{\vz}}
+
+\def\vec#1{\begin{array}{c}#1\end{array}}
+
+%two column float page must be 90% full
+\renewcommand\dblfloatpagefraction{.90}
+%two column top float can cover up to 80% of page
+\renewcommand\dbltopfraction{.80}
+%float page must be 90% full
+\renewcommand\floatpagefraction{.90}
+%top float can cover up to 80% of page
+\renewcommand\topfraction{.80}
+%bottom float can cover up to 80% of page
+\renewcommand\bottomfraction{.80}
+%at least 10% of a normal page must contain text
+\renewcommand\textfraction{.1}
+
+\begin{document}
+
+\title{\LARGE{Handbook of Robotics\\
+~\\
+Chapter 22 - Range Sensors}\\
+~\\
+~}
+
+\author{Robert B. Fisher\\
+School of Informatics\\
+University of Edinburgh\\
+rbf@inf.ed.ac.uk\\
+\and
+Kurt Konolige\\
+Artificial Intelligence Center\\
+SRI International\\
+konolige@ai.sri.com\\
+\\
+\\
+\\
+\\
+}
+
+\date{\today}
+
+\maketitle
+
+\pagenumbering{roman}
+
+\tableofcontents
+
+\pagenumbering{arabic}
+
+\setcounter{page}{1}
+
+\setcounter{chapter}{22}
+
+Range sensors are devices that capture the 3D structure of the world
+from the viewpoint of the sensor, usually measuring the depth to the
+nearest surfaces. These measurements could be at a single point,
+across a scanning plane, or a full image with depth measurements at
+every point.
+The benefits of this range data is that a robot can be relatively 
+certain where the real world is, relative to the sensor, thus allowing
+the robot to more reliably find navigable routes, avoid obstacles,
+grasp objects, act on industrial parts, etc.
+
+This chapter introduces the main representations for range data 
+(point sets, triangulated surfaces, voxels), the main methods 
+for extracting usable features from the range data (planes, lines, triangulated surfaces),
+the main sensors for acquiring it (Section \ref{sec22.1} -
+stereo and laser triangulation and ranging systems),
+how multiple observations of the scene, {\it e.g.} as if from a 
+moving robot, can be registered (Section \ref{ch22.2})
+and several indoor and outdoor robot applications where
+range data greatly simplifies the task (Section \ref{ch22.3}).
+
+\section{Range sensing basics \label{sec22.1}}
+
+Here we present: 1) the basic representations used for range image data,
+2) a brief introduction to the main 3D sensors that are less commonly used
+in robotics applications and 3) a detailed presentation of the more common 
+laser-baser range image sensors.
+
+\subsection{Range images and point sets} \label{sec22.1.1}
+
+\index{Range data} Range data is a $2\frac{1}{2}{\rm D}$ or 3D representation of the scene
+around the robot.
+The 3D aspect arises because we are measuring the $(X,Y,Z)$ coordinates
+of one or more points in the scene.
+Often only a single \index{range image} range image is used at each time instance.
+This means that we only observe the front sides of objects - the
+portion of the scene visible from the robot.
+In other words, we don't have a full 3D observation of all sides of
+a scene.
+This is the origin of the term $2\frac{1}{2}{\rm D}$.
+Figure \ref{fig23.1}a shows a sample range image and (b) shows a 
+\index{registered reflectance image} registered reflectance image, where each pixel records the level of reflected 
+infrared light.
+\begin{figure}
+{\epsfxsize = 0.47\textwidth \epsfbox{BOOKFIGS/inkirksmall.ps}}
+\caption{
+Above: Registered infrared reflectance image.
+Below: Range image where closer is darker.
+\label{fig23.1}}
+\end{figure}
+
+There are two standard formats for representing range data.
+The first is an image $d(i,j)$, which records the distance $d$ to the
+corresponding scene point $(X,Y,Z)$ for each image pixel $(i,j)$.
+There are several common mappings from $(i,j,d(i,j))$ to $(X,Y,Z)$,
+usually arising from the geometry of the range sensor.
+The most common image mappings are illustrated in Figures \ref{rngmapa} and
+\ref{rngmapb}.
+In the formulas given here,
+$\alpha$ and $\beta$ are calibrated values specific to the sensor.
+\begin{figure}[htb]
+{\epsfxsize = 0.47\textwidth \epsfbox{BOOKFIGS/ortho.eps}}
+a) Orthographic\\
+\ \\
+{\epsfxsize = 0.47\textwidth \epsfbox{BOOKFIGS/persp.eps}}\\
+b) Perspective
+\caption{Different range image mappings: a) orthographic, b) perspective.
+\label{rngmapa}}
+\end{figure}
+
+\begin{figure}[htb]
+{\epsfxsize = 0.44\textwidth \epsfbox{BOOKFIGS/cylp.eps}}
+c) Cylindrical\\
+\ \\
+{\epsfxsize = 0.44\textwidth \epsfbox{BOOKFIGS/spher2.eps}}\\
+d) Spherical
+\caption{Different range image mappings: c) cylindrical and d) spherical.
+\label{rngmapb}}
+\end{figure}
+\begin{enumerate}
+
+\item {\bf Orthographic}: 
+Here $(X,Y,Z) = (\alpha i, \beta j, d(i,j))$.
+These images often arise from range sensors that
+  scan by translating in the $x$ and $y$ directions.
+(See Figure \ref{rngmapa}a.)
+
+\item {\bf Perspective}:
+Here $d(i,j)$ is the distance along the line of sight of the ray through 
+pixel $(i,j)$ to point $(x,y,z)$. Treating the range sensor focus
+as the origin $(0,0,0)$ and assuming that its optical axis is the
+$Z$ axis and $(X,Y)$ axes are parallel to the image $(i,j)$ axes, then 
+$(X,Y,Z) = \frac{d(i,j)}{\sqrt{\alpha^2 i^2 + \beta^2 j^2 + f^2}}
+(\alpha i, \beta j, f)$, where $f$ is the `focal length' of the system.
+These images often arise from sensor equipment that incorporates a normal
+intensity camera.
+(See Figure \ref{rngmapa}b.)
+
+\item {\bf Cylindrical}:
+Here, $d(i,j)$ is the distance along the line of sight of the ray through 
+pixel $(i,j)$ to point $(X,Y,Z)$. In this case, the sensor usually rotates
+to scan in the $x$ direction, and translates to scan in the $y$ direction.
+Thus, \\
+$(X,Y,Z) = (d(i,j) \sin(\alpha i), \beta j, d(i,j) \cos(\alpha i))$ 
+is the usual conversion.
+(See Figure \ref{rngmapb}c.)
+
+\item {\bf Spherical}:
+Here, $d(i,j)$ is the distance along the line of sight of the ray through 
+pixel $(i,j)$ to point $(X,Y,Z)$. In this case, the sensor usually rotates
+to scan in the $x$ direction, and, once each $x$ scan, also rotates
+in the $y$ direction. Thus $(i,j)$ are the azimuth and elevation of the
+line of sight.
+Here \\
+$(X,Y,Z) =\\ d(i,j) (
+\cos(\beta j) \sin(\alpha i),
+\sin(\beta j),
+\cos(\beta j) \cos(\alpha i))$.
+(See Figure \ref{rngmapb}d.)
+
+
+\end{enumerate}
+
+Some sensors only record distances in a plane, so the scene $(x,z)$ is
+represented by the linear image $d(i)$ for each pixel $i$.
+The orthographic, perspective and cylindrical projection options
+listed above still apply in simplified form.
+
+The second format is as a list $\{(X_i,Y_i,Z_i)\}$ of 3D data points,
+but this format can be used with all of the mappings listed above.
+Given the conversions from image data $d(i,j)$ to $(X,Y,Z)$ 
+the range data is only supplied as a list.
+Details of the precise mapping and data format are supplied with
+commercial range sensors.
+
+\subsection{Stereo vision}\index{Stereo vision}
+
+It is possible to acquire range information from many different sensors,
+but only a few have the reliability needed for most robotics applications.
+The more reliable ones, \index{laser based triangulation} laser based triangulation and LIDAR (laser radar)
+are discussed in the next section.
+
+Realtime stereo analysis uses two or more input images to estimate the
+distance to points in a scene.  The basic concept is {\em
+triangulation}: a scene point and the two camera points form a
+triangle, and knowing the baseline between the two cameras, and the
+angle formed by the camera rays, the distance to the object can be
+determined.
+
+In practice, there are many difficulties in making a stereo imaging
+system that is useful for robotics applications.  Most of these
+difficulties arise in finding reliable matches for pixels in the two
+images that correspond to the same point in the scene.  A further
+consideration is that stereo analysis for robotics has a realtime
+constraint, and the processing power needed for some algorithms can be
+very high.  But, in recent years much progress has been made, and the
+advantage of stereo imaging is that it can provide full 3D range
+images, registered with visual information, potentially out to an
+infinite distance, at high frame rates - something which no other
+range sensor can match.
+
+In this subsection we will review the basic algorithms of stereo
+analysis, and highlight the problems and potential of the method.
+For simplicity, we use binocular stereo.
+
+\subsubsection{Stereo image geometry}\index{Stereo}
+
+This subsection gives some more detail of the fundamental geometry of
+stereo, and in particular the relationship of the images to the 3D
+world via projection and reprojection.  A more in-depth discussion of
+the geometry, and the rectification process, can be found in \cite{hartley}.
+
+
+The input images are {\em rectified}, which means that the original
+images are modified to correspond to ideal pinhole cameras with a
+particular geometry, illustrated in Figure \ref{fig23.stereo-geometry}.
+Any 3D point $S$ projects to a point in the images along a ray through
+the focal point.  If the principal rays of the cameras are parallel,
+and the images are embedded in a common plane and have collinear scan
+lines, then the search geometry takes a simple form.  The {\em
+epipolar line} of a point $s$ in the left image, defined as the
+possible positions of $s'$ in the right image, is always a scan line
+with the same $y$ coordinate as $s$.  Thus, search for a stereo match
+is linear.  The process of finding a rectification of the original
+images that puts them into standard form is called {\em calibration},
+and is discussed in \cite{hartley}.
+
+The difference in the $x$ coordinates of $s$ and $s'$ is the {\em
+disparity} of the 3D point, which is related to its distance from the
+focal point, and the baseline $T_x$ that separates the focal points.
+
+\begin{figure}
+
+{\epsfxsize = 0.47\textwidth \epsfbox{BOOKFIGS/StereoGeom.eps}}
+%%{ \epsfbox{BOOKFIGS/StereoGeom.ps}}
+
+\caption{
+Ideal stereo geometry.  The global coordinate system is centered on
+the focal point (camera center) of the left camera.  It is a
+right-handed system, with positive $Z$ in front of the camera, and
+positive $X$ to the right.  The camera principal ray pierces the image
+plane at $C_x,C_y$, which is the same in both cameras (a variation for
+{\em verged} cameras allows $C_x$ to differ between the images).  The
+focal length is also the same.  The images are lined up, with $y=y'$
+for the coordinates of any scene point projected into the images.  The
+difference between the $x$ coordinates is called the {\em disparity}.
+The vector between the focal points is aligned with the $X$ axis.
+\label{fig23.stereo-geometry}}
+
+\end{figure}
+
+
+A 3D point can be projected into either the left or right image by a
+matrix multiplication in homogenous coordinates, using the {\em
+projection matrix}.  The 3D coordinates are in the frame of the left
+camera (see Figure \ref{fig23.stereo-geometry}).
+
+\begin{eqnarray}
+\bf{P} =
+\left[ 
+\vec{F_x \\ 0 \\ 0}
+\vec{ 0\\ F_y \\ 0}
+\vec{ C_x \\ C_y \\ 1}
+\vec{ -F_x T_x \\ 0 \\ 0} 
+\right]
+\end{eqnarray}
+
+This is the projection matrix for a single camera.  $F_x$, $F_y$ are
+the focal lengths of the rectified images, and $C_x$,
+$C_y$ is the optical center.  $T_x$ is the translation of
+the camera relative to the left (reference) camera.  For the left
+camera, it is 0; for the right camera, it is the baseline times the
+$x$ focal length.
+
+A point in 3D is represented by homogeneous coordinates and the
+projection is performed using a matrix multiply
+
+\begin{eqnarray}
+\left[
+\vec{x\\ y\\ w}
+\right] 
+=
+ \bf{P} \left[ \vec{X\\ Y\\ Z \\ 1} \right]
+\end{eqnarray}
+ 
+\noindent where $(x/w, y/w)$ are the idealized image coordinates.
+
+If points in the left and right images correspond to the same scene
+feature, the depth of the feature can be calculated from the image
+coordinates using the {\em reprojection matrix}.
+
+\begin{eqnarray}
+\bf{Q} =
+\left[ 
+\vec{1 \\ 0 \\ 0 \\ 0}
+\vec{0 \\ 1 \\ 0 \\ 0}
+\vec{0 \\ 0 \\ 0 \\ -1/T_x}
+\vec{-C_x \\ -C_y \\ F_x \\ \frac{C_x - C_x'}{T_x}} 
+\right]
+\end{eqnarray}
+
+\noindent The primed parameters are from the left projection matrix, the
+unprimed from the right.  The last term is zero except for verged
+cameras.  If $x,y$ and $x',y$ are the two matched image points, with
+$d=x-x'$, then 
+
+\begin{eqnarray}
+\left[
+\vec{X\\ Y\\ Z\\ W}
+\right] 
+=
+ \bf{Q} \left[ \vec{x\\ y\\ d \\ 1} \right]
+\label{reprojection.eq.ch22}
+\end{eqnarray}
+ 
+\noindent where $(X/W, Y/W, Z/W)$ are the coordinates of the scene
+feature, and $d = x - x'$ is the disparity.  Assuming $C_x = C'_x$,
+the $Z$ distance assumes the familiar inverse form of triangulation
+\begin{equation}
+ Z = \frac{F_x T'_x}{d}.
+\label{eq22.disparity-range}
+\end{equation}
+\noindent Reprojection is valid only for rectified images - for the general
+case, the projected lines do not intersect.
+The disparity $d$ is an {\em inverse depth}
+measure, and the vector $(x,y,d)$ is a perspective representation
+range image (see Section \ref{sec22.1.1}), sometimes called the {\em
+disparity space} representation.  The disparity space is often used in
+applications instead of 3D space, as a more efficient representation
+for determining obstacles or other features (see Section
+\ref{ch22.roughterrain}).
+
+Equation \ref{reprojection.eq.ch22} is a homography between disparity
+space and 3D Euclidean space.  Disparity space is also useful in
+translating between 3D frames.  Let $p_0 = [x_0,y_0,d_0,1]$ in frame
+0, with frame 1 related by the rigid motion $R,t$.  From the
+reprojection equation
+\ref{reprojection.eq.ch22} the 3D position is ${\bf Q}p_0$ Under the
+rigid motion this becomes $\left(\begin{array}{cc}R&t\\ 0 & 1
+\end{array}\right)Qp_0$, and finally applying $Q^{-1}$ yields the
+disparity representation in frame 1.  The concatenation of these
+operations is the homography 
+
+\begin{equation}
+H(R,t) = Q^{-1}\left(\begin{array}{cc}R&t
+  \\ 0 & 1 \end{array}\right)Q.  
+\label{homography.eq.ch22}
+\end{equation}
+
+\noindent Using the homography allows the points
+in the reference frame to be directly projected onto another frame,
+without translating to 3D points.
+
+\subsubsection{Stereo Methods}
+
+The fundamental problem in stereo analysis is matching image elements
+that represent the same object or object part in the scene.  Once the
+match is made, the range to the object can be computed using the image
+geometry.
+
+Matching methods can be characterized as local or global.  Local
+methods attempt to match small regions of one image to another based
+on intrinsic features of the region.  Global methods supplement local
+methods by considering physical constraints such as surface continuity
+or base-of-support.  Local methods can be further classified by
+whether they match discrete features among images, or correlate a
+small area patch \cite{barnard1982}.  Features are usually
+chosen to be lighting and viewpoint-independent, e.g., corners are a
+natural feature to use because they remain corners in almost all
+projections.  Feature-based algorithms compensate for viewpoint
+changes and camera differences, and can produce rapid, robust
+matching. But they have the disadvantage of requiring perhaps
+expensive feature extraction, and yielding only sparse range results.
+
+In the next section we present local area correlation in more detail,
+since it is one of the most efficient and practical algorithms for
+realtime stereo.  A survey and results of recent stereo matching
+methods is in \cite{scharstein02taxonomy}, and the authors maintain a
+web page listing up-to-date information at \cite{middlebury}.
+
+
+\subsubsection{Area Correlation Stereo} \index{Area Correlation Stereo}
+
+Area correlation compares small patches among images using
+correlation.  The area size is a compromise, since small areas are
+more likely to be similar in images with different viewpoints, while
+larger areas increase the signal-to-noise ratio.  In contrast to the
+feature-based method, area-based correlation produces dense results.
+Because area methods needn't compute features, and have an extremely
+regular algorithmic structure, they can have optimized
+implementations.  
+
+The typical area correlation method has five steps (Figure
+\ref{fig23.stereo-processing}): 
+\begin{enumerate}
+\item Geometry correction.  In this step, distortions in the input
+images are corrected by warping into a "standard form". 
+\item Image transform.  A local operator transforms each pixel in the
+grayscale image into a more appropriate form, e.g., normalizes it
+based on average local intensity. 
+\item Area correlation.  This is the correlation step, where each
+small area is compared with other areas in its search window. 
+\item Extrema extraction.  The extreme value of the correlation at
+each pixel is determined, yielding a disparity image: each pixel value
+is the disparity between left and right image patches at the best
+match. 
+\item Post-filtering.  One or more filters clean up noise in the
+disparity image result. 
+\end{enumerate}
+
+\begin{figure}
+{\epsfxsize = 0.47\textwidth \epsfbox{BOOKFIGS/StereoProc.eps}}
+\caption{
+Basic stereo processing.  See text for details.
+\label{fig23.stereo-processing}}
+
+\end{figure}
+
+
+Correlation of image areas is disturbed by illumination, perspective,
+and imaging differences among images.  Area correlation methods
+usually attempt to compensate by correlating not the raw intensity
+images, but some transform of the intensities.  Let $u,v$ be the
+center pixel of the correlation, $d$ the disparity, and $I_{x,y}$,
+$I'_{x,y}$ the intensities of the left and right images.
+
+\begin{enumerate}
+\item Normalized cross-correlation. 
+$$
+\frac
+{\sum_{x,y}[I_{x,y}-\hat{I}_{x,y}][I'_{x-d,y}-\hat{I'}_{x-d,y}]}
+{\sqrt{ \sum_{x,y}[I_{x,y}-\hat{I}_{x,y}]^2 \sum_{x,y}[I'_{x,y}-\hat{I'}_{x-d,y}]^2 }}
+$$
+
+\item High-pass filter such as Laplacian of gaussian (LOG).  The
+laplacian measures directed edge intensities over some area smoothed
+by the gaussian.  Typically the standard deviation of the gaussian is
+1-2 pixels.  
+$$
+\sum_{x,y}s[\bf{LOG}_{x,y}-\bf{LOG}_{x-d,y}],
+$$
+where $s(x)$ is $x^2$ or $||x||$.
+
+\item Nonparametric.  These transforms are an attempt to deal with
+the problem of outliers, which tend to overwhelm the correlation
+measure, especially using a square difference.  The census method \cite{zabih94} 
+computes a bit vector describing the local environment of a pixel, and
+the correlation measure is the Hamming distance between two vectors.
+$$
+\sum_{x,y}(I_{x,y} > I_{u,v}) \oplus (I'_{x-d,y} > I'_{u,v})
+$$
+\end{enumerate}
+
+Results on the different transforms and their error rates for some
+standard images are compiled in \cite{middlebury}.
+
+Another technique for increasing the signal-to-noise ratio of matches
+is to use more than two images \cite{faugeras96}.  This technique can
+also overcome the problem of viewpoint occlusion, where the matching
+part of an object does not appear in the other image.  The simple
+technique of adding the correlations between images at the same
+disparity seems to work well \cite{okutomi93}.  Obviously, the
+computational expenditure for multiple images is greater than for
+two. 
+
+\begin{table}
+\begin{tabular}{|p{1.2in}p{2in}|l|}
+\hline
+Correlation surface  & \cite{matthies93}\\
+\hline
+\verb+  + peak width & wide peak indicates poor feature\\
+ & localization \\
+\verb+  + peak height & small peak indicates poor match \\
+\verb+  + number of peaks  & multiple peaks indicate\\
+& ambiguity \\
+\hline
+Mode filter  & lack of supporting disparities \\
+&violates smoothness \\	
+\hline
+Left/Right check  & non-symmetric match\\
+\cite{bolles93,fua93}& indicates occlusion \\
+\hline
+Texture \cite{moravec79}  & low texture energy yields\\
+&poor matches \\
+\hline
+\end{tabular}
+
+\caption{
+Post-filtering techniques for eliminating false matches in area
+correlation. 
+\label{tab23.post-filter}}
+
+
+\end{table}
+
+Dense range images usually contain false matches that must be
+filtered, although this is less of a problem with multiple-image
+methods.  Table \ref{tab23.post-filter} lists some of the post-filters
+that have been discussed in the literature. 
+
+Disparity images can be processed to give sub-pixel
+accuracy, by trying to locate the correlation peak between pixels.
+This increases the available range resolution without much additional
+work.  Typical accuracies are $1/10$ pixel.
+
+\begin{figure}
+
+{\epsfxsize = 0.33\textwidth \epsfbox{BOOKFIGS/garden-color.eps}}
+{\epsfxsize = 0.33\textwidth \epsfbox{BOOKFIGS/garden-3D.eps}}
+{\epsfxsize = 0.38\textwidth \epsfbox{BOOKFIGS/garden-disparity.eps}}
+%%{ \epsfbox{BOOKFIGS/StereoGeom.ps}}
+
+\caption{
+Sample stereo results from an outdoor garden scene; baseline is 9 cm.
+Upper: original left image.  Middle: computed 3D points from a
+different angle.  Lower: disparity in pseudo-color.
+\label{fig23.garden-results}}
+
+\end{figure}
+
+
+\subsubsection{Stereo range quality}
+
+Various artifacts and problems affect stereo range images.
+
+{\bf Smearing.}  Area correlation introduces expansion in foreground
+objects, e.g., the woman's head in Figure \ref{fig23.garden-results}.
+The cause is the dominance of strong edges on the object.
+Nonparametric measures are less subject to this phenomenon.  Other
+approaches include multiple correlation windows and shaped windows.
+
+{\bf Dropouts.}  These are areas where no good matches can be found
+because of low texture energy.  Dropouts are a problem for indoor and
+outdoor man-made surfaces.  Projecting an infrared random texture can
+help \cite{adan}.
+
+{\bf Range resolution.}  Unlike LADAR devices, stereo range accuracy
+is a quadratic function of distance, found by differentiating Equation
+\ref{eq22.disparity-range} with respect to disparity:
+\begin{equation}
+ \delta Z = -\frac{F_x T'_x}{d^2}.
+\end{equation}
+The degradation of stereo range with distance can be clearly seen in
+the 3D reconstruction of Figure \ref{fig23.garden-results}.
+
+{\bf Processing.}  Area correlation is processor-intensive, requiring
+$Awd$ operations, where $A$ is the image area, $w$ the correlation
+window size, and $d$ the number of disparities.  Clever optimizations
+take advantage of redundant calculations to reduce this to $Ad$
+(independent of window size), at the expense of some storage.
+Realtime implementations exist for standard PCs \cite{videre,ptgrey},
+graphics accelerators \cite{zach03accurate,yang03multiresolution},
+DSPs \cite{konolige97}, FPGAs \cite{videre,focusrobotics}, and
+specialized ASICs \cite{tyzx}.
+
+\subsubsection{Other visual sources of range information}
+
+Here we briefly list the most popular, but less reliable sources of range
+information. These sources can potentially supplement other sensors.
+\begin{itemize}
+
+
+%\item {\bf Binocular stereo}:
+%When a scene is observed by two (or more) cameras whose focus points
+%are in different locations, then it is possible to triangulate observed
+%scene points to determine the 3D position of the scene points.
+%Triangulation is a straightforward geometric calculation, given calibrated 
+%cameras, as illustrated in Figure \ref{fig23.3}.
+%When a feature ${\bf \it p}$ is seen by two cameras, camera calibration
+%information allows the computation of rays ${\bf \it v_l}$ and ${\bf \it v_r}$
+%from each of the cameras towards the point. (Note that these rays are in 3D
+%space, unlike the diagram.)
+%The desired 3D point is close to where the rays pass most closely.
+%(Noise and calibration errors mean that they usually do not intersect.
+%Different algorithms exist to estimate the intersection point based
+%on different error assumptions, but the point closest to the two rays
+%is a reasonable first order choice.)
+%Calibration is commonly done with calibration targets \cite{zhang} but
+%is also done via auto-calibration methods \cite{hartley} whereby 
+%the 3D positions and the intrinsic parameters of the cameras can be estimated
+%from (normally) 7 or more matched scene points.
+%Some additional information is needed in the autocalibration method 
+%to upgrade the normal perspective calibration to a Euclidean calibration.
+%Also, correction for radial lens distortion \cite{awf} must be done first.
+
+
+%\begin{figure}[htb]
+%{\epsfxsize = 0.47\textwidth \epsfbox{BOOKFIGS/stertri1.eps}}
+%\caption{Geometry of stereo triangulation.
+%\label{fig23.3}}
+%\end{figure}
+
+
+%Given calibrated cameras, it is then possible to do 3D triangulation.
+%There are several possibilities for what features to use as the structure to triangulate.
+%Central to all possibilities is the ``correspondence problem'', which
+%is the problem of how to match features from one image ({\it e.g.} the left image) with those of the
+%other image ({\it e.g.} the right image).
+%Typically, individual features are a locally  ambiguous so there is always
+%the possibilities of incorrect matching, which leads to incorrect 3D
+%estimates. A second problem is that the matching algorithm might have high
+%computational complexity.
+
+%A popular choice is distinct feature points ({\it e.g.} SIFT \cite{lowe}),
+%but this allows reconstruction only at sparse points.
+%The normal approach to the matching of points in two images
+%uses the `Fundamental Matrix', ${\bf \it F}$ that specifies that
+%two points can potentially match (based on the epipolar constraint)  \cite{hartley,pollefeys}.
+%The Fundamental Matrix can be estimated by use of calibration charts,
+%or by auto-calibration through matching seven or more 
+%feature points in the two images.
+
+%After points are paired, the 3D position of corresponding scene points
+%can be computed.
+%A triangulated
+%surface connects these 3D points. These surfaces might be noisy and have
+%errors due to incorrect correspondences, and tend
+%to be more suitable for visualization and localization 
+%rather than navigation or grasping.
+%A second common choice for indoor mobile robotics is vertical lines, such as
+%door and corridor edges \cite{ayache}. Matching and triangulation of these
+%tends to be more accurate because there are fewer in a scene and they are
+%more distinct features. However, they do not give useful information for
+%what lies between the edges, nor on the floor, so are more suitable for 
+%localization than obstacle avoidance.
+%Finally, there are dense stereo systems \cite{criminisi}. These give full
+%range images rather than sparse points. They usually work based
+%on correlation of the pixel grey (or color) values in a neighborhood
+%around each pixel. The dense range images can be used for navigation,
+%localization and grasping. 
+%The two main current disadvantages are 1) speed - large accurate range
+%images can take from minutes to hours to compute and 2) inaccurate range
+%values are calculated in areas where there is no visual texture.
+%However, smaller range images can be computed in real time \cite{koninckx}
+%and the lack of obvious scene texture can be overcome by 
+%simultaneously projecting an infrared texture field onto the scene \cite{adan}.
+%Traditionally, stereo is computed on single frames, however, video
+%rate stereo range sensors are now available \cite{ollis}.
+
+\item {\bf Focus/defocus}: 
+Knowledge of the camera parameters and the amount of blur of image features
+allows estimation of how far the corresponding scene features are from the 
+perfect focus distance \cite{nayar}. Sensors may be passive (using a pre-captured
+image) or active (capturing several images with different focus settings).
+
+\item {\bf Structure and motion \index{Structure and motion}}:
+Structure and motion algorithms compute 3D scene structure and the sensor
+positions simultaneously \cite{pollefeys}. These is essentially a binocular stereo 
+process (see discussion above), except that only a single moving camera is
+used. Thus the images needed by the stereo process are acquired by the
+same camera in several different positions. 
+Video camcorders are also used, but have lower resolution.
+One important advantage of this approach over the normal algorithm is
+that features can be tracked easily if the time between frames or the 
+motion is small enough.
+This simplifies the ``correspondence problem'', however it can lead
+to another problem. If the pair of images used for the stereo calculation
+are taken close together in time, then the separation between the cameras
+images will not be much - this is a ``short baseline''.
+Triangulation calculations are then more inaccurate, as small errors
+in estimating the position of image features results in large errors in the
+estimated 3D position (particularly the depth estimate). 
+This problem can be partly avoided by tracking for longer periods.
+A second problem that can arise is that not all motions are suitable
+for estimate of the full 3D scene structure. For example, if the 
+video recorder only rotates about its optical axis or about its
+focus point, then no 3D information can be recovered.
+A little care can avoid this problem.
+
+\item {\bf Shading}:
+The pattern of shading on a surface is related to the orientation of the
+surface relative to the observer and light sources.
+This relationship can be used to estimate the surface orientation
+across the surface. The surface normals can then be integrated to
+give an estimate of the relative surface depth.
+
+\item {\bf Photometric stereo}:
+Photometric stereo \cite{Hertzmann} is a combination of shading and stereo processes.
+The key concept is that the shading of an object varies with the
+position of the light sources. 
+Hence, if you had several aligned pictures of an object or scene with the
+light source in different positions ({\it e.g.} the sun moved), then
+you can calculate the scene's surface normals.
+From these, the relative surface depth can be estimated.
+The restriction of a stationary observer and changing light sources
+makes this approach less likely to be useful to most robotics applications.
+
+\item {\bf Texture}:
+The way uniform or statistical textures vary on a surface is related
+to the orientation of the surface relative to the observer.
+As with shading, the texture gradients can be used to estimate 
+the surface orientation
+across the surface \cite{Lobay}.
+The surface normals can then be integrated to
+give an estimate of the relative surface depth.
+
+\end{itemize}
+
+
+\subsection{Laser-based Range Sensors} \index{Laser-based Range Sensors}
+
+There are three types of laser based range sensors in common use:
+\begin{enumerate}
+\item triangulation sensors,
+\item phase modulation sensors and
+\item time of flight sensors.
+\end{enumerate}
+These are discussed in more detail below.
+There are also doppler and interference laser-based range
+sensors, but these seem to not be in general use at the moment so we 
+skip them here.
+An excellent recent review of range sensors is by Blais  \cite{blais}.
+
+The physical principles behind the three types of sensors discussed below do
+not intrinsically depend on the use of a laser - for the most part any light 
+source would work.
+However, lasers are traditional because: 
+1) they can easily generate bright beams with lightweight sources,
+2) infrared beams can be used inobtrusively, 
+3) they focus well to give narrow beams, 
+4) single frequency sources allow easier rejection filtering of unwanted frequencies,
+5) single frequency sources do not disperse from refraction as much as
+   full spectrum sources,
+6) semiconductor devices can more easily generate short pulses, etc.
+
+One advantage of all three sensor types is that it is often
+possible to acquire a
+reflectance image registered with the range image.
+By measuring the amount that the laser beam strength has reduced after
+reflection from the target, one can estimate the reflectance of the
+surface. This is only the reflectance at the single spectral frequency of the
+laser, but, nonetheless, this gives useful information about the appearance
+of the surface (as well as the shape as given by the range measurement).
+(Three color laser systems \cite{Baribeau} similarly give registered RGB color 
+images.)
+Figure \ref{fig23.1} shows registered range and reflectance images from the same scene.
+
+One disadvantage of all three sensor types is specular reflections.
+The normal assumption is that the observed light is a diffuse reflection
+from the surface.
+If the observed surface is specular, such as polished metal or water, then
+the source illumination may be reflected in unpredictable directions.
+If any light eventually is detected by the receiver, then it is likely to
+cause incorrect range measurements.
+Specular reflections are also likely at the fold edges of surfaces.
+
+A second problem is the laser `footprint'.
+Because the laser beam has a finite width, when it strikes at the edge
+of a surface, part of the beam may be actually lie on a more distant surface.
+The consequences of this will depend on the actual sensor, but it commonly
+results in range measurements that lie between the closer and more distant
+surfaces.
+These measurements thus suggest that there is surface where there really is 
+empty space.
+Some noise removal is possible in obvious empty space, but there may be
+erroneous measurements that are so close to the true surface that they
+are difficult to eliminate.
+
+\subsection{Time of Flight Range Sensors}
+
+\index{Time of flight range sensors} Time of flight range sensors are exactly that: they compute distance
+by measuring the time that a pulse of light takes to travel from the 
+source to the observed target and then to the detector (usually colocated
+with the source).
+In a sense, they are radar sensors that are based on light.
+The travel time multiplied by the speed of light (in the given medium - space,
+air or water and adjusted for the density and temperature of the medium) gives the
+distance.
+Laser-based time of flight range sensors are also caller LIDAR
+(LIght Detection And Ranging) or LADAR (LAser raDAR) sensors.
+
+Limitations on the accuracy of these sensors is based on the minimum 
+observation time (and thus the minimum distance observable),
+the temporal accuracy (or quantization) of the receiver and the temporal
+width of the laser pulse.
+%A minimum pulse width sensor \cite{} uses single photons and very sensitive
+%detectors to get a range accuracy of xxx mm with an stand-off distance 
+%of xxx cm. Multiple photon transmissions ({\it e.g.} 1000) are sampled to get 
+%accurate measurements.
+
+Many time of flight sensors used for local measurements have what is 
+called an ``ambiguity interval'', for example 20 meters.
+The sensor emits pulses of light periodically, and computes an average
+target distance from the time of the returning pulses. 
+To limit noise from reflections and simplify the detection electronics,
+many sensors only accept signals that arrive within time $\Delta t$,
+but this time window might also observe previous pulses reflected by 
+more distant surfaces.
+This means that a measurement $Z$ is ambiguous to the multiple of
+$\frac{1}{2}c\Delta t$ because surfaces that are further away ({\it e.g.} $z$) than 
+$\frac{1}{2}c\Delta t$ are recorded as $z {\rm mod} \frac{1}{2}c\Delta t$.
+Thus distances on smooth surfaces can increase until they reach
+$c\frac{\Delta t}{2}$ and then they become 0.
+Typical values for $c\frac{\Delta t}{2}$ are 20-40m.
+On smooth surfaces, such as a ground plane or road, an unwinding algorithm
+can recover the true depth by assuming that the distances should be changing
+smoothly.
+
+Most time of flight sensors transmit only a single beam, thus range measurements
+are only obtained from a single surface point.
+Robotics applications usually need more information, so the range data 
+is usually supplied as a vector of range to surfaces lying in a plane
+(see Figure \ref{lineing}) or as an image (see Figure \ref{fig23.1}).
+To obtain these denser representations, the laser beam is swept across the
+scene.
+Normally the beam is swept by a set of mirrors rather than moving 
+the laser and detector themselves (mirrors are lighter and less prone 
+to motion damage).
+The most common technologies for this are using a stepper motor (for
+program-based range sensing) or rotating or oscillating mirrors for
+automatic scanning.
+\begin{figure}[htb]
+{\epsfxsize = 0.47\textwidth \epsfbox{BOOKFIGS/lineing.eps}}
+\caption{Plot of ideal 1D range image of sample distance versus angle of measurement.
+\label{lineing}}
+\end{figure}
+
+Typical ground-based time of flight sensors suitable for robotics
+applications have a range of 10-100m, and an accuracy of 5-10mm.
+The amount of the scene scanned will depend on the sweep rate of the 
+mirrors and the pulse rate, but 1-25K points per second are typical.
+Manufacturers of these sensors include Acuity, Sick, Mensi,
+DeltaSphere and Cyrax.
+
+Recently, a type of time-of-flight range sensor called the ``Flash LADAR''
+has been developed.
+The key innovation has been the inclusion of VLSI timing circuits at each
+pixel of the sensor chip.
+Thus, each pixel can measure the time at which a light pulse is observed
+from the line of sight viewed by that pixel.
+This allows simultaneous calculation of the range values at each pixel.
+The light pulse now has to cover to whole portion of the scene that is
+observed, so sensors typically use an array of infrared laser LEDs.
+While spatial resolution is smaller than current cameras ({\it e.g.}
+$64\times 64$, $160\times 124$, $128\times 128$), the data can be acquired
+at video rates (30-50 fps), which provides considerable information 
+usable for robot feedback.
+Different sensor ranges have been reported, such as up to 5m \cite{anderson}
+(with on the order of 5-50 cm standard deviation depending on
+target distance and orientation)
+or at 1.1 km \cite{stettner} (no standard deviation reported).
+
+\subsection{Modulation Range Sensors}
+
+\index{Modulation-based range sensors} Modulation-based range sensors are commonly of two types, where a
+continuous laser signal is either amplitude or frequency modulated.
+By observing the phase shift between the outgoing and return signals,
+the signal transit time is estimated and from this the target distance.
+As the signal phase repeats every $2 \pi$, these sensors also have
+an ambiguity interval.
+
+
+These sensors also produce a single beam that must be swept.
+Scan ranges are typically 20-40m and accuracy of 5mm.
+Figure \ref{fig23.1} was captured with a modulation sensor.
+
+\subsection{Triangulation Range Sensors}
+
+
+\index{Triangulation range sensors} Triangulation range sensors \cite{LeMoigne} are based on principles similar to the
+stereo sensors discussed previously.
+The key concept is illustrated in Figure \ref{lasertri}: a laser beam is projected
+from one position onto the observed surface.
+The light spot that this creates is observed by a sensor from a second
+position.
+Knowing the relative positions and orientations of the laser and sensor,
+plus some simple trigonometry allows calculation of the 3D position
+of the illuminated surface point.
+The triangulation process is more accurate when the laser spot's
+position is accurately estimated. About 0.1 pixel accuracy can be
+normally achieved \cite{naidu}.
+\begin{figure}[htb]
+{\epsfxsize = 0.47\textwidth \epsfbox{BOOKFIGS/lastri.eps}}
+\caption{Triangulation using a laser spot.
+\label{lasertri}}
+\end{figure}
+
+Because the laser illumination can be controlled, this gives a number
+of practical advantages:
+\begin{enumerate}
+
+\item A laser of known frequency ({\it e.g.} 733 nm) can be matched with
+a very selective spectral filter of the same frequency ({\it e.g.} 5 
+nm half width). This normally allows unique identification of the 
+light spot as the filtering virtually eliminates all other bright
+light, leaving the laser spot as the brightest spot in the image.
+
+\item The laser spot can be reshaped with lenses or mirrors to create
+multiple spots or stripes, thus allowing a measurement of multiple
+3D points simultaneously. Stripes are commonly used because these can
+be swept across the scene (see Fig \ref{swept} for an example) to observe a full
+scene.
+Other illumination patterns are also commonly used, such
+as parallel lines, concentric circles, cross hairs and dot grids.
+Commercial structured light pattern generators are available from
+{\it e.g.} Lasiris or Edmunds Optics.
+
+\begin{figure}[htb]
+{\epsfxsize = 0.47\textwidth \epsfbox{BOOKFIGS/swept.eps}}
+\caption{Swept laser plane covers a larger scene.
+\label{swept}}
+\end{figure}
+
+
+\item The laser light ray can be positioned by mirrors under computer
+control to selectively observe a given area, such as around a doorway
+or potential obstacle, or an object that might be grasped.
+
+\end{enumerate}
+
+
+
+Disadvantages include:
+
+\begin{enumerate}
+
+\item Potential eye safety risks from the power of lasers, particularly
+when invisible laser frequencies are used (commonly infrared).
+
+\item Specular reflections from metallic and polished objects, which may cause
+incorrect calculation of where the laser spot is illuminating, as in Figure 
+\ref{specular} where the hypothesized surface lies behind the true surface.
+
+\end{enumerate}
+\begin{figure}
+{\epsfxsize = 0.47\textwidth \epsfbox{BOOKFIGS/specular.eps}}
+\caption{Incorrect estimated depths on specular surfaces
+\label{specular}}
+\end{figure}
+
+\subsection{Example Sensors}
+
+A typical phase modulation based range sensor is the Zohler and Frohlich 25200.
+This is an expensive spherical scan sensor, observing a full 360 degrees
+horizontally and 155 vertically. Each scan can acquire up to 20,000 3D points
+horizontally and 8000 points vertically in about 100 seconds.
+The accuracy of the scan depends on the distance to the target, but
+4 mm is typical, with samples every 0.01 degrees (which samples every
+1.7 mm at 10m distance).
+The densely sensed data is typically used for 3D scene survey, modelling and
+virtual reality reconstruction.
+
+An example of a laser sensor that has been commonly used for robot navigation
+is the SICK LMS 200.
+This sensor sweeps a laser ray in a horizontal plane through an arc of 180
+degrees, acquiring 720 range measurements in a plane in 0.05 seconds.
+While a plane might seem limiting, the observed 3D data can be easily matched
+to a stored (or previously learned) model of the environment at the
+height of the scan.
+This allows accurate estimation of the sensor's position in the scene
+(and thus a mobile vehicle that carries the sensor).
+Of course, this requires an environment without overhanging structures
+that are not detectable at the scan height.
+Another common configuration is to mount the sensor high on the vehicle 
+with the scan plane tilted downwards. In this configuration the ground
+in front of the vehicle is progressively scanned as the vehicle moves forward,
+thus allowing detection of potential obstacles.
+
+The Minolta 910 is a small triangulation scanner with accuracy of about 0.01 mm
+in a range of up to 2m, for about $500^2$ points in 2.5 seconds.
+It has commonly been used for small region scanning, such as for inspection
+or part modelling, but can also be mounted in a fixed location to scan
+a robot workcell. 
+Observation of the workcell allows a variety of actions, such as
+inspection of parts, location of dropped or bin delivered components,
+or accurate part position determination.
+
+More examples and details range sensors for robot navigation are presented
+in Section \ref{ch22.3}.
+
+\section{Registration \label{ch22.2}}
+
+This section introduces techniques for 3D localization of parts for
+robot manipulation, self-localization of robot vehicles and
+scene understanding for robot navigation.
+All of these are based on the ability to register 3D shapes, {\it e.g.}
+range images to range images, triangulated surfaces or geometric models.
+Before we introduce these applications in Section \ref{3dapp}, we first look
+at some basic techniques for manipulating 3D data.
+
+\subsection{3D Feature Representations}
+
+There are many representations available for encoding 3D scene structure
+and model representations, but the following representations are
+the ones most commonly encountered in robotics applications.
+Some scene models or descriptions may use more than one of these
+simultaneously to describe different aspects of the scene or object models.
+\begin{itemize}
+
+\item {\bf 3D Point Sets \index{Point Sets}}: 
+This is a set $\{ {\bf \it p}_i = (X_i,Y_i,Z_i)\}$ of 3D points that
+describe some salient and identifiable points in the scene.
+They might be the centers of spheres (often used as markers),
+corners where 3 planes intersect, or the extrema of some protrusion
+or indentation on a surface.
+They may be a subset of an initially acquired 3D full scene point set,
+or they might be extracted from a range image, or they might be computed
+theoretical points based on extracted data features.
+
+\item {\bf Planes}: 
+This is a set of planar surfaces observed in a scene or bounding 
+part or all of an object model.
+There are several ways to represent a plane, but one common representation
+is by the equation of the plane $ax + by + cz +d = 0$ that
+passes through corresponding scene or model surface points 
+$\{ {\bf \it p}_i = (X_i,Y_i,Z_i)\}$.
+A plane only needs 3 parameters, so there are usually some additional
+constraints on the plane representation $(a,b,c,d)$, such as $d=1$ or
+$a^2 + b^2 + c^2 = 1$. The vector ${\bf \it n} = \frac{(a,b,c)'}{a^2+b^2+c^2}$ 
+is the surface normal.
+
+A planar surface may only be described by the infinite surface as given by the
+equation, but it may also include a description of the boundary of the
+surface patch.
+Again there are many possible representations for curves, either in 3D or
+in 2D lying in the plane of the surface.
+Convenient representations for robotics applications are lists of  
+the 3D points $\{(X_i,Y_i,Z_i)\}$ that form the patch boundary, or
+polylines, which represent the boundary by a set of connected line segments.
+A polyline can be represented by the sequence of 3D points $\{(X_i,Y_i,Z_i)\}$ 
+that form the vertices that join the line segments.
+
+\item {\bf Triangulated Surfaces \index{Triangulated Surfaces}}:
+
+This representation describes an object or scene by a set of triangular 
+patches. More general polygonal surface patches or even various smooth
+surface representations are also used, but triangles are most commonly used
+because they are simpler and there are inexpensive PC graphics cards that
+display triangles at high speed.
+
+
+The triangles can be large ({\it e.g.} when representing planar
+surfaces) or small ({\it e.g.} when representing curved surfaces).
+The size chosen for the triangles reflects the accuracy desired for 
+representing the object or scene surfaces.
+The triangulated surface might be complete in the sense that all observable
+scene or objects surfaces are represented by triangles, or there might
+be disconnected surface patches with or without internal holes.
+For grasping or navigation, you don't want any unrepresented scene surface
+to lie in front of the represented portion of the surface where a gripper or
+vehicle might collide with it.
+Hence, we assume that the triangulation algorithms produce patch sets that,
+if completely connected at the edges, implicitly bound all real scene
+surfaces.
+Figure \ref{timmesh} shows an example of a triangulated surface 
+over the original underlying smooth surface.
+\begin{figure}[htb]
+{\epsfxsize = 0.47\textwidth \epsfbox{BOOKFIGS/mesh.ps}}
+\caption{Triangulated surface (Thanks to T. Breckon).
+\label{timmesh}}
+\end{figure}
+
+
+There are many slightly different schemes for representing the triangles
+\cite{foley}, but the main features are a list 
+$\{ {\bf \it v}_i = (X_i,Y_i,Z_i)\}$ indexed by $i$ of the 3D vertices
+at the corners of the triangles, and a list of the
+triangles $\{ {\bf \it t}_n = (i_n,j_n,k_n) \}$ specifying the indices of
+the corner vertices.
+
+From the triangular surface patches, one can compute potential grasping
+positions, potential navigable surfaces or obstacles, or match 
+observed surface shapes to previously stored shapes.
+
+\item {\bf 3D lines}: 
+The 3D lines where planar surfaces meet are features that can be
+easily detected by both stereo and range sensors.
+These features occur commonly in built environments ({\it e.g.} where
+walls, floors, ceilings and doorways meet, around the edges of wall
+structures like notice boards, at the edges of office and warehouse
+furniture, etc.).
+They are also common on manmade objects.
+In the case of stereo, changes of surface shape or coloring are detected
+as edges, which can be matched in the stereo process to directly
+produce the 3D edge.
+In the case of a range sensor, planar surfaces can be easily extracted from the
+range data (see next section) and adjacent planar surfaces can be intersected
+to give the edges.
+
+The most straightforward representation for 3D lines is 
+the set of points $ {\bf \it x} = {\bf \it p} + \lambda {\bf \it v}$ for all $\lambda$,
+where ${\bf \it v}$ is a unit vector.
+This has 5 degrees of freedom; more complex representations {\it e.g.} with
+4 degrees of freedom exist \cite{hartley}.
+
+\item {\bf Voxels}
+
+The \index{voxel} voxel (volume pixel) approach represents the 3D world by 3D boxes/cells that
+indicate where there is scene structure and where there is free space.
+The simplest representation is a 3D binary array, encoded as 1 for having
+structure and 0 for free space.
+This can be quite memory intensive, and also requires a lot of computation to
+check many voxels for content.
+A more complex but more compact representation is the hierarchical 
+representation called the octree \cite{foley}. This divides the entire (bounded)
+rectangular space into 8 rectangular subspaces called octants 
+(see Figure \ref{octree}).
+A tree data structure encodes the content of each octant as empty,
+full or mixed.
+Mixed octants are then subdivided into 8 smaller rectangular octants,
+encoded as subtrees of the larger tree.
+Subdivision continues until some minimum octant size is reached.
+Determining whether a voxel is empty, full or mixed depends on the sensor
+used, however, if no 3D data points are located in the volume of a
+voxel, then it is likely to be empty.
+Similarly, if many 3D points are present, then the voxel is likely to 
+be full.
+The remaining voxels can be considered to be mixed.
+More details of a voxelization algorithm can be found in \cite{Curless}.
+\begin{figure}[htb]
+{\epsfxsize = 0.48\textwidth \epsfbox{BOOKFIGS/octree.eps}}
+\caption{Recursive space decomposition and a portion of the corresponding octree.
+\label{octree}}
+\end{figure}
+
+For the purpose of robot navigation, localization or grasping, only the
+surface and \index{free space voxels} free space voxels need to be marked accurately.
+The interior of objects and scene structure are largely irrelevant.
+
+\end{itemize}
+
+
+\subsection{3D Feature Extraction} \index{3D Feature Extraction}
+\label{3d_feature_extraction.ch22}
+
+Three
+ types of structured 3D features are of particular interest for robot
+applications: 
+%interest points,
+straight lines, planes, triangulated surfaces.
+How these are extracted from range datasets is summarized here:
+
+\begin{itemize}
+
+%\item {\bf Interest points}: 
+%
+%There has been much vision work using ``interest points'' in intensity images.
+%These are local image neighborhoods where the some property, usually related
+%to the magnitude of variation in intensity values, makes the neighborhood
+%distinctive, and a point can be located where the property of interest is
+%maximized. This means that the point can be probably located in the next
+%intensity image.
+%The most commonly used intensity interest point is the 
+%Harris operator \cite{}.
+%
+%In a similar way, a small amount of research has developed interest points
+%on 3D surfaces or point clouds.
+%In a manner similar to intensity images, the goal is to have a distinct
+%location that can be identified in the next 3D scan.
+%With these distinct 3D points, a vehicle can register the two scene views
+%containing the interest points and thus compute where it has moved to or,
+%alternatively, extend its scene model.
+%An example of 
+%
+%!!! couldn't find any citations on robot use - so omitted
+
+
+\item {\bf Planes}: 
+Planes are generally found by some region growing process, based on a seed patch.
+When the scene largely consists of planes, a
+particularly simple approach is based on selecting a previously unused
+point and the set of points $\{{\bf \it v}_i =(X_i,Y_i,Z_i)\}$ in its neighborhood. 
+A plane is fit to these points using a least square method:
+Create a $4 \times N$ matrix ${\bf \it D}$ of the $N$ points in the set, each point
+augmented with a 1.
+Call these extended points $\{ {\bf \it v}_i \}$.
+As each point lies in the same plane $a x + b y + c z + d = 0$, we can easily
+estimate the plane parameter vector ${\bf \it p} = (a,b,c,d)'$ by the following.
+We know that a perfect plane fit to perfect data would satisfy ${\bf \it D}{\bf \it p} = {\bf \it 0}$.
+Since there is noise, we instead create the error vector ${\bf \it e}={\bf \it D}{\bf \it p}$ 
+and find the vector ${\bf \it p}$ that minimizes its length (squared) ${\bf \it e} \cdot {\bf \it e} = {\bf \it p}'{\bf \it D}'{\bf \it D}{\bf \it p}$.
+This vector is the eigenvector with the smallest eigenvalue of the
+matrix ${\bf \it D}'{\bf \it D}$.
+This initial hypothesized plane then needs to be tested for reasonableness by
+1) examining the smallest eigenvalue - it should be small and on the 
+order of the square of the expected noise level and 2) ensuring that most of the
+3D points in the fitted set lie on the plane ({\it i.e.} $\mid {\bf \it v}_i \cdot {\bf \it p} \mid < \tau$).
+
+Larger planar regions are ``grown'' by locating new adjacent points ${\bf \it v}_i$ that
+lie on the plane ({\it i.e.} $\mid {\bf \it v}_i \cdot {\bf \it p} \mid < \tau$).
+When enough of these are found, the parameters ${\bf \it p}$ of the plane are
+re-estimated.
+Points on the detected plane are removed and the process is repeated with
+a new seed patch.
+This process continues until no more points can be added.
+More complete descriptions of planar feature extraction can be
+found in \cite{hoover}.
+
+When the planes are more sparsely found in the scene, then another
+approach is the \index{RANSAC feature detection} RANSAC feature detection algorithm \cite{ransac}.
+When adapted for plane finding, this algorithm selects three 3D points
+at random (although exploiting some locality to the point selection 
+algorithm can improve the efficiency of the algorithm).
+These three points determine a plane with parameter vector ${\bf \it p}$.
+Test all points $\{ {\bf \it v} \}$ in the set for belonging to the plane
+({\it i.e.} $\mid {\bf \it v}_i \cdot {\bf \it p} \mid < \tau$).
+If enough points are close to the plane, then potentially a plane has been 
+found.
+These points should also be processed to find a connected set,
+from which a more accurate set of plane parameters can be estimated
+using the least-square algorithm given above.
+If a planar patch is successfully found, the points that lie in that
+plane are removed from the dataset.
+The random selection of three points then continues until no more planes
+are found (a bound on how many tries to make can be estimated).
+
+\item {\bf Straight lines}: 
+
+While straight lines are common in man-made scenes, direct extraction
+from 3D datasets is not easy.
+The main source of the difficulty is 3D sensors often do not acquire good
+responses at edges of surfaces: 1) the sensor beam will be sampling from two
+different surfaces and 2) laser based sensors produce somewhat unpredictable
+effects.
+For this reason, most 3D line detection algorithms are indirect,
+whereby planes are first detected, {\it e.g.} using the method
+of the previous section, and then adjacent planes are intersected.
+Adjacency can be tested by finding paths of connected pixels that lead
+from one plane to the other.
+If planes 1 and 2 contains points ${\bf \it p}_1$ and ${\bf \it p}_2$ 
+and have surface normals ${\bf \it n}_1$ and ${\bf \it n}_2$
+respectively, then the resulting intersection line has equation
+${\bf \it x} = {\bf \it a} + \lambda {\bf \it d}$ where 
+${\bf \it a}$ is a point on the line and
+${\bf \it d} = \frac{{\bf \it n}_1  \times {\bf \it n}_2}{\mid\mid {\bf \it n}_1  \times {\bf \it n}_2 \mid\mid}$ is the line direction.
+There are an infinite number of possible points ${\bf \it a}$, which can be 
+found by solving the equations 
+${\bf \it a}'{\bf \it n}_1 = {\bf \it p}_1'{\bf \it n}_1$
+and ${\bf \it a}'{\bf \it n}_2 = {\bf \it p}_2'{\bf \it n}_2$.
+A reasonable third constraint that obtains a point near to ${\bf \it p}_2$ is
+the equation ${\bf \it a}'{\bf \it d} = {\bf \it p}_2'{\bf \it d}$.
+This gives us an infinite line.
+Most practical applications require a finite segment.
+The endpoints can be estimated by 1) finding the points on the line that
+lie close to observed points in both planes and then 2) finding the two
+extremes of those points.
+On the other hand, finding straight 3D lines can be easier with a stereo 
+sensor, as these result from matching 2 straight 2D image lines.
+
+\item {\bf Triangulated surfaces}: 
+
+The goal of the process is to estimate a triangulated mesh from a set of 
+3D data points.
+If the points are sampled on a regular grid ({\it e.g.} from a $2\frac{1}{2}$D
+range image), then the triangles can be
+formed naturally from the sampling (see Figure \ref{pltri}).
+If the points are part of a 3D point set, then triangulation is harder.
+We do not give details here because of the complexity of this task,
+but some of the issues that have to be considered are:
+1) how to find a surface that lies close to all data points 
+(as it is unlikely to actually pass through all because of noise),
+2) how to avoid holes and wild triangles in the mesh,
+3) how to choose the threshold of closeness so that only one surface
+passes through sections of point cloud,
+4) how to choose the triangle size,
+5) what to do about outlying points and
+6) how to maintain observable scene features, like surface edges.
+Popular early approaches for triangulation are the marching
+cube and triangle \cite{hoppe,hilton2} algorithms.
+These algorithms can give meshes with many triangles.
+The triangle size and thus the computational complexity of using the
+mesh can be reduced by mesh decimation, for which many algorithms
+exist \cite{hoppe2,Schroeder}.
+\begin{figure}[htb]
+{\epsfxsize = 0.40\textwidth \epsfbox{BOOKFIGS/pltri.eps}}
+\caption{Triangulation of a regular grid of points.
+\label{pltri}}
+\end{figure}
+
+\end{itemize}
+
+
+\subsection{Model Matching and Multiple-View Registration\label{match22}} \index{Multiple-View Registration}
+
+Model matching is the process of matching some stored representation
+to some observed data. In the case discussed here, we assume that
+both are 3D representations.
+Furthermore, we assume that the representations being matched are both of
+the same type, {\it e.g.} 3D model and scene lines).
+(While different types of data can also be matched, we ignore these
+more specialized algorithms here.)
+
+A special case of matching is when the two structures being matched are
+both scene or model surfaces.
+This commonly occurs when attempting to produce a larger 
+representation of the scene by fusing multiple partial views of the scene.
+These partial views can be acquired as a mobile vehicle navigates
+around the scene, observing it from different places.
+The SLAM algorithm \cite{thrun} (discussed in Chapter 37) is a 
+mobile robotics algorithm for Simultaneous Localization And Mapping,
+which incrementally fuses newly observed scene structure to its
+growing scene map model, while also matching portions of that newly observed
+data to previously observed data to estimate its current location.
+One SLAM project \cite{little} used SIFT feature points for 3D modelling and map construction.
+
+The algorithm used for matching depends on the complexity
+the structures being matched.
+If the structures being matched are extended geometric entities such as
+planes or 3D lines, then a discrete matching algorithm like the
+Interpretation Tree algorithm \cite{grimson} can be used.
+Alternatively, if the structures are low-level, such as 3D points 
+or triangles, then a point set alignment algorithm like the 
+\index{Iterated Closest Point (ICP)} Iterated Closest Point (ICP) algorithm \cite{besl2} can be used.
+Both of these are described in more detail below.
+
+After structures have been matched, then most common next step is
+to estimate the transformation (rotation plus translation) linking the
+two datasets. This process is described in the next section.
+%The transformation can be encoded as a homogeneous matrix {\bf \it T}.
+With the transformation, we can then transform the data into the
+same coordinate system and fuse (combine) the datasets.
+If the structures being fused are points, then the result is a
+larger point set formed from the combination of the two (or more) 
+original datasets.
+Sets of planes and lines can also be simply added together, subject to
+representing the matched members of the two datasets only once.
+Triangulated surfaces require a more complex merging, in that we require
+a topologically correct triangulated mesh to be the result.
+The zippering algorithm \cite{turk} is a well-known triangulated 
+mesh merging algorithm.
+
+The Interpretation Tree algorithm \cite{grimson} is suitable for matching
+small numbers ({\it e.g.} less than about 20-30) discrete objects, such
+as vertical edges seen in 2D or 3D. If there are $M$ model and $D$ data 
+objects, then potentially there are $M^D$ different matches. 
+The key to efficient matching is to identify pairwise constraints that
+eliminate unsuitable matches.
+Constraints between pairs of model features and pairs of data
+features also greatly reduce the matching space. If the constraints
+eliminate enough features, a polynomial time algorithm results.
+The core of the algorithm is defined as follows.
+Let $\{m_i\}$ and $\{d_j\}$ be the sets po model and data features to
+be matched, $u(m_i,d_j)$ is true if $m_i$ and $d_j$ are compatible
+features, $b(m_i,m_j,d_k,d_l)$ is true if the four model and data features
+are compatible and $T$ is the minimum number of matched features before
+a successful match is declared.
+\verb+Pairs+ is the set of successfully matched features.
+The function \verb+truesizeof+ counts the number of actual matches in the
+set, disregarding matches with the wildcard * which matches anything.
+%!!! get algorithm on 1 page !!!
+\begin{verbatim}
+pairs=it(0,{})
+if truesizeof(pairs) >= T, then success
+
+function pairs=it(level,inpairs)
+  if level >= T, then return inpairs
+  if M-level+truesizeof(inpairs) < T
+    then return {} % can never succeed
+  for each d_i % loopD start
+    if not u(m_level,d_i), then continue loopD
+    for each (m_k,d_l) in inpairs
+      if not b(m_level,m_k,d_i,d_l)
+        then continue loopD
+    endfor
+    % have found a successful new pair to add
+    pairs = it(level+1,
+                 union(inpairs,(m_level,d_i)))
+    if truesizeof(pairs) >= T, then return
+  endfor % loopD end
+
+  % no success, so try wildcard  
+  it(level+1,union(inpairs,(m_level,*)))
+\end{verbatim}
+
+When the data being matched are sets of points or triangles,
+then the ICP algorithm \cite{besl2} is more commonly used.
+This algorithm estimates the pose transformation that aligns the
+two sets to a minimum distance.
+With this transformation, then the two sets can be represented in the
+same coordinate system and treated as a larger single set (perhaps
+with some merging of overlapping data).
+
+Here we give the algorithm for point matching, but this can be
+easily adapted for other sets of features.
+This algorithm is iterative, so may not always converge quickly, but
+often several iterations is sufficient.
+However, ICP can produce a bad alignment of the data sets.
+Best results arise with a good initial alignment, such as from
+odometry or previous positions.
+The ICP algorithm can be extended to include other properties when
+matching, such as color or local neighborhood structure.
+A good spatial indexing algorithm ({\it e.g.} k-d trees) 
+is necessary for efficient matching
+in the closest point function (CP) below.
+
+Let ${\cal S}$ be a set of $N_s$ points $\{ {\bf \it s}_1, \dots, {\bf \it s}_{N_s} \}$
+and ${\cal M}$ be the model.
+Let $ \mid\mid {\bf \it s} - {\bf \it m} \mid\mid $ be the Euclidean distance
+between point ${\bf \it s} \in {\cal S}$ and 
+${\bf \it m} \in {\cal M}$.
+Let CP(${\bf \it s},{\cal M}$) be the closest point (Euclidean distance)
+in ${\cal M}$ to the scene point ${\bf \it s}$.
+\begin{enumerate}
+\item Let ${\bf \it T}^{[0]}$ be an initial estimate of the rigid transformation aligning the two sets.
+\item Repeat for $k = 1 .. k_{\rm max}$ or until convergence:
+\begin{enumerate}
+
+\item Compute the set of correspondences 
+${\cal C} = \bigcup_{i=1}^{N_s} \{ ( {\bf \it s}_i,
+CP({\bf \it T}^{[k-1]}({\bf \it s}_i),{\cal M})) \}$.
+
+\item Compute the new Euclidean transformation ${\bf \it T}^{[k]}$ that minimizes
+the mean square error between point pairs in ${\cal C}$.
+
+\end{enumerate}
+\end{enumerate}
+
+
+\subsection{Maximum Likelihood Registration} \index{Maximum Likelihood Registration}
+
+One popular technique for range scan matching, especially in the 2D
+case, uses maximum likelihood as the criterion for match goodness.
+This technique also takes into account a probabilistic model of the
+range readings.  Let $r$ be a range reading of a sensor scan at
+position $s$, and $\bar r$ the distance to the nearest object along
+the path of $r$ (which depends on $s$).  Then a model of the sensor
+reading is the probability $p(r|\bar r)$.  Typically the model has a
+gaussian shape around the correct range, with an earlier
+false-positive region and a missed reading region at the end (see Figure
+\ref{prob.ch22}).  
+
+\begin{figure}[htb]
+{\epsfxsize = 0.48\textwidth \epsfbox{BOOKFIGS/prob.eps}}
+\caption{Probability profile $p(r|\bar r)$ for a laser sensor reading
+(from \cite{thrun05}.  The gaussian peak occurs at the distance $\bar
+r$ of the obstacle. 
+\label{prob.ch22}}
+\end{figure}
+
+
+A scan is matched when its position produces a maximum likelihood
+result for all the readings, based on a reference scan.  Assuming
+independence of the readings, from Bayes' rule we get:
+
+$$ {\bf max}_s p(s | {\bf r}) = {\bf max}_s \prod_i p(r_i | \bar
+r_i).$$
+
+The maximum likelihood scan location can be found by hill-climbing or
+exhaustive search from a good starting point.  Figure
+\ref{scanmatch.ch22} shows the results of maximum likelihood for
+aligning a scan against several reference scans.  In this 2D case, the
+reference scans are put into an occupancy grid for computing $\bar r$
+\cite{haehnel02b}.  A widespread modification for efficiency is to compute $\bar
+r$ by a smearing operation on the occupancy grid, ignoring
+line-of-sight information \cite{konolige99}.  In the 3D case, trianglulated
+surfaces are more appropriate than voxels \cite{haehnel02}.
+
+\begin{figure}[htb]
+{\epsfxsize = 0.5\textwidth \epsfbox{BOOKFIGS/scanmatch.eps}}
+\caption{Scan match by maximum likelihood against several reference
+scans in an occupancy grid (from \cite{haehnel02b}).
+\label{scanmatch.ch22}}
+\end{figure}
+
+\subsection{Multiple Scan Registration}
+
+In the previous subsection, multiple reference scans could be used to
+form an occupancy grid or surface triangles for matching.  In general,
+scan matching between sets of scans produces a network of constraints
+among the scans, for example, in going around a loop, successive scans
+form a chain of constraints, and the first and last scans form a
+closed loop of constraints.  Globally consistent registration of scans
+is a part of SLAM (Chapter 37).
+
+If the individual constraints have covariance estimates, then maximum
+likelihood techniques can be used to find a globally consistent
+estimate for all the scans \cite{lu97}.  This global registration
+is among the scan {\em poses}, and doesn't involve the scans
+themselves - all information has been abstracted to constraints among
+the poses.  Let $\bar{s}_{ij}$ be the scan-matched pose difference
+between scans $s_i$ and $s_j$, with covariance $\Gamma_{ij}$.  The
+maximum likelihood estimate for all $s$ is given by the nonlinear
+least-squares system
+
+\begin{equation}
+\min_s \sum_{ij} (s_{ij}-\bar{s}_{ij})^T \Gamma_{ij} (s_{ij}-\bar{s}_{ij}),
+\label{eq22.multiple_reg}
+\end{equation}
+
+\noindent which can be solved efficiently using iterative least
+squares techniques, e.g., Levenberg-Marquadt or conjugate gradient
+methods \cite{konolige04,kelly03}.
+
+A complication is that the system of constraints is calculated based
+on an initial set of poses $s$.  Given a re-positioning of $s$ from
+(\ref{eq22.multiple_reg}), redoing the scan matching will give a
+different set of constraints, in general.  Iterating the registration
+process with new constraints is not guaranteed to lead to a global
+minimum; in practice, with a good initial estimate, convergence is
+often rapid and robust.
+
+
+\subsection{Relative Pose Estimation\label{pose23}} \index{Pose Estimation}
+
+Central to many tasks is the estimation of the coordinate system
+relative position or pose transformation between two coordinate systems.
+For example, this might be the pose of a scanner mounted on
+a mobile vehicle relative to scene landmarks.
+Or, it might be the relative pose of some scene features as observed in
+two views taken from different positions.
+
+We present here three algorithms that cover most instances of 
+the pose estimation process,
+which differ slightly based on the type of feature being matched.
+
+\ \\
+\noindent
+{\bf Point set relative pose estimation}
+
+The first algorithm matches point sets. Assume that $N$ 3D points
+$\{ {\bf \it m}_i\}$ in one structure or coordinate system 
+are matched to points $\{ {\bf \it d}_i\}$ in a different coordinate system.
+The matching might be found as part of the alignment process in the
+ICP algorithm just described or they might be observed triangle vertices
+matched to a previously constructed triangulated scene model, for example.
+The desired pose is the rotation matrix {\bf \it R} and translation vector
+${\bf \it t}$ that minimizes $\sum_i \mid\mid {\bf \it R}{\bf \it m}_i + {\bf \it t} - {\bf \it d}_i \mid\mid^2$.
+Compute the mean vectors ${\bf \it \mu}_m$ and ${\bf \it \mu}_d$ of the two sets.
+Compute the centralized point sets by
+${\bf \it a}_i = {\bf \it m}_i - {\bf \it \mu}_m$ and
+${\bf \it b}_i = {\bf \it d}_i - {\bf \it \mu}_d$.
+Construct the $3 \times N$ matrix {\bf \it A} that consists
+of the vectors $\{ {\bf \it a}_i \}$ stacked up.
+Construct the $3 \times N$ matrices {\bf \it B} in a similar way from the
+vectors $\{ {\bf \it b}_i \}$.
+Compute the singular value decomposition svd(${\bf \it B}{\bf \it A'}$) = 
+${\bf \it U'}{\bf \it D}{\bf \it V'}$ \cite{arun}.
+Compute the rotation matrix\footnote{If the data points are nearly planar
+then this calculation can introduce a mirror image transformation.
+This can be checked with the vector triple product and,
+if mirrored, the diagonal correction matrix C(1,1,-1) can be used in
+{\bf \it R} = ${\bf \it V}{\bf \it C}{\bf \it U'}$.}
+${\bf \it R} = {\bf \it V}{\bf \it U'}$.
+Finally, compute the translation vector ${\bf \it t} = {\bf \it \mu}_d - {\bf \it R}{\bf \it \mu}_m$.
+With these least square estimates of the transformation, a point ${\bf \it m}_i$
+transforms to point ${\bf \it R}{\bf \it m}_i + {\bf \it t}$, which should
+be near to point ${\bf \it d}_i$.
+
+\ \\
+\noindent
+{\bf Straight line relative pose estimation}
+
+If 3D lines are the features that are extracted, then
+the relative pose transformation can be estimated as follows.
+Assume $N$ paired lines. 
+The first set of lines is described by
+direction vectors $\{{\bf \it e}_i\}$ and a point on each line $\{{\bf \it a}_i\}$.
+The second set of lines is described by
+direction vectors $\{{\bf \it f}_i\}$ and a point on each line $\{{\bf \it b}_i\}$.
+In this algorithm, we assume that the direction vectors on the
+matched segments always point the same direction ({\it i.e.} are not inverted).
+This can be achieved by exploiting some scene constraints, or trying all 
+combinations and eliminating inconsistent solutions.
+The points ${\bf \it a}_i$ and ${\bf \it b}_i$ need not correspond to the same point
+after alignment.
+The desired rotation matrix {\bf \it R}
+ minimizes $\sum_i \mid\mid {\bf \it R}{\bf \it e}_i - {\bf \it f}_i \mid\mid^2$.
+Construct the $3 \times N$ matrices {\bf \it E} that consists
+of the vectors $\{ {\bf \it e}_i \}$ stacked up.
+Construct the $3 \times N$ matrices {\bf \it F} in a similar way from the
+vectors $\{ {\bf \it f}_i \}$.
+Compute the singular value decomposition svd(${\bf \it F}{\bf \it E'}$) = 
+${\bf \it U'}{\bf \it D}{\bf \it V'}$.
+Compute the rotation matrix\footnotemark[1] {\bf \it R} = ${\bf \it V}{\bf \it U'}$.
+The translation estimate ${\bf \it t}$
+minimizes the sum of the square of the distances $\lambda_i$
+between the rotated points ${\bf \it a}_i$ and corresponding line $({\bf \it f}_i,{\bf \it b}_i)$.
+Define matrix ${\bf \it L} = \sum_i (I - {\bf \it f}_i{\bf \it f}_i')'(I - {\bf \it f}_i{\bf \it f}_i')$.
+Define the vector ${\bf \it n} = 
+\sum_i (I - {\bf \it f}_i{\bf \it f}_i')'(I - {\bf \it f}_i{\bf \it f}_i') 
+({\bf \it R}{\bf \it a}_i - {\bf \it b}_i)$.
+Then the translation is ${\bf \it t}= - {\bf \it L}^{-1}{\bf \it n}$.
+
+\ \\
+\noindent
+{\bf Plane relative pose estimation}
+
+Finally, if planes are the 3D features extracted for matching, then
+the relative pose transformation can be estimated as follows.
+Assume $N$ paired planes. 
+The first set of planes is described by
+surface normals $\{{\bf \it e}_i\}$ and a point on each plane $\{{\bf \it a}_i\}$.
+The second set of planes is described by
+surface normals $\{{\bf \it f}_i\}$ and a point on each plane $\{{\bf \it b}_i\}$.
+Here we assume that the surface normals always point outward from the surface.
+The points ${\bf \it a}_i$ and ${\bf \it b}_i$ need not correspond to the same point
+after alignment.
+The desired rotation matrix {\bf \it R}
+ minimizes $\sum_i \mid\mid {\bf \it R}{\bf \it e}_i - {\bf \it f}_i \mid\mid^2$.
+Construct the $3 \times N$ matrices {\bf \it E} that consists
+of the vectors $\{ {\bf \it e}_i \}$ stacked up.
+Construct the $3 \times N$ matrices {\bf \it F} in a similar way from the
+vectors $\{ {\bf \it f}_i \}$.
+Compute the singular value decomposition svd(${\bf \it F}{\bf \it E'}$) = 
+${\bf \it U'}{\bf \it D}{\bf \it V'}$.\cite{arun}
+Compute the rotation matrix\footnotemark[1] {\bf \it R} = ${\bf \it V}{\bf \it U'}$.
+The translation estimate ${\bf \it t}$
+minimizes the sum of the square of the distances $\lambda_i$
+between the rotated point ${\bf \it a}_i$ and the corresponding plane $({\bf \it f}_i,{\bf \it b}_i)$.
+Define matrix ${\bf \it L} = \sum_i {\bf \it f}_i{\bf \it f}_i'$.
+Define the vector ${\bf \it n}= \sum_i {\bf \it f}_i{\bf \it f}_i' ({\bf \it R}{\bf \it a}_i - {\bf \it b}_i)$.
+Then the translation is ${\bf \it t}= - {\bf \it L}^{-1}{\bf \it n}$.
+
+In all of the calculations described above, we assumed normally distributed
+errors. For techniques to robustify these sorts of calculations, see
+Zhang \cite{zhang}.
+
+\subsection{3D Applications \label{3dapp}}
+
+This section links the techniques presented above to the robotics applications
+of 3D localization of parts for
+robot manipulation, self-localization of robot vehicles and
+scene understanding for robot navigation.
+The robotics tasks mentioned here are discussed in more detail
+in other chapters in the series.
+While this chapter focusses on robotics applications, there are
+many other 3D sensing applications. An area of much current research is
+that of acquiring 3D models, particularly for reverse engineering of
+mechanical parts \cite{benko},
+historical artifacts \cite{levoy},
+buildings \cite{stamos} and
+people for computer games and movies (see, {\it e.g.}, Cyberware's Whole Body X 3D Scanner).
+
+
+The key tasks in robot manipulation are:
+(1) identification of grasping points (see Chapters 27 and 28),
+(2) identification of a collision free grasp (see Chapters 27 and 28),
+(3) recognition of parts to be manipulated (see Chapter 23) and
+(4) position estimation of parts for manipulation (see Chapters 23 and 42).
+
+The key tasks in robot navigation and self-localization are:
+(5) identification of a navigable groundplane (see Section \ref{ch22.3}),
+(6) identification of a collision free path (see Chapter 35),
+(7) identification of landmarks (see Chapter 36) and
+(8) estimation of vehicle location (see Chapter 40).
+
+The mobile and assembly robotics tasks link together rather
+naturally.
+Tasks 1 \& 5 have a connection, when we consider these tasks
+in the context of unknown parts or paths. Part grasping requires
+finding regions on a part that are graspable, which usually means locally
+planar patches that are large enough that a gripper can make good contact
+with them.
+Similarly, navigation usually requires smooth ground regions that are
+large enough for the vehicle - again locally planar patches.
+Both tasks are commonly based on triangulated scene methods to
+represent the data, from which connected regions of nearly coplanar
+patches can be extracted.
+The main difference between these two tasks is the groundplane
+detection task is looking for a larger patch, that must be on the
+``ground'' and upward facing.
+
+Tasks 2 \& 6 require a method of representing empty space along the 
+proposed trajectory of the gripper contacts or the vehicle.
+The voxel representation is good for this task.
+
+Tasks 3 \& 7 are model matching tasks and can use the methods of
+Section \ref{match22} to match observed scene features to prestored
+models of known parts or scene locations.
+Commonly used features are large planar surfaces, 3D edges and 3D feature
+points.
+
+Tasks 4 \& 8 are pose estimation tasks and can use the methods of
+Section \ref{pose23} to estimate the pose of the object 
+relative to the sensor or vehicle ({\it i.e.} sensor) relative to the scene.
+Again, commonly used features are large planar surfaces, 3D edges and 3D feature
+points.
+
+
+\section{Navigation and Terrain Classification  \label{ch22.3}}
+
+One of the more compelling uses for range data is for navigation of
+mobile robot vehicles.  Range data provides information about
+obstacles and free space for the vehicle, in a direct geometric form.
+Because of the realtime constraints of navigation, it is often
+impractical to reconstruct a full 3D model of the terrain using the
+techniques presented in this Chapter.  Instead, most systems use an
+{\em elevation model}. \index{elevation model} An elevation model is a tesselated 2D
+representation of space, where at each cell there is information about
+the distribution of 3D points in the cell.  In its simplest
+incarnation, the elevation map just contains the mean height of range
+points above the nominal ground plane (Figure
+\ref{elevation_map.ch22}).  This representation is sufficient for some
+indoor and urban environments; more sophisticated versions that
+determine a local plane, scatter of points in the cell, etc., are
+useful for more complicated off-road driving.  Elevation maps marked
+with obstacles have obvious utility for planning a collision-free path
+for the vehicle.
+
+\begin{figure}[hbt]
+{\epsfxsize = 0.5\textwidth \epsfbox{BOOKFIGS/elevation_map.eps}}
+\caption{Elevation map in urban terrain.  Each cell holds the height
+of the terrain at that point.  More extensive features can also be
+incorporated: slope, point variance, etc.
+\label{elevation_map.ch22}}
+\end{figure}
+
+
+\subsection{Indoor Reconstruction}
+
+SLAM algorithms (Chapter 37) using 2D laser rangefinders can
+reconstruct floor plans with centimeter precision.  Some research has
+extended this work to 3D reconstruction, using 2D lasers that are
+swept along as the robot moves \cite{thrun00}.  The resultant point
+cloud is typically registered using the pose of the robot as corrected
+by the 2D SLAM algorithm, rather than any of the 3D registration
+techniques covered in this chapter, because the laser is swept using
+robot motion.
+
+The raw points can be presented as a 3D image, or triangulated to give
+a planar or mesh reconstruction of indoor surfaces. \index{indoor surfaces}
+The latter is
+especially compelling when camera images are texture-mapped onto the
+surfaces, creating a realistic 3D model.  Figure
+\ref{indoor_3d_map.ch22} shows some results from indoor mapping using
+this technique (from \cite{thrun00}).  Smoothing of surface facets can
+be used to recover planar surfaces \cite{liu01}.
+
+\begin{figure}[hbt]
+{\epsfxsize = 0.5\textwidth \epsfbox{BOOKFIGS/thrun-3d-indoor.eps}}
+\caption{3D indoor map from a swept vertical plane LADAR.
+Registration is from a horizontal LADAR using SLAM algorithms (from
+\cite{thrun00}). 
+\label{indoor_3d_map.ch22}}
+\end{figure}
+
+
+
+\subsection{Urban Navigation}
+
+In urban navigation, the environment is structured, with roads,
+buildings, sidewalks, and also moving objects - people and other
+vehicles.  There are two main challenges: how to register laser scans
+from a fast-moving vehicle for consistent mapping, and how to detect
+moving objects using range scans (of course, other methods are also
+used for detecting moving objects, e.g., appearance-based vision).
+
+Outdoor vehicles can use precision GPS, inertial measurement units,
+and wheel odometry to keep track of their position and orientation,
+typically with an extended Kalman filter.  This method is good enough
+to obviate the need for precise registration matching among scans, as
+long as the motion model of the vehicle, and timing from the range
+scanner, is used to place each scan reading in its proper position in
+the world model.  This method also works in relatively easy off-road
+terrain such as in the DARPA Grand Challenge
+\cite{GrandChallenge}.  In all cases, the reduction of pose
+estimation error is critical for good performance
+\cite{thrun06}. 
+
+Once scan readings are registered using the vehicle pose estimation,
+they can be put into an elevation map, and obstacles detected using
+the slope and vertical extent of the range readings in the cells of
+the map.  A complication is that there may be multiple levels of
+elevation in an urban setting, for example, an overpass would not be
+an obstacle if it were high enough.  One proposal is to use multiple
+elevation clusters within each cell; this technique is called a {\em
+multi-level surface map \index{surface map}} (MLS, \cite{triebel06}).
+Each cell in the map stores a set of surfaces represented by a mean
+height and variance.  Figure \ref{elev_map.ch22} shows an MLS with a
+cell size of $10 {\rm cm}^2$, with ground plane and obstacles marked.
+
+\begin{figure}[hbt]
+{\epsfxsize = 0.50\textwidth \epsfbox{BOOKFIGS/mls_map.eps}}
+\caption{Elevation map of an urban scene, using 10cm x 10cm cells.
+Obstacles in red, ground plane in green (from \cite{triebel06}).
+\label{elev_map.ch22}}
+\end{figure}
+
+For dynamic objects, realtime stereo at 15 to 30 Hz can capture the
+motion of the objects.  When the stereo rig is fixed, range background
+subtraction isolates just the moving objects \cite{eveland98}.  When
+the rig is on a moving vehicle, the problem is more difficult, since
+the whole scene is moving with respect to the rig.  It can be solved
+by estimating the motion of the rig with respect to the dominant rigid
+background of the scene.  Let $R,t$ be the motion of the rig between
+two frames, estimated by extracting features and matching them across
+the two temporal frames, using the techniques of Chapter 37.
+The homography $H(R,t)$ of Equation
+\ref{homography.eq.ch22} provides a direct projection of the disparity
+vectors $p_0 = [x_0,y_0,d_0,1]$ of the first frame to their
+correspondences $H(R,t)p_0$ under $R,t$ in the second frame.  Using
+the homography allows the points in the reference frame to be directly
+projected onto the next frame, without translating to 3D points.
+Figure \ref{ind_motion.ch22} shows the projected pixels under rigid
+motion from a reference scene.  The difference between the projected
+and actual pixels gives the independently moving objects (from
+\cite{agrawal05}).
+
+\begin{figure*}[ht!]
+{\epsfxsize = 0.95\textwidth \epsfbox{BOOKFIGS/independent_motion.eps}}
+\caption{Independent motion detection from a moving platform.
+Reference image on left is forward-projected using the motion homography to
+the center image; right image is difference with actual image.
+\label{ind_motion.ch22}}
+\end{figure*}
+
+
+\subsection{Rough Terrain} \label{ch22.roughterrain}
+
+Rough outdoor terrain presents to challenges:
+\begin{itemize}
+\item There may be no extensive ground plane to characterize
+driveability and obstacles.
+\item Vegetation that is pliable and driveable may appear as an
+obstacle in range images.
+\end{itemize}
+
+Figure \ref{rough_terrain.ch22} shows a typical outdoor scene, with a
+small (1 meter) robot driving through vegetation and rough ground
+\cite{konolige06}.  Range data from stereo vision on the robot will
+see the top of the vegetation and some ground points below.  The
+elevation model can be extended to look at {\em point statistics}
+within each cell, to capture the notion of a local ground plane and
+penetrability related to vegetation.  In \cite{ollis06}, for
+example, the set of proposed features includes:
+\begin{itemize}
+\item Major plane slope using a robust fit (Section
+\ref{3d_feature_extraction.ch22}). 
+\item Height difference of max and min heights.
+\item Points above the major plane.
+\item Density: ratio of points in the cell to rays that pass through
+the cell.
+\end{itemize}
+The density feature is interesting (and expensive to compute), and
+attempts to characterize vegetation such a grass or bushes, by looking
+at whether range readings penetrate an elevation cell.  The idea of
+using vegetation permeability to range readings has been discussed in
+several other projects on off-road driving
+\cite{manduchi03,lalonde05,kelly05}.  
+
+\begin{figure}[hbt]
+{\epsfxsize = 0.40\textwidth \epsfbox{BOOKFIGS/rough_terrain.eps}}
+\caption{Rough terrain, no ground plane, driveable vegatation.
+\label{rough_terrain.ch22}}
+\end{figure}
+
+Elevation map cells can be characterized as obstacles or driveable
+through learning or hand-built classifiers.  Among the learning
+techniques are neural nets \cite{ollis06} and Gaussian mixture
+models with expectation-maximization learning \cite{vandapel06}.
+The latter work also includes a lower level of interpretation,
+classifying surfaces into planar patches (ground plane, solid
+obstacles), linear features (telephone wires), and scattered features
+(vegetation).  Figure \ref{point_classified.ch22} shows some results
+from a laser-scanned outdoor scene.  Linear features such as telephone
+wires and the telephone pole are accurately determined, as well as
+vegetation with high penetrability.
+
+\begin{figure}[hbt]
+{\epsfxsize = 0.40\textwidth \epsfbox{BOOKFIGS/point_stats_classified.eps}}
+\caption{Classification using point statistics, from
+\cite{vandapel06}.  Red is planar surface, blue is thin linear
+surface, green is scattered penetrable surface.
+\label{point_classified.ch22}}
+\end{figure}
+
+Some additional problems occur in \index{rough-terrain navigation} rough-terrain navigation.  For
+planar laser rangefinders that are swept over the terrain by vehicle
+motion, the precision of vehicle pose estimation is important for
+accurate reconstruction.  Attitude errors of less than $0.5^o$ can
+cause false positives in obstacle detection, especially for sweeps far
+ahead of the vehicle.  In \cite{thrun06}, this problem is solved by
+looking at the time of each laser reading, and noting a correlation
+between height errors and time difference in the readings.
+
+Negative \index{obstacles} obstacles (ditches and cliffs) are difficult to detect with
+range information, because the sensor may not see the bottom of the
+obstacle.  This is especially true for vehicle-mounted sensors that
+are not very high off the ground, and that are looking far ahead.
+Negative obstacles can be infered when there is a gap in the ground
+plane, and a plane slanted upwards at the back edge of the gap.  Such
+artifacts can be efficiently found using column search on the
+disparity image \cite{bellutta00}.
+
+\section{Conclusions and Further Reading}
+
+Range sensing is an active and expanding field of research in
+robotics.  The presence of new types of devices - flash ladars,
+multi-beam ladars, on-camera stereo processing - and the continuing
+development of robust algorithms for object reconstruction,
+localization and mapping has helped to bring applications out of the
+laboratory and into the real world.  Indoor navigation with ladars is
+already being exploited in commercial products (see, for example,
+\cite{karto}).  As the basic capabilities become more robust,
+researchers are looking to perform useful tasks, such as fetching
+items or doing dishes \cite{STAIR}.
+
+Another set of challenges are found in less benign
+environments, such as urban and off-road driving (DARPA Grand
+Challenge and Urban Challenge \cite{GrandChallenge}).  Stereo vision
+and laser rangefinding also will play a role in helping to provide
+autonomy for a new generation of more-capable robotic platforms that
+rely on walking for locomotion \cite{cmu-humanoid}.  The challenges are
+dealing with motion that is less smooth than wheeled platforms,
+environments that contain dynamic obstacles, and task-oriented
+recognition of objects.  
+
+
+
+
+\bibliographystyle{latex8}
+\begin{thebibliography}{99}
+
+\bibitem{adan}
+A. Adan, F. Molina, L. Morena, 
+``Disordered patterns projection for 3D motion recovering'',
+Proc. Int. Conf. on 
+3D Data Processing, Visualization and Transmission, pp 262-269, Thessaloniki, 2004.
+
+\bibitem{agrawal05}
+M. Agrawal, K. Konolige, L. Iocchi,
+``Real-time detection of independent motion using stereo'', 
+IEEE workshop on Motion, 2005, Breckenridge, Colorado, pp 207 - 214.
+
+\bibitem{anderson}
+D. Anderson, H. Herman, and A. Kelly,
+``Experimental Characterization of Commercial Flash Ladar Devices'',
+Int. Conf. of Sensing and Technology, Palmerston North, pp 17 - 23, November, 2005. 
+
+\bibitem{arun}
+K. S. Arun, T. S. Huang, S. D. Blostein,
+``Least-Squares Fitting of Two 3-D Point Sets'', 
+IEEE Trans. Pat. Anal. and Mach. Intel, 9(5), pp 698-700, 1987.
+
+\bibitem{ayache}
+N. Ayache,
+{\underline {Artificial Vision for Mobile Robots:}}\\{\underline {Stereo Vision and Multi sensory Perception}},
+MIT Press, Cambridge, 1991.
+
+\bibitem{Baribeau}
+R. Baribeau, M. Rioux, and G. Godin, 
+``Color Reflectance Modeling Using a Polychromatic Laser Range Sensor'',
+IEEE Trans. Pat. Anal. and Mach. Intel, 14(2), pp. 263-269, February 1992.
+
+\bibitem{barnard1982}
+S. Barnard, M. Fischler,
+``Computational stereo''.
+ACM Computing Surveys, 14(4), pp 553-572, 1982.
+
+\bibitem{bellutta00}
+P. Bellutta, R. Manduchi, L. Matthies, K. Owens, A. Rankin, 
+``Terrain Perception for Demo III'', 
+Proc. of the 2000 IEEE Intelligent Vehicles Conf., pp 326-331, Dearborn, 2000.
+
+\bibitem{benko}
+P. Benko, G. Kos, T. Varady, L. Andor, and R.R. Martin.
+``Constrained fitting in reverse engineering''. 
+Computer Aided Geometric Design, 19:173-- 205, 2002.
+
+\bibitem{besl}
+P. J. Besl,
+{\underline{Analysis and Interpretation of Range}}\\{\underline {Images}},
+Springer, Berlin-Heidelberg-New York, 1990.
+
+\bibitem{besl2}
+P. J. Besl, N. D. McKay,
+``A method for registration of 3D shapes''
+IEEE Trans. Pat. Anal and Mach. Intel., 14(2), pp 239-256, 1992.
+
+\bibitem{blais}
+F. Blais,
+``Review of 20 years of range sensor development'',
+J. of Electronic Imaging, 13(1), pp 231-240, Jan 2004.
+
+\bibitem{bolles93}
+R. Bolles, J. Woodfill, 
+``Spatiotemporal consistency checking of passive range data'',  
+Proc. Int. Symp. on Robotics Research, Hidden Valley, 1993.
+
+\bibitem{chen2}
+Y. Chen, G. Medioni,
+``Object modeling by registration of multiple range images'',
+Image and Vision Comp., 10(3), pp. 145-155, 1992.
+
+\bibitem{collins96}
+R. T. Collins,
+``A space-sweep approach to true multi-image matching'', 
+Proc. Int. Conf. on Computer Vision and Pattern Recog, pp. 358-363, San Francisco, 1996.
+
+\bibitem{criminisi}
+A.  Criminisi, J. Shotton, A. Blake, C. Rother and P. H. S. Torr,
+``Efficient Dense Stereo with Occlusions for New View Synthesis by Four State Dynamic Programming'', 
+Int. J. of Computer Vision, 71(1), pp 89 - 110, 2007.
+
+\bibitem{Curless}
+B. Curless, M. Levoy,
+``A Volumetric Method for Building Complex Models from Range Images'',
+Proc.  of Int. Conf. on Comp. Graph. and Inter. Tech. (SIGGRAPH), pp 303 - 312, New Orleans, 1996.
+
+\bibitem{GrandChallenge}
+The DARPA Grand Challenge.
+\verb+www.darpa.mil/grandchallenge05+, accessed Nov 12, 2007.
+
+
+\bibitem{eveland98}
+C. Eveland, K. Konolige, R. Bolles,
+``Background modeling for segmentation of video-rate stereo sequences'',
+Proc. Int. Conf. on Computer Vision and Pattern Recog, pp 266-271, Santa Barbara, 1998.
+
+\bibitem{faugeras96}
+O. Faugeras, B. Hotz, H. Mathieu, T. Vi\'eville, Z. Zhang, P. Fua,
+E. Th\'eron, L. Moll, G. Berry, J. Vuillemin, P. Bertin and C. Proy,
+``Real time correlation based stereo: algorithm implementations and applications'',
+International Journal of Computer Vision, 1996.
+
+
+\bibitem{ransac}
+M. A. Fischler, R. C. Bolles,
+``Random sample consensus: a paradigm for model fitting with applications to
+image analysis and automated cartography'',
+Comm. of the ACM, 24(6), pp. 381-395, June 1981. 
+
+\bibitem{naidu}
+R. B. Fisher, D. K. Naidu,  
+``A Comparison of Algorithms for Subpixel Peak Detection'',
+in Sanz (ed.) {\underline {Image Technology}},
+Springer-Verlag, Heidelberg, 1996.
+
+\bibitem{awf}
+A. W. Fitzgibbon,
+``Simultaneous Linear Estimation of Multiple View Geometry and Lens Distortion'',
+Proc. Int. Conf. on Computer Vision and Pattern Recog, Vol I, pp 125-132, Kauai, Hawaii, 2001.
+
+\bibitem{focusrobotics}
+Focus Robotics Inc.,
+\verb+www.focusrobotics.com+, accessed Nv 12, 2007.
+
+\bibitem{foley}
+J. D. Foley, A. van Dam, S. K. Feiner, J. F. Hughes,
+{\underline{Computer Graphics: principles and practice}} (second edition in C),
+Addison Wesley, Boston et al, 1996.
+
+\bibitem{fua93}
+P. Fua,
+``A parallel stereo algorithm that produces dense depth maps and preserves image features'',
+Machine Vision and Applications 6(1), pp. 35-49, 1993.
+
+\bibitem{grimson}
+E. Grimson,
+{\underline {Object Recognition by Computer:}}\\{\underline {The role of geometric constraints}},
+MIT Press, London, 1990.
+
+\bibitem{haehnel02}
+D. Haehnel, W. Burgard,
+``Probabilistic Matching for 3D Scan Registration'',
+Proc. of the VDI-Conference Robotik 2002 (Robotik), Ludwigsburg, 2002.
+
+\bibitem{haehnel02b}
+D. Haehnel, D. Schulz, W. Burgard,
+``Mapping with mobile robots in populated environments'',
+in Proc. of the IEEE/RSJ Int. Conf. on Intelligent
+Robots and Systems (IROS), Vol 1, pp 496- 501, Lausanne, 2002.
+
+\bibitem{ollis06}
+M. Happold, M. Ollis, N. Johnson,
+``Enhancing Supervised Terrain Classification with Predictive Unsupervised Learning'',
+Robotics: Science and Systems, Philadelphia, 2006.
+
+\bibitem{hartley}
+R. Hartley, A. Zisserman.
+{\underline{Multiple view geometry}}\\{\underline{in computer vision}}.
+Cambridge ; New York : Cambridge University Press, 2000.
+
+\bibitem{Hertzmann}
+A. Hertzmann, S. M. Seitz, 
+``Example-Based Photometric Stereo: Shape Reconstruction with General, Varying BRDFs'',
+IEEE Trans. Pat. Anal. and Mach. Intel., 27(8), pp. 1254-1264, August 2005.
+
+\bibitem{hilton2}
+A. Hilton, A. Stoddart, J. Illingworth, T. Windeatt.
+``Implicit surface-based geometric fusion'',
+Comp. Vis. and Image Under., 69(3), pp 273-291, March 1998.
+
+\bibitem{hoover}
+A. Hoover, G. Jean-Baptiste, X. Jiang, P. J. Flynn,
+H. Bunke, D. Goldgof, K. Bowyer,
+D. Eggert, A. Fitzgibbon, R. Fisher.
+``An Experimental Comparison of Range Segmentation Algorithms'',
+IEEE Trans. Pat. Anal. and Mach. Intel., 18(7), pp 673--689, July 1996.
+
+\bibitem{hoppe}
+H. Hoppe, T. DeRose, T. Duchamp, J. McDonald, W. Stuetzle,
+``Surface reconstruction from unorganized points'',
+Comp. Graphics, 26(2), pp 71-78, 1992.
+
+\bibitem{hoppe2}
+H. Hoppe,	
+``New quadric metric for simplifying meshes with appearance attributes'',
+IEEE Visualization 1999 Conference, pp 59-66, San Francisco, October, 1999.
+
+\bibitem{karto}
+KARTO: Software for robots on the move.
+\verb+www.kartorobotics.com+, accessed Nov 12, 2007.
+
+
+\bibitem{kelly03}
+A. Kelly, R. Unnikrishnan,
+``Efficient Construction of Globally Consistent Ladar Maps using Pose Network Topology
+and Nonlinear Programming'',
+Proc. Int. Symp of Robotics Research, Siena, I2003.
+
+\bibitem{kelly05}
+A. Kelly, A. Stentz, O. Amidi, M. Bode, D. Bradley, A. Diaz-Calderon, M. Happold, H. Herman, R. Mandelbaum,
+T. Pilarski, P. Rander, S. Thayer, N. Vallidis, R. Warner,
+``Toward Reliable Off Road Autonomous Vehicles Operating in Challenging Environments'',
+Int. J. of Robotics Research, Vol. 25, No. 5-6, 449-483, 2006.
+
+\bibitem{koninckx}
+T. P. Koninckx, L. J. Van Gool,
+``Real-Time Range Acquisition by Adaptive Structured Light'',
+IEEE Trans Pat. Anal. and Mach. Intel. 28(3), pp. 432-445, March 2006. 
+
+\bibitem{konolige97}
+K. Konolige,
+``Small vision system. hardware and implementation'',
+in Proc. Int. Symp. on Robotics Research, pages 111--116,
+Hayama, Japan, 1997.
+
+\bibitem{konolige99}
+K. Konolige, K. Chou,
+``Markov localization using correlation'',
+Proc. Int. Joint Conf. on AI (IJCAI), pp 1154 - 1159, Stockholm, 1999.
+
+\bibitem{konolige04}
+K. Konolige,
+``Large-scale map-making'',
+Proceedings of the National Conference on AI (AAAI), pp. 457 - 463, San Jose, CA, 2004.
+
+\bibitem{konolige06}
+K. Konolige, M. Agrawal, R. C. Bolles, C. Cowan, M. Fischler, B. Gerkey,
+``Outdoor mapping and Navigation using Stereo Vision'',
+Intl. Symp. on Experimental Robotics (ISER), Rio de Janeiro, 2006.
+
+\bibitem{lalonde05}
+J.-F. Lalonde, N. Vandapel, M. Hebert,
+``Data Structure for Efficient Processing in 3-D'',
+Robotics: Science and Systems 1, Cambridge, 2005.
+
+\bibitem{vandapel06}
+J. Lalonde, N. Vandapel, D. Huber, M. Hebert,
+``Natural terrain classification using three-dimensional ladar data
+for ground robot mobility'',
+J. of Field Robotics, Vol. 23, No. 10 (2006).
+
+\bibitem{LeMoigne}
+J. J. LeMoigne, A. M. Waxman, 
+``Structured Light Patterns for Robot Mobility'',
+Robotics and Automation Vol 4, pp. 541-548, 1988.
+
+\bibitem{levoy}
+M. Levoy, K. Pulli, B. Curless, S. Rusinkiewicz, D. Koller, L. Pereira, M. Ginzton, S. Anderson, J. Davis, J. Ginsberg, J. Shade, D. Fulk.
+``The Digital Michelangelo Project: 3D Scanning of Large Statues '',
+Proc. 27th Conf. on Computer graphics and interactive techniques
+(SIGGRAPH), pp 131 - 144, New Orleans, July 2000.
+
+\bibitem{little}
+J. Little, S. Se, D. Lowe,
+``Vision based mobile robot localization and mapping using scale-invariant features",
+Proc. IEEE Inf. Conf. on Robotics and Automation, pp 2051-2058, Seoul, 2001.
+
+\bibitem{liu01}
+Y. Liu, R. Emery, D. Chakrabarti, W. Burgard, S. Thrun, 
+``Using EM to Learn 3D Models of Indoor Environments with Mobile
+Robots'', 
+Proc.Int. Conf. on Machine Learning, pp. 329-336, Williamstown, 2001.
+
+\bibitem{Lobay}
+A. Lobay, D. A. Forsyth, 
+``Shape from Texture without Boundaries'',
+Int. J. Comp. Vision, 67(1), pp. 71-91, April 2006.
+
+\bibitem{lowe}
+D. Lowe, 
+``Distinctive image features from scale-invariant keypoints'',
+Int. J. Comp. Vis, 2(60), pp 91-110, 2004.
+
+\bibitem{lu97}
+F. Lu, E. Milios,
+``Globally consistent range scan alignment for environment mapping'',
+Autonomous Robots, Vol 4, pp 333-349 (1997).
+
+\bibitem{manduchi03}
+R. Manduchi, A. Castano, A. Talukder, L.Matthies,
+``Obstacle Detection and Terrain Classification for Autonomous Off-Road Navigation'',
+Autonomous Robots, Vol 18, pp 81-102, 2005.
+
+\bibitem{matthies93}
+L. Matthies,
+``Stereo vision for planetary rovers: stochastic
+modeling to near realtime implementation'',
+Int. J. Comp. Vis,  8(1), pp. 71-91, 1993.
+
+\bibitem{moravec79}
+H. Moravec, 
+``Visual mapping by a robot rover'',
+Proc. Int. Joint Conf. on AI (IJCAI), Tokyo, pp. 598-600, 1979.
+
+\bibitem{nayar}
+S. K. Nayar, Y. Nakagawa, 
+``Shape from Focus'',
+IEEE Trans Pat. Anal. and Mach. Intel. 16(8), pp. 824-831, August 1994.
+
+\bibitem{okutomi93}
+M. Okutomi, T. Kanade,
+``A multiple-baseline stereo'',
+IEEE Trans Pat. Anal. and Mach. Intel., 15(4), pp. 353-363, 1993.
+
+\bibitem{ollis}
+M. Ollis, T. Williamson,
+``The Future of 3D Video'', Computer, 34(6), pp. 97-99, June 2001.
+
+\bibitem{cmu-humanoid}
+Perception for Humanoid Robots.
+\verb+www.ri.cmu.edu/projects/project_595.html+, accessed Nov 12, 2007.
+
+\bibitem{ptgrey}
+Point Grey Research Inc.,
+\verb+www.ptgrey.com+, accessed Nov 12, 2007.
+
+\bibitem{pollefeys}
+M. Pollefeys, R. Koch, L. Van Gool,
+``Self-Calibration and Metric Reconstruction Inspite of Varying and Unknown Intrinsic Camera Parameters'',
+Int. J. of Computer Vision, 32(1), pp 7-25, 1999.
+
+\bibitem{scharstein02taxonomy}
+D. Scharstein, R. Szeliski, R. Zabih,
+``A taxonomy and evaluation of dense two-frame stereo correspondence algorithms'',
+Int. Journal of Computer Vision, 47(1/2/3), pp 7-42, April-June 2002.
+
+\bibitem{middlebury}
+D. Scharstein, R. Szeliski,
+``Middlebury College Stereo Vision Research Page'',
+\verb+vision.middlebury.edu/stereo+, accessed Nov 12, 2007.
+
+\bibitem{Schroeder}
+W. J. Schroeder, J. A. Zarge, W. E. Lorensen,
+``Decimation of triangle meshes''
+Proc.  of Int. Conf. on Comp. Graph. and Inter. Tech. (SIGGRAPH), pp 65 - 70, Chicago, 1992.
+
+\bibitem{STAIR}
+The Stanford Artificial Intelligence Robot.
+\verb+www.cs.stanford.edu/group/stair+, accessed Nov 12, 2007.
+
+
+\bibitem{stamos}
+I. Stamos and P. Allen.
+``3-D Model Construction Using Range and Image Data''
+Proc. IEEE Conf. on Computer Vision and Pattern Recognition, 
+Volume: 1,  pp 531-536, Hilton Head Island, 2000. 
+
+\bibitem{stettner}
+R. Stettner, H. Bailey, and S. Silverman,
+``Three-Dimensional Flash Ladar Focal Planes and Time-Dependent Imaging'',
+Advanced Scientific Concepts, 2006;
+Technical report at URL (February 23, 2007):
+\verb+www.advancedscientificconcepts.com/+\\
+\verb+images/Three%20Dimensional%20Flash%20Ladar+\\
+\verb+%20Focal%20Planes-ISSSR%20Paper.pdf+, accessed Nov 12, 2007.
+
+\bibitem{thrun00}
+S. Thrun, W. Burgard, D. Fox,
+``A real-time algorithm for mobile robot mapping with applications to
+multi-robot and 3D mapping'',  
+Proc. IEEE Inf. Conf. on Robotics and Automation, pp 321-328, San Francisco, 2000.
+
+\bibitem{thrun}
+S. Thrun, 
+``A probabilistic online mapping algorithm for teams of mobile robots'',
+Int. J. of Robotics Research, 20(5), pp 335-363, 2001.
+
+\bibitem{thrun05}
+S. Thrun, W. Burgard, and D. Fox. 
+{\em Probabilistic Robotics}, MIT Press, Cambridge, MA, 2005.
+
+\bibitem{thrun06}
+S. Thrun, M. Montemerlo, H. Dahlkamp, et al.,
+``Stanley: The Robot That Won The DARPA Grand Challenge'',
+Journal of Field Robotics, Vol. 23, No. 9, 2006.
+
+\bibitem{triebel06}
+R. Triebel, P. Pfaff, W. Burgard,
+``Multi-level surface maps for outdoor terrain mapping and loop closing'',
+Proc. of the IEEE Int. Conf. on Intel. Robots and Systems (IROS), Beijing, 2006.
+
+\bibitem{turk}
+G. Turk, M. Levoy,
+``Zippered Polygon Meshes from Range Images'',
+Proc.  of Int. Conf. on Comp. Graph. and Inter. Tech. (SIGGRAPH), pp 311-318, Orlando, 1994.
+
+\bibitem{tyzx}
+TYZX Inc.,
+\verb+www.tyzx.com+, accessed Nov 12, 2007.
+
+\bibitem{videre}
+Videre Design LLC,
+\verb+www.videredesign.com+, accessed Nov 12, 2007.
+
+\bibitem{yang03multiresolution}
+R. Yang and M. Pollefeys,
+``Multi-resolution real-time stereo on commodity graphics hardware'',
+Int. Conf. Comp. Vis and Pat. Rec, Vol 1, pp 211-217, Madison, 2003.
+
+\bibitem{zabih94}
+R. Zabih,  J. Woodfill,
+``Non-parametric local transforms for computing visual correspondence'',
+Proc. Eur. Conf. on Comp. Vis, Vol 2, pp 151-158 Stockholm, 1994.
+
+\bibitem{zach03accurate}
+C. Zach, A. Klaus, M. Hadwiger, K. Karner,
+``Accurate dense stereo reconstruction using graphics hardware'',
+Proc. EUROGRAPHICS, pp 227-234, Granada, 2003.
+
+\bibitem{zhang}
+Z. Zhang,
+``Parameter estimation techniques: a tutorial with application to conic fitting'',
+Image and Vision Comp., Vol 15, pp 59-76, 1997.
+
+\end{thebibliography}
+
+\end{document}
