@@ -1,0 +1,8 @@
+To compile:
+
+>> latex ch31.tex
+>> bibtex ch31.aux
+>> latex ch31.tex
+
+Produces a .ps, file, which can be changed to a pdf via ps2pdf.
+
