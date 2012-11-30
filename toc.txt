@@ -1,0 +1,30 @@
+Range Sensing Basics
+  Range Images and Point Sets
+  Stereo Vision
+  Laser-Based Range Sensors
+  Time-of-Flight Range Sensors
+  Modulation Range Sensors
+  Triangulation Range Sensors
+  Example Sensors
+
+Representations, Features and Segmentation
+  Filtering
+  Voxel representations
+  Surfel representations
+  Normals
+  Planes and geometric primitives
+  3-D Features
+  
+Registration
+  ICP and variants
+  Model Matching and Multiple-View Registration
+  Maximum-Likelihood Registration
+  Relative Pose Estimation
+
+Example 3-D applications
+  Indoor Reconstruction
+  Urban Navigation and Terrain Classification
+  Tracking People and Skeleton Extraction
+  Object Recognition for Mobile Manipulation
+
+Conclusions and Further Reading
