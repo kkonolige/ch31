@@ -1,8 +1,9 @@
 To compile:
 
->> pdflatex ch31.tex
->> bibtex ch31.aux
->> pdflatex ch31.tex
+>> make
 
-Produces a .pdf, file
+... calls latex ch31.tex, then converts the dvi file to pdf
+
+
+
 
