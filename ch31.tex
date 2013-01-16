@@ -5,6 +5,7 @@
 \usepackage{amstext}
 \usepackage{amssymb}
 \usepackage{science}
+\usepackage{graphicx}
 \bibliographystyle{handbook}
 
 %\setlength{\textwidth}{86mm}
@@ -55,6 +56,13 @@
 \newcommand{\hx}{\hat{\vx}}
 \newcommand{\hy}{\hat{\vy}}
 \newcommand{\hz}{\hat{\vz}}
+
+%% -- added by Andreas
+\newcommand{\V}[1]{\vector{#1}}  % as defined by the Springer class
+\newcommand{\M}[1]{\V{#1}}    % Format forr "Matrix"
+\usepackage[chapter]{algorithm}
+\usepackage{algorithmic}
+%% --
 
 \def\vec#1{\begin{array}{c}#1\end{array}}
 
@@ -1040,143 +1048,611 @@ in Section \ref{ch22.3}.
 \section{Registration \label{ch22.2}}
 
 This section introduces techniques for 3D localization of parts for
-robot manipulation, self-localization of robot vehicles and
-scene understanding for robot navigation.
-All of these are based on the ability to register 3D shapes, {\it e.g.}
-range images to range images, triangulated surfaces or geometric models.
-Before we introduce these applications in Section \ref{3dapp}, we first look
-at some basic techniques for manipulating 3D data.
+robot manipulation, self-localization of robot vehicles and scene
+understanding for robot navigation.  All of these are based on the
+ability to register 3D shapes, {\it e.g.}  range images to range
+images, triangulated surfaces or geometric models.  Registration puts
+two or more independently acquired 3D shapes into one frame of
+reference. It can be solved as an optimization problem that uses a
+cost function for the quality of the alignment. The 3D shapes are
+registered by determining the rigid transformation (rotation and
+translation) which minimizes the cost function. Feature based
+registration extracts distinguishing features of the range images and
+uses corresponding features for calculating the alignment.
 
-\subsection{3D Feature Representations}
+\subsection{The ICP Algorithm}
 
-There are many representations available for encoding 3D scene structure
-and model representations, but the following representations are
-the ones most commonly encountered in robotics applications.
-Some scene models or descriptions may use more than one of these
-simultaneously to describe different aspects of the scene or object models.
+The following method is used for registration of point sets. The
+complete algorithm was invented at the same time in 1991 by Besl and
+McKay~\cite{Besl_1992}, by Chen and Medioni~\cite{Chen_1991} and by
+Zhang~\cite{Zhang_1992}. The method is called Iterative Closest Points
+(ICP) algorithm. It is the de-facto standard for registration of point
+sets, but is also applicable to 3D shapes, if one samples them.
+
+Given two independently acquired sets of 3D points, $\hat M$ (model
+set) and $\hat D$ (data set) which correspond to a single shape, we
+want to find the transformation $(\M R, \V t)$ consisting of a
+rotation matrix $\M R$ and a translation vector $\V t$ which minimizes
+the following cost function:
+\begin{align}
+E(\M R, \V t) & = \frac{1}{N} \sum_{i=1}^N \norm{\V m_i - (\M R \V d_i
+ + \V t)}^2, \label{DMin}
+\end{align}
+All corresponding points can be represented in a tuple $(\V m_i,\V
+d_i)$ where $\V m_i \in M \subset \hat M$ and $\V d_i \in D \subset
+\hat D$. Two things have to be calculated: First, the corresponding
+points, and second, the transformation ($\M R$, $\V t$) that minimizes
+$E(\M R, \V t)$ on the basis of the corresponding points. The ICP
+algorithm uses closest points as corresponding points. A sufficiently
+good starting guess enables the ICP algorithm to converge to the
+correct minimum. Fig.~\ref{fig:icp} shows two 3D point clouds, their
+initial registration and after a few ICP iterations.
+\begin{figure}
+  \centering
+\includegraphics[width=0.75\linewidth]{BOOKFIGS/start_1}\\
+\includegraphics[width=0.75\linewidth]{BOOKFIGS/final_1}
+\caption{Initial alignment of two 3D pint clouds (top) and after
+  optimization with ICP (bottom).}
+\end{figure}  
+
+Although, implementations of ICP (cf. algorithm~\ref{algo:ICP})
+use a maximal distance for closest points to handle partially
+overlapping point sets. In this case, the proof about ICP's monotonic
+cnvergance in~\cite{Besl_1992} no longer holds, since the number of
+points as well as the value of $E(\M R, \V t)$ might increase after
+applying a transformation.
+
+\begin{algorithm}[H]
+\caption{The ICP algorithm.}\label{algo:ICP}
+\begin{algorithmic}[1]
+\vspace*{2mm}
+\FOR {$i = 0$ to \textit{maxIterations}}
+  \FORALL {$\V d_j \in D$}
+    \STATE {find the closest point within a range $d_\text{max}$ in the
+      set $M$ for point $\V d_j$}
+  \ENDFOR
+
+  \STATE {Calculate transformation ($\M R, \V t$) that minimizes the
+    error function Eq. (\ref{DMin})}
+
+  \STATE  Apply the transformation found in step 5 to the data set
+           $D$.
+
+  \STATE Compute the difference of the quadratic error, i.e., compute the
+  difference of the value $\norm{E_{i-1}(\M R, \V t) - E_i(\M R, \V t)}$
+  before and after the application of the transformation. If this
+  difference falls below a threshold
+  $\varepsilon$, terminate.
+\ENDFOR
+\vspace*{2mm}
+\end{algorithmic}
+\end{algorithm}
+
+Current research in the context of ICP algorithms mainly focuses on
+fast variants of ICP algorithms~\cite{Rusi_2001}. If the input are 3D
+meshes then a point-to-plane metric can be used instead of
+Eq.~\eqref{DMin}. Minimizing using a point-to-plane metric outperforms
+the standard point-to-point one, but requires the computation of
+normals and meshes in a pre-processing step.
+
+The computation of closest points is the crucial step of the ICP
+algorithm. A naive implementation examines all points in $M$ and the
+resulting computation time for ICP is $O(|D|\,|M|)$, i.e.,
+$O(n^2)$. Note: $N$ can be very large; advanced high-precise 3D
+laser scanners such as the Zoller+Fr\"ohlich yield a data rate up to
+1.000.000 3D points per second~\cite{Zoller}. An efficient tree data
+structure, a $k$-d tree is widely used to speed-up the closest point
+computation. Every node of the $k$-d tree represents a partition of
+the point set into two distinct sets, the successor nodes. The root of
+the tree represents the whole point set. The leaves of the tree are
+called buckets and are a partition of the set into small, disjunctive
+point sets. Furthermore, every node of the tree consists of the center
+and the dimension of the point set.  In the original $k$-d tree paper,
+these so-called split dimensions $D$ have been chosen depending of the
+depth of node in a robin-round fashion~\cite{Bentley_1975}.  The split
+dimension and value define an axis-aligned hyperplane in the
+$k$-dimensional space. The data are partitioned according to their
+position to the hyperplane into the successor nodes. The $k$-d tree is
+constructed until the number of points in the nodes falls below a
+threshold $b$ (bucket size). Only the leaves of the tree contain the
+data points. Searching in $k$-d trees is done recursively. A given 3D point $\V
+p_q$ needs to be compared to the separating plane (splitting dimension
+and splitting value) in order to decide on which side the search must
+continue. This procedure is executed until the leaves are
+reached. There, the algorithm has to evaluate all bucket
+points. However, the closest point may be in a different bucket, iff
+the distance $d$ of the query point $\V p_q$ to the limits is smaller
+than the one to the closest point in the bucket $\V p_b$.
+In this case backtracking has to be performed. The test is known as
+Ball-Within-Bounds test~\cite{Bentley_1975, Friedman_1977,
+  Greenspan_2003}. The optimized $k$-d tree choses the split dimension
+and split value~\cite{Friedman_1977}, such that the expected amount of
+backtracking is minimized.  Since one typically has no information
+about the query points $k$-d tree algorithms take only the
+distribution of the given points into account. For all possible
+queries this works sufficiently, but it will not be optimal for a
+specific query~\cite{Friedman_1977}. This enables the recursive
+construction and avoids the overall optimization that is known to be
+NP-complete~\cite{Hyafil_1977}.
+
+Improvements to $k$-d tree search, especially for small dimensions,
+have been presented in the last decade. They include approximate $k$-d
+tree search~\cite{Greenspan_2003}, registration using
+$d$2-trees~\cite{Mitra_2004} and cached $k$-d tree search
+\cite{3DIM_2007}. In addition, the spatial data structure oc-tree
+might, which is discussed later in this section, can used to search
+the point clouds with similar performance.
+
+In each ICP iteration, the transformation can be calculated in $O(N)$
+by any of these four methods: (1) a singular value decomposition (SVD)
+based method by Arun et al.~\cite{Arun_1987}, (2) a quaternion based
+method by Horn~\cite{Horn_1988}, (3) an algorithm using orthonormal
+matrices by Horn et al.~\cite{Horn_1987}, and (4) a calculation based
+on dual quaternions by Walker et al.~\cite{Walker_1991}. Besides these
+closed-form solutions, there are several linearized, approximative
+version~\cite{CVIU2010}. The challenge is to ensure thar $\M R$ is
+orthonormal. Most often, the first method is implemented, due to it's
+simplicity and the availability of numerical SVDs in various
+libraries. The rotation $\M R$ is represented as an orthonormal $3
+\times 3$ matrix.  The optimal rotation is calculated by $\M R = \M V
+\M U^T$. Here the matrices $\M V$ and $\M U$ are derived by the SVD
+$\M H = \M U \M \Lambda \M V^T$ of a cross correlation matrix $\M
+H$. This $3 \times 3$ matrix $\M H$ is given by
+\begin{align}
+\M H =  \sum_{i=1}^{N} \V m'^T_i \V d'_i 
+ =  \begin{pmatrix}
+S_{xx} & S_{xy} & S_{xz} \\
+S_{yx} & S_{yy} & S_{yz} \\
+S_{zx} & S_{zy} & S_{zz} \\
+\end{pmatrix}, \label{korrelation} 
+\end{align}
+where $S_{xx} = \sum_{i=1}^{N} \ m'_{x,i} d'_{x,i}, \ S_{xy} =
+\sum_{i=1}^{N} \ m'_{x,i} d'_{y,i}, \ \ldots \, $.
+
+\subsection{Marker and Feature-based Registration} 
+
+To avoid issues with starting guess in the ICP framework, marker based
+registration uses defined artificial or natural landmarks as
+corresponding points. This manual data association ensures that by
+minimizing Eq.~\eqref{DMin} the scans are registered at the correct
+location. Iterations are no longer required, but possible a
+verification with the RANSAC algorithm. The RANSAC algorithm is a
+general, randomized procedure that iteratively finds an accurate model
+for observed data that may contain a large number of
+outliers~\cite{Fischler:1981}.
+
+\subsubsection{3D Feature Representations}
+
+There are many representations available for encoding 3D scene
+structure and model representations, but the following representations
+are the ones most commonly encountered in robotics applications. Some
+scene models or descriptions may use more than one of these
+simultaneously to describe different aspects of the scene or object
+models.
+
 \begin{itemize}
 
-\item {\bf 3D Point Sets \index{Point Sets}}: 
-This is a set $\{ {\bf \it p}_i = (X_i,Y_i,Z_i)\}$ of 3D points that
-describe some salient and identifiable points in the scene.
-They might be the centers of spheres (often used as markers),
-corners where 3 planes intersect, or the extrema of some protrusion
-or indentation on a surface.
-They may be a subset of an initially acquired 3D full scene point set,
-or they might be extracted from a range image, or they might be computed
-theoretical points based on extracted data features.
+\item {\bf Normals \index{Normal}}:
 
-\item {\bf Planes}: 
-This is a set of planar surfaces observed in a scene or bounding 
-part or all of an object model.
-There are several ways to represent a plane, but one common representation
-is by the equation of the plane $ax + by + cz +d = 0$ that
-passes through corresponding scene or model surface points 
-$\{ {\bf \it p}_i = (X_i,Y_i,Z_i)\}$.
-A plane only needs 3 parameters, so there are usually some additional
-constraints on the plane representation $(a,b,c,d)$, such as $d=1$ or
-$a^2 + b^2 + c^2 = 1$. The vector ${\bf \it n} = \frac{(a,b,c)'}{a^2+b^2+c^2}$ 
-is the surface normal.
+  Normals describe the surface orientation in a points. There are a
+  number of approaches that have been developed for computing normals
+  in point clouds and range images. Most of these approaches involves
+  some form of eigenvalue decomposition resembling total linear least
+  squares. The normals are usually computed when taking into account
+  the nearby neighbor points which are computed using a variety of
+  meth- ods like Nearest Neighbor Search. These methods include $k$
+  Nearest Neighbors ($k$NN) and radius search among others. The method
+  of total least squares is robust to noise as it inherently includes
+  low pass filtering but it sensitive to the distribution and density
+  of the point samples as well as the curvature of the underlying
+  manifold. Improvements to the above method by using higher order
+  surfaces are discussed in~\cite{Mitra_2003} and it is noted that
+  such methods can fail even with arbitrarily dense samples.
 
-A planar surface may only be described by the infinite surface as given by the
-equation, but it may also include a description of the boundary of the
-surface patch.
-Again there are many possible representations for curves, either in 3D or
-in 2D lying in the plane of the surface.
-Convenient representations for robotics applications are lists of  
-the 3D points $\{(X_i,Y_i,Z_i)\}$ that form the patch boundary, or
-polylines, which represent the boundary by a set of connected line segments.
-A polyline can be represented by the sequence of 3D points $\{(X_i,Y_i,Z_i)\}$ 
-that form the vertices that join the line segments.
+  The total least squares problem is finding the plane parameters
+  that optimally fit a small surface area in a point set given by the 
+  the nearest neighbors. A plane is defined by the equation
+\begin{align*}
+  n_x x + n_y y + n_z z - d = 0
+\end{align*}  
+  where $\V p = (x, y, z)^T$ lies on the plane and $(n_x, n_y, n_z,
+  d)$ are the parameters to compute. Given a subset of $k$ 3D points
+  $p_i, i = 1, 2, \ldots, k$ of the surface, least squares finds the
+  optimal normal vector $n = (n_x, n_y, n_z )^T$ and scalar $d$ that
+  minimizes the following error equation
+\begin{align}
+  e = \sum_{i=1}^k (\V p_i \V n - d)\label{eq:normal}
+\end{align}  
+  The basic method for normal estimation from the neighboring points
+  using a fitting a plane is the Principal Component Analysis (CA).
+  PCA is the eigenvalue decomposition of the data covariance (or
+  correlation) matrix or singular value decomposition of a data
+  matrix, usually after mean centering (and normalizing) the data
+  matrix for each attribute (3D query point). PCA can be interpreted
+  as fiting a Gaussian distribution and computing the main axes. For
+  each query point
+\begin{align*}
+  \V \mu    & = \frac{1}{k} \sum_{i=1}^{k} \V p_i \\
+  \M \Sigma & = \frac{1}{k} \sum_{i=1}^{k} (\V p_i - \V \mu)^T(\V p_i - \V \mu)
+\end{align*}
+  The vector corresponding to the smallest eigenvalue of the above
+  matrix $\M \Sigma$ is the normal direction if the neighboring
+  points belong to a plane and this is also the closed form
+  solution of the total least squares problem.
+
+  For equirectangular range images, i.e., spherical coordinates, a
+  fast algorithm has been developed in~\cite{Badino_2011} that avoids
+  computing eigenvalues. Dividing \eqref{eq:normal} by $d^2$ yiled a
+  simplified function and further division by the squared range
+  $\rho^2$ yields
+\begin{align*}
+  e = \sum_{i=1}^k \left( (\rho^{-1}\V p_i)^T \V n - \rho_i^{-1}\right)^2
+  \qquad
+  \V p_i =
+  \begin{pmatrix}
+    \cos \theta_i \sin \phi_i\\
+    \sin \theta_i \sin \phi_i\\
+    \cos \phi_i
+  \end{pmatrix}
+\end{align*}  
+  Therefore, a solution for $\V n$ is given as:
+\begin{align*}
+  \V n = \M M^{-1} b \quad \text{where} \ M = \sum_{i=1}^{k}\V p_i \V p_i^T,
+  b = \sum_{i=1}^{k} \frac{\V p_i}{\rho_i}.
+\end{align*}
+  This way the computation of eigenvalues is avoided and the matrix
+  $\M M$ can be precomputed for the desired image coordinates as it
+  does not depend on the range. The tangential surface and therefore
+  its normal vector is obtained by simply taking the derivative of
+  the surface function in the point of interest.
+\begin{align*}
+  \V n
+  & = \nabla \rho = \nabla \rho(\theta,\phi)\\
+  & = \begin{pmatrix}
+    \cos \theta \sin \theta
+    - \frac{\sin \theta}{\rho \sin \phi} \frac{\partial \rho}{\partial \theta}
+    + \frac{\cos \theta \cos \phi}{\rho} \frac{\partial \rho}{\partial \phi}\\
+    \sin \theta \sin \theta
+    - \frac{\cos \theta}{\rho \sin \phi} \frac{\partial \rho}{\partial \theta}
+    + \frac{\sin \theta \cos \phi}{\rho} \frac{\partial \rho}{\partial \phi}\\
+    \cos \phi - \frac{\sin \phi}{\rho} \frac{\partial \rho}{\partial \phi}
+    \end{pmatrix}
+\end{align*}
+
+  
+\item {\bf 3D Point Features \index{Point Features}}:
+
+  This is a set $\{ {\bf \it p}_i = (X_i,Y_i,Z_i)\}$ of 3D points that
+  describe some salient and identifiable points in the scene. They
+  might be the centers of spheres (often used as markers), corners
+  where 3 planes intersect, or the extrema of some protrusion or
+  indentation on a surface.  They may be a subset of an initially
+  acquired 3D full scene point set, or they might be extracted from a
+  range image, or they might be computed theoretical points based on
+  extracted data features.
+
+  An example of 3D Point features and descriptors are Spin Images,
+  which are used for surface matching between point clouds and meshes.
+  Scanned 3-D points become the vertices of the mesh and connectivity
+  is established by the 3-D scanning geometry. A fundamental component
+  of the surface matching representation is an oriented point, a
+  three-dimensional point with an associated direction.  Huber et
+  al. define an oriented point $\V O$ at a surface mesh vertex using
+  the 3-D position of the vertex $\V p$ and the surface normal at the
+  vertex $\V n$~\cite{HuberPhD}.  Two coordinates can be calculated
+  given an oriented point: $\alpha$ the radial distance to the surface
+  normal line $L$ and $\beta$ the axial distance above the tangent
+  plane $P$ (cf.~Figure\ref{fig:spinimage}).
+  \begin{align*}
+    \begin{array}{l}
+  (\V x) \mapsto (\alpha, \beta) = \\[1.1ex]
+    (\sqrt{||\V x - \V p||^2 - ( \V n \cdot (\V x -\V p))^2},
+      \V n \cdot (\V x - \V p))
+      \end{array}
+  \end{align*}
+  \begin{figure}
+    \centering
+    \includegraphics[width=0.75\linewidth]{BOOKFIGS/spinimage}
+    \caption{Definition of a spin image.}
+  \end{figure}  
+  The term spin-map originates from the cylindrical symmetry of the
+  oriented point basis; the basis can spin about its axis with no
+  effect on the coordinates of points with respect to the
+  basis~\cite{HuberPhD}. A consequence of the cylindrical symmetry is
+  that points that lie on a circle that is parallel to $P$ and centered
+  on $L$ will have the same coordinates $(\alpha,\beta)$ with respect
+  to the basis.
+ 
+  Seminal work on 3D point features are the Point Feature Histograms
+  (PFH) descriptors. They encode a point’s k-neighborhood geometrical
+  properties by generalizing the mean curvature around the point using
+  a multi-dimensional histogram of values~\cite{RaduPhD}. This highly
+  dimensional hyperspace aims at providing an informative signature
+  for the feature representation, aims at being invariant to the 6D
+  pose of the underlying surface, and aims at coping very well with
+  different sampling densities or noise levels present in the
+  neighborhood~\cite{pointclouds.org}.
+
+  To formulate the new feature space, the concept of a dual-ring
+  neighborhood is first introduced.  Following the notation and the
+  text of \cite{RaduPhD} let $P$ be a set of 3D points with $x_i, y_i,
+  z_i$ the geometric coordinates. A point $\V p_i$ of $P$ is said to
+  have a dual-ring neighborhood if:
+  \begin{align*}
+  r_1, r_2 \in R \ r_1 < r_2 \
+  \text{, such that}
+  \left\{
+  \begin{array}{l}
+    r_1 \to P^{k_1}\\
+    r_2 \to P^{k_2}
+  \end{array}
+  \right.
+  \end{align*}
+  with $0 < k_1 < k_2$. The two radii $r_1$ and $r_2$ are used to
+  determine two distinct layers of feature representations for pi. The
+  first layer represents the surface normal at the query point from
+  the neighborhood patch $P^{k_1}$. The second layer comprises the
+  Point Feature Histogram as a set of angular features
+  (cf. Fig.~\ref{fig:angular_feature}):
+  \begin{align*}
+    \alpha & = \V v \cdot \V n_t \\
+    \phi   & = \V u \cdot \frac{(\V p_t - \V p_s)}{d}\\
+    \theta & = \arctan(\V w \cdot \V n_t, \V u \cdot \V n_t)
+  \end{align*}
+  \begin{figure}
+    \centering
+    \includegraphics[width=0.85\linewidth]{BOOKFIGS/angular_feature}
+    \includegraphics[width=0.6\linewidth]{BOOKFIGS/pfh}
+    \caption{Angular features in PFHs (top) and the definition of the
+      two regions (bottom).}\label{fig:angular_feature}
+  \end{figure}  
+
+  In addition to 3D structural features, 3D features derived from
+  texture, e.g., co-registered color images or scan reflectivity, are
+  widely used for
+  registration~\cite{Boehm_2007,Weinmann_2011_RegistrationOfTLS,FIXME}.
+  Fig.~\ref{fig:scansift} shows SIFT features extracted for a 3D
+  scanner with calibrated reflectivity values.
+  \begin{figure}
+    \centering
+    \includegraphics[width=0.8\linewidth]{BOOKFIGS/scansift}
+    \caption{Sift features extracted from the reflectivity values of a
+      3D laser scan.}\label{fig:scansift}
+  \end{figure}  
+  
+\item {\bf Planes}:
+  
+  A planar surface may only be described by the infinite surface as
+  given by the equation, but it may also include a description of the
+  boundary of the surface patch. Convenient representations for
+  robotics applications are lists of the 3D points $\{(X_i,Y_i,Z_i)\}$
+  that form the patch boundary, or polylines, which represent the
+  boundary by a set of connected line segments. A polyline is
+  represented by the sequence of 3D points $\{(X_i,Y_i,Z_i)\}$ that
+  form the vertices that join the line segments.
+
+  Plane extraction, or plane fitting, is the problem of modeling a
+  given 3D point cloud as a set of planes that ideally explain every
+  data point. The RANSAC algorithm is one possible algorithm. When
+  adapted for plane finding, this algorithm selects three 3D points at
+  random (although exploiting some locality to the point selection
+  algorithm can improve the efficiency of the algorithm). These three
+  points determine a plane with parameter vector ${\bf \it a}$.  Test
+  all points $\{ \V p \}$ in the set for belonging to the plane
+  ({\it i.e.} $\mid \V p_i \cdot \V a \mid < \tau$).  If
+  enough points are close to the plane, then potentially a plane has
+  been found.  These points should also be processed to find a
+  connected set, from which a more accurate set of plane parameters
+  can be estimated using the least-square algorithm given above.  If a
+  planar patch is successfully found, the points that lie in that
+  plane are removed from the dataset.  The random selection of three
+  points then continues until no more planes are found (a bound on how
+  many tries to make can be estimated). For example Schnabel et
+  al.~\cite{Schnabel:2007} have adapted RANSAC for plane extraction
+  and found that the algorithm performs precise and fast plane
+  extraction, but only if the parameters have been fine-tuned
+  properly. For their optimization they use knowledge, that is not
+  readily available in point cloud data, such as normals, neighboring
+  relations and outlier ratios.
+
+  A further standard method for plane detection is region growing,
+  based on a seed patch. When the scene largely consists of planes, a
+  particularly simple approach is based on selecting a previously
+  unused point and the set of points $\{\V p_i = (X_i,Y_i,Z_i)\}$ in
+  its neighborhood. A plane is fit to these points using the least
+  square method (cf. normal computation).  This hypothesized plane
+  then needs to be tested for reasonableness by 1) examining the
+  smallest eigenvalue - it should be small and on the order of the
+  square of the expected noise level and 2) ensuring that most of the
+  3D points in the fitted set lie on the plane ({\it i.e.} $\mid
+  {\V p}_i \cdot \V a \mid < \tau$).
+
+  Larger planar regions are ``grown'' by locating new adjacent points
+  $\V p_i$ that lie on the plane ({\it i.e.} $\mid \V p_i \cdot \V a
+  \mid < \tau$).  When enough of these are found, the parameters $\V
+  a$ of the plane are re-estimated.  Points on the detected plane
+  are removed and the process is repeated with a new seed patch.
+  This process continues until no more points can be added.
+  complete descriptions of planar feature extraction with region
+  growing is given in~\cite{hoover}.
+
+  Bauer et al. use the radon transform to detect planes in volume
+  data~\cite{Bauer:2008}. The idea and the speed of the algorithm are
+  similar to that of the Standard Hough Transform. The Hough
+  Transform~\cite{Hough:1962} is a method for detecting parametrized
+  objects. For the Hough transform planes are represented in the Hesse
+  normal form, using normal vectors. A plane is thereby given by a
+  point $\V{p}$ on the plane, the normal vector $\V{n}$ that is
+  perpendicular to the plane and the distance $\rho$ to the origin
+  \begin{align*}
+    \rho = \V p \cdot \V n  = {p}_x {n}_x + {p}_y {n}_y + {p}_z {n}_z = \rho .
+  \end{align*}
+  Considering the angles between the normal vector and the coordinate
+  system, the coordinates of $\V n$ are factorized to
+  \begin{align}
+    {p}_x \cdot \cos{\theta} \cdot \sin{\varphi} + {p}_y \cdot \sin{\varphi} \cdot \sin{\theta} + {p}_z \cdot \cos{\varphi} = \rho ,
+    \label{eq:polar}
+  \end{align}
+  with $\theta$ the angle of the normal vector on the $xy$-plane and
+  $\varphi$ the angle between the $xy$-plane and the normal vector in
+  $z$ direction. $\varphi$, $\theta$ and $\rho$ define the
+  3-dimensional Hough Space ($\theta,\varphi,\rho$) such that each
+  point in the Hough Space corresponds to \emph{one plane} in
+  $\mathbb{R}^3$. To find planes in a point set, one calculates the
+  Hough Transform for each point. Given a point $\V p$ in Cartesian
+  coordinates, one finds all planes the point lies on, i.e., find all
+  the $\theta$, $\phi$ and $\rho$ that satisfy Eq.~\eqref{eq:polar}
+  Marking these points in the Hough Space, i.e., leads to a 3D
+  sinusoid curve as shown in Fig.~\ref{fig:houghcurve}. The
+  intersections of two curves in Hough Space denote the planes that
+  are rotated around the line built by the two points. Consequently,
+  the intersection of three curves in Hough Space corresponds to the
+  polar coordinates defining the plane spanned by the three points. In
+  Fig.~\ref{fig:houghcurve} the intersection is marked in black.
+  %
+  Given a set $P$ of points in Cartesian coordinates, one transforms
+  all points $\V{p}_i \in P$ into Hough Space. The more curves
+  intersect in $\V{h}_j \in (\theta, \varphi, \rho)$, the more points
+  lie on the plane represented by $\V{h}_j$ and the higher is the
+  probability that $\V{h}_j$ is actually extracted from $P$.
+  %
+  \begin{figure}
+    %\psfrag{phi}{$\varphi$}
+    %\psfrag{theta}{$\theta$}
+    %
+    \includegraphics[width=0.4\textwidth]{BOOKFIGS/Hough}
+    \caption{Transformation of three points from $R$ to % FIXME mathbbm R
+      Hough space ($\theta,\varphi,\rho$). The intersection of the
+      curves (marked in black) depicts the plane spanned by the three
+      points.}
+    \label{fig:houghcurve}
+  \end{figure}
+  %  
+
+  The Standard Hough Transform is far too slow for plane detection in
+  real world data. A variant called Randomized Hough Transform is the
+  method of choice when dealing with 3D data due to its exceptional
+  performance as far as runtime and quality is
+  concerned~\cite{Borrmann_2011}.
+  
+  Other plane extraction algorithms are highly
+  specialized for a specific application and are not in widespread use
+  for miscellaneous reasons. Lakaemper et al.~\cite{Lakaemper:2006}
+  use an Expectation Maximization (EM) algorithm to fit planes that
+  are initially randomly generated, Wulf et al.~\cite{Wulf:2004}
+  detect planes relying on the specific properties of a sweeping laser
+  scanner and Yu et al.~\cite{Yu:2008} developed a clustering approach
+  to solve the problem.  
 
 \item {\bf Triangulated Surfaces \index{Triangulated Surfaces}}:
 
-This representation describes an object or scene by a set of triangular 
-patches. More general polygonal surface patches or even various smooth
-surface representations are also used, but triangles are most commonly used
-because they are simpler and there are inexpensive PC graphics cards that
-display triangles at high speed.
+  Most commonly, surfaces are approximated by polygonal meshes,
+  particularly triangle meshes, a standard data structure in computer
+  graphics to represent 3D objects. This representation describes an
+  object or scene by a set of triangular patches. More general
+  polygonal surface patches or even various smooth surface
+  representations are also used, but triangles are most commonly used
+  because they are simpler and there are inexpensive PC graphics cards
+  that display triangles at high speed.
 
-
-The triangles can be large ({\it e.g.} when representing planar
-surfaces) or small ({\it e.g.} when representing curved surfaces).
-The size chosen for the triangles reflects the accuracy desired for 
-representing the object or scene surfaces.
-The triangulated surface might be complete in the sense that all observable
-scene or objects surfaces are represented by triangles, or there might
-be disconnected surface patches with or without internal holes.
-For grasping or navigation, you don't want any unrepresented scene surface
-to lie in front of the represented portion of the surface where a gripper or
-vehicle might collide with it.
-Hence, we assume that the triangulation algorithms produce patch sets that,
-if completely connected at the edges, implicitly bound all real scene
-surfaces.
-Figure \ref{timmesh} shows an example of a triangulated surface 
-over the original underlying smooth surface.
-\begin{figure}[htb]
-{\epsfxsize = 0.47\textwidth \epsfbox{BOOKFIGS/mesh.ps}}
-\caption{Triangulated surface (Thanks to T. Breckon).
-\label{timmesh}}
+  The triangles can be large ({\it e.g.} when representing planar
+  surfaces) or small ({\it e.g.} when representing curved surfaces).
+  The size chosen for the triangles reflects the accuracy desired for
+  representing the object or scene surfaces.  The triangulated surface
+  might be complete in the sense that all observable scene or objects
+  surfaces are represented by triangles, or there might be
+  disconnected surface patches with or without internal holes.  For
+  grasping or navigation, you don't want any unrepresented scene
+  surface to lie in front of the represented portion of the surface
+  where a gripper or vehicle might collide with it.  Hence, we assume
+  that the triangulation algorithms produce patch sets that, if
+  completely connected at the edges, implicitly bound all real scene
+  surfaces. Figure~\ref{timmesh} shows an example of a triangulated
+  surface over the original point cloud.
+\begin{figure}
+    \includegraphics[width=0.5\textwidth]{BOOKFIGS/kinect_fusion}
+\caption{Left: image acquired with a kinect-like sensor.
+  Right: Reconstruction with kinect fusion. \label{timmesh}}
 \end{figure}
 
+  The de-facto standard is the Marching Cubes method introduced by
+  Lorensen et al. \cite{lorensen87marching}. This algorithm
+  sub-divides the scanned volume into cubic cells or voxels. For each
+  cell the intersections between the cell edges and the surface are
+  calculated. Pre-calculated surface patterns are then used to
+  generate a local triangle mesh approximation. An example of such
+  patterns are given in Fig.~\ref{fig:patterns}. To interpolate the
+  intersections, implicit continuous surface representations like
+  planes or splines are fitted to the local data using least squares
+  fits~\cite{alexa02computing, hoppe92surface}.
+  %
+  % FIXME More about Hoopes distance function
+  %
+  A feature of the Marching Cubes algorithm is that it produces more
+  triangles than are needed to represent an object.  Hence, several
+  mesh simplification algorithms have been introduced over the past
+  years. Most of them define error metrics that indicate the error
+  that a certain operation causes to the model, i.e., the removal of
+  an edge~\cite{melax98simple, garland97surface}. To optimize the
+  model, the edges causing minimal error to the topology are removed
+  iteratively. Since after each edge removal new vertices have to be
+  inserted into the mesh, the initial topology can be altered.
+\begin{figure}
+    \includegraphics[width=0.5\textwidth]{BOOKFIGS/marching_cube_patterns}
+\caption{Pattern for meshing 3D voxels. 256 combinations are possible,
+  but it is sufficient to model 16, iff symmetries are considered.
+\label{fig:patterns}}
+\end{figure}
 
-There are many slightly different schemes for representing the triangles
-\cite{foley}, but the main features are a list 
-$\{ {\bf \it v}_i = (X_i,Y_i,Z_i)\}$ indexed by $i$ of the 3D vertices
-at the corners of the triangles, and a list of the
-triangles $\{ {\bf \it t}_n = (i_n,j_n,k_n) \}$ specifying the indices of
-the corner vertices.
+  The kinect fusion approach modifies Hoppe's distance
+  function~\cite{kinectfusion}. It exploits the properties of the
+  depth image (rectangular) to calculate normals and the associated
+  planes. The mathod is massively parallelized by a GPU implementation
+  and can reconstruct and register meshes in real-time.
 
-From the triangular surface patches, one can compute potential grasping
-positions, potential navigable surfaces or obstacles, or match 
-observed surface shapes to previously stored shapes.
+\item {\bf 3D lines}:
+  
+  The 3D lines where planar surfaces meet are features that can be
+  easily detected by both stereo and range sensors.  These features
+  occur commonly in built environments ({\it e.g.} where walls,
+  floors, ceilings and doorways meet, around the edges of wall
+  structures like notice boards, at the edges of office and warehouse
+  furniture, etc.).  They are also common on manmade objects.  In the
+  case of stereo, changes of surface shape or coloring are detected as
+  edges, which can be matched in the stereo process to directly
+  produce the 3D edge.  In the case of a range sensor, planar surfaces
+  can be easily extracted from the range data (see next section) and
+  adjacent planar surfaces can be intersected to give the edges.
 
-\item {\bf 3D lines}: 
-The 3D lines where planar surfaces meet are features that can be
-easily detected by both stereo and range sensors.
-These features occur commonly in built environments ({\it e.g.} where
-walls, floors, ceilings and doorways meet, around the edges of wall
-structures like notice boards, at the edges of office and warehouse
-furniture, etc.).
-They are also common on manmade objects.
-In the case of stereo, changes of surface shape or coloring are detected
-as edges, which can be matched in the stereo process to directly
-produce the 3D edge.
-In the case of a range sensor, planar surfaces can be easily extracted from the
-range data (see next section) and adjacent planar surfaces can be intersected
-to give the edges.
-
-The most straightforward representation for 3D lines is 
-the set of points $ {\bf \it x} = {\bf \it p} + \lambda {\bf \it v}$ for all $\lambda$,
-where ${\bf \it v}$ is a unit vector.
-This has 5 degrees of freedom; more complex representations {\it e.g.} with
-4 degrees of freedom exist \cite{hartley}.
+  The most straightforward representation for 3D lines is the set of
+  points $ {\bf \it x} = {\bf \it p} + \lambda {\bf \it v}$ for all
+  $\lambda$, where ${\bf \it v}$ is a unit vector.  This has 5 degrees
+  of freedom; more complex representations {\it e.g.} with 4 degrees
+  of freedom exist \cite{hartley}.
 
 \item {\bf Voxels}
 
-The \index{voxel} voxel (volume pixel) approach represents the 3D world by 3D boxes/cells that
-indicate where there is scene structure and where there is free space.
-The simplest representation is a 3D binary array, encoded as 1 for having
-structure and 0 for free space.
-This can be quite memory intensive, and also requires a lot of computation to
-check many voxels for content.
-A more complex but more compact representation is the hierarchical 
-representation called the octree \cite{foley}. This divides the entire (bounded)
-rectangular space into 8 rectangular subspaces called octants 
-(see Figure \ref{octree}).
-A tree data structure encodes the content of each octant as empty,
-full or mixed.
-Mixed octants are then subdivided into 8 smaller rectangular octants,
-encoded as subtrees of the larger tree.
-Subdivision continues until some minimum octant size is reached.
-Determining whether a voxel is empty, full or mixed depends on the sensor
-used, however, if no 3D data points are located in the volume of a
-voxel, then it is likely to be empty.
-Similarly, if many 3D points are present, then the voxel is likely to 
-be full.
-The remaining voxels can be considered to be mixed.
-More details of a voxelization algorithm can be found in \cite{Curless}.
-\begin{figure}[htb]
+  The \index{voxel} voxel (volume pixel) approach represents the 3D
+  world by 3D boxes/cells that indicate where there is scene structure
+  and where there is free space.  The simplest representation is a 3D
+  binary array, encoded as 1 for having structure and 0 for free
+  space.  This can be quite memory intensive, and also requires a lot
+  of computation to check many voxels for content.  A more complex but
+  more compact representation is the hierarchical representation
+  called the octree \cite{foley}. This divides the entire (bounded)
+  rectangular space into 8 rectangular subspaces called octants (see
+  Figure \ref{octree}).  A tree data structure encodes the content of
+  each octant as empty, full or mixed.  Mixed octants are then
+  subdivided into 8 smaller rectangular octants, encoded as subtrees
+  of the larger tree.  Subdivision continues until some minimum octant
+  size is reached.  Determining whether a voxel is empty, full or
+  mixed depends on the sensor used, however, if no 3D data points are
+  located in the volume of a voxel, then it is likely to be empty.
+  Similarly, if many 3D points are present, then the voxel is likely
+  to be full.  The remaining voxels can be considered to be mixed.
+  More details of a voxelization algorithm can be found in
+  \cite{Curless}.
+\begin{figure}
 {\epsfxsize = 0.48\textwidth \epsfbox{BOOKFIGS/octree.eps}}
 \caption{Recursive space decomposition and a portion of the corresponding octree.
 \label{octree}}
@@ -1185,93 +1661,6 @@ More details of a voxelization algorithm can be found in \cite{Curless}.
 For the purpose of robot navigation, localization or grasping, only the
 surface and \index{free space voxels} free space voxels need to be marked accurately.
 The interior of objects and scene structure are largely irrelevant.
-
-\end{itemize}
-
-
-\subsection{3D Feature Extraction} \index{3D Feature Extraction}
-\label{3d_feature_extraction.ch22}
-
-Three
- types of structured 3D features are of particular interest for robot
-applications: 
-%interest points,
-straight lines, planes, triangulated surfaces.
-How these are extracted from range datasets is summarized here:
-
-\begin{itemize}
-
-%\item {\bf Interest points}: 
-%
-%There has been much vision work using ``interest points'' in intensity images.
-%These are local image neighborhoods where the some property, usually related
-%to the magnitude of variation in intensity values, makes the neighborhood
-%distinctive, and a point can be located where the property of interest is
-%maximized. This means that the point can be probably located in the next
-%intensity image.
-%The most commonly used intensity interest point is the 
-%Harris operator \cite{}.
-%
-%In a similar way, a small amount of research has developed interest points
-%on 3D surfaces or point clouds.
-%In a manner similar to intensity images, the goal is to have a distinct
-%location that can be identified in the next 3D scan.
-%With these distinct 3D points, a vehicle can register the two scene views
-%containing the interest points and thus compute where it has moved to or,
-%alternatively, extend its scene model.
-%An example of 
-%
-%!!! couldn't find any citations on robot use - so omitted
-
-
-\item {\bf Planes}: 
-Planes are generally found by some region growing process, based on a seed patch.
-When the scene largely consists of planes, a
-particularly simple approach is based on selecting a previously unused
-point and the set of points $\{{\bf \it v}_i =(X_i,Y_i,Z_i)\}$ in its neighborhood. 
-A plane is fit to these points using a least square method:
-Create a $4 \times N$ matrix ${\bf \it D}$ of the $N$ points in the set, each point
-augmented with a 1.
-Call these extended points $\{ {\bf \it v}_i \}$.
-As each point lies in the same plane $a x + b y + c z + d = 0$, we can easily
-estimate the plane parameter vector ${\bf \it p} = (a,b,c,d)'$ by the following.
-We know that a perfect plane fit to perfect data would satisfy ${\bf \it D}{\bf \it p} = {\bf \it 0}$.
-Since there is noise, we instead create the error vector ${\bf \it e}={\bf \it D}{\bf \it p}$ 
-and find the vector ${\bf \it p}$ that minimizes its length (squared) ${\bf \it e} \cdot {\bf \it e} = {\bf \it p}'{\bf \it D}'{\bf \it D}{\bf \it p}$.
-This vector is the eigenvector with the smallest eigenvalue of the
-matrix ${\bf \it D}'{\bf \it D}$.
-This initial hypothesized plane then needs to be tested for reasonableness by
-1) examining the smallest eigenvalue - it should be small and on the 
-order of the square of the expected noise level and 2) ensuring that most of the
-3D points in the fitted set lie on the plane ({\it i.e.} $\mid {\bf \it v}_i \cdot {\bf \it p} \mid < \tau$).
-
-Larger planar regions are ``grown'' by locating new adjacent points ${\bf \it v}_i$ that
-lie on the plane ({\it i.e.} $\mid {\bf \it v}_i \cdot {\bf \it p} \mid < \tau$).
-When enough of these are found, the parameters ${\bf \it p}$ of the plane are
-re-estimated.
-Points on the detected plane are removed and the process is repeated with
-a new seed patch.
-This process continues until no more points can be added.
-More complete descriptions of planar feature extraction can be
-found in \cite{hoover}.
-
-When the planes are more sparsely found in the scene, then another
-approach is the \index{RANSAC feature detection} RANSAC feature detection algorithm \cite{ransac}.
-When adapted for plane finding, this algorithm selects three 3D points
-at random (although exploiting some locality to the point selection 
-algorithm can improve the efficiency of the algorithm).
-These three points determine a plane with parameter vector ${\bf \it p}$.
-Test all points $\{ {\bf \it v} \}$ in the set for belonging to the plane
-({\it i.e.} $\mid {\bf \it v}_i \cdot {\bf \it p} \mid < \tau$).
-If enough points are close to the plane, then potentially a plane has been 
-found.
-These points should also be processed to find a connected set,
-from which a more accurate set of plane parameters can be estimated
-using the least-square algorithm given above.
-If a planar patch is successfully found, the points that lie in that
-plane are removed from the dataset.
-The random selection of three points then continues until no more planes
-are found (a bound on how many tries to make can be estimated).
 
 \item {\bf Straight lines}: 
 
@@ -1306,40 +1695,11 @@ extremes of those points.
 On the other hand, finding straight 3D lines can be easier with a stereo 
 sensor, as these result from matching 2 straight 2D image lines.
 
-\item {\bf Triangulated surfaces}: 
-
-The goal of the process is to estimate a triangulated mesh from a set of 
-3D data points.
-If the points are sampled on a regular grid ({\it e.g.} from a $2\frac{1}{2}$D
-range image), then the triangles can be
-formed naturally from the sampling (see Figure \ref{pltri}).
-If the points are part of a 3D point set, then triangulation is harder.
-We do not give details here because of the complexity of this task,
-but some of the issues that have to be considered are:
-1) how to find a surface that lies close to all data points 
-(as it is unlikely to actually pass through all because of noise),
-2) how to avoid holes and wild triangles in the mesh,
-3) how to choose the threshold of closeness so that only one surface
-passes through sections of point cloud,
-4) how to choose the triangle size,
-5) what to do about outlying points and
-6) how to maintain observable scene features, like surface edges.
-Popular early approaches for triangulation are the marching
-cube and triangle \cite{hoppe,hilton2} algorithms.
-These algorithms can give meshes with many triangles.
-The triangle size and thus the computational complexity of using the
-mesh can be reduced by mesh decimation, for which many algorithms
-exist \cite{hoppe2,Schroeder}.
-\begin{figure}[htb]
-{\epsfxsize = 0.40\textwidth \epsfbox{BOOKFIGS/pltri.eps}}
-\caption{Triangulation of a regular grid of points.
-\label{pltri}}
-\end{figure}
-
 \end{itemize}
 
-
 \subsection{Model Matching and Multiple-View Registration\label{match22}} \index{Multiple-View Registration}
+
+FIXME!!!
 
 Model matching is the process of matching some stored representation
 to some observed data. In the case discussed here, we assume that
