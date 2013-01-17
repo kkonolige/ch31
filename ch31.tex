@@ -89,15 +89,15 @@ Chapter 31 - Range Sensors}\\
 ~\\
 ~}
 
-\author{Andreas Nuechter\\
-School of Engineering and Science \\
-Jacobs University Bremen gGmbH \\
-a.nuechter@jacobs-university.de \\
-\and
-Kurt Konolige\\
+\author{Kurt Konolige\\
 Artificial Intelligence Center\\
 SRI International\\
 konolige@ai.sri.com\\
+\and
+Andreas N{\"u}chter\\
+School of Engineering and Science \\
+Jacobs University Bremen gGmbH \\
+andreas@nuechti.de\\
 \\
 \\
 \\
@@ -1748,7 +1748,8 @@ solution for minimizing Eq.~\eqref{DMinGlobal} is not know, but a
 small angle approximation or the helix transform yield a system of
 linear equations that can be solved by Choleskey
 decomposition~\cite{CVIU2010}. In an ICP-like fashion after every
-transformation new point pairs have to be found.
+transformation new point pairs have to be found
+(cf. algorithm~\ref{algo:gICP}).
 %
 \begin{algorithm}[H]
 \caption{The globally consistent ICP algorithm.}\label{algo:gICP}
@@ -1772,45 +1773,42 @@ transformation new point pairs have to be found.
 \end{algorithm}
 %
 
--------
-
-the probabilistic approach first proposed in \cite{Lu1997a} to
-6\,DoF. For a more detailed description of the extension refer to
-\cite{RAS2007}
-
-For each pose ${\V X}$, the term
-$\bar{\V X}$ denotes a pose estimate, and $\Delta {\V X}$ is the pose error.
-
-The positional error of two poses ${\V X}_j$ and
+A probabilistic SLAM-like notation of Eq.~\eqref{DMinGlobal} was
+formulated in~\cite{lu97} for 2D range scans. For each pose ${\V X}$,
+the term $\bar{\V X}$ denotes a pose estimate, and $\Delta {\V X}$ is
+the pose error. The positional error of two poses ${\V X}_j$ and
 ${\V X}_k$ is described by:
 \begin{align*}
 E_{j,k} &= \sum^m_{i=1} \norm{ {\V X}_j \oplus {\V d}_i - {\V X}_k \oplus
-{\V m}_i }^2 = \sum^m_{i=1} \norm{ {\V Z}_i ({\V X_j}, \V X_k) }^2.
+{\V m}_i }^2 
 \end{align*}
 Here, $\oplus$ is the compounding operation that transforms a point
 into the global coordinate system.  For small pose differences,
-$E_{j,k}$ can be linearized by use of a Taylor expansion:
-
-With the linearized
-error metric ${\V E}'_{j,k}$ and the Gaussian distribution $(\bar{\V E}_{j,k}, {\M
-C}_{j,k})$ a Mahalanobis distance that describes the global error of all the
-poses is constructed:
+$E_{j,k}$ can be linearized by use of a Taylor expansion. With the
+linearized error metric ${\V E}'_{j,k}$ and the Gaussian distribution
+$(\bar{\V E}_{j,k}, {\M C}_{j,k})$ a Mahalanobis distance that
+describes the global error of all the poses is constructed
 \begin{align}
 {\M W} &= \sum_{j \rightarrow k} (\bar{\V E}_{j,k} - {\V E}'_{j,k})^{T} {\M C}^{-1}_{j,k}
 (\bar{\V E}'_{j,k} - {\V E}'_{j,k}) \nonumber \\
 &=  \sum_{j \rightarrow k}
 \bigl(\bar{\V E}_{j,k} - ({\V X}'_j - {\V X}'_k)\bigr)
-{\M C}^{-1}_{j,k} \bigl(\bar{\V E}'_{j,k} - ({\V X}'_j - {\V X}'_k)\bigr).\label{eq:u1}
+{\M C}^{-1}_{j,k} \bigl(\bar{\V E}'_{j,k} - ({\V X}'_j - {\V X}'_k)\bigr),\label{eq:u1}
 \end{align}
+which can be solved efficiently using iterative least squares
+techniques, e.g., Levenberg-Marquadt or conjugate gradient methods
+\cite{konolige04,kelly03}.  The covariances are computed from point
+pairs. In the presence of correct covariances, Eq.~\eqref{eq:u1} is
+minimized once. In case of scan matching, new pose estimates yield new
+closest point pairs and in turn new covariances. Iterating the process
+of calculating point pairs and minimization yields a stable algorithm
+that converges rapidly. The probabilisty notation and the global ICP
+notation are very similar~\cite{CVIU2010}. The solution for 2D range
+scans has been extended to to 6DoF in~\cite{RAS2007}.
 
+\subsection{Model Matching}
 
-
-
-
-
-\subsection{Model Matching and Multiple-View Registration\label{match31}} \index{Multiple-View Registration}
-
-FIXME!!!
+FIXME
 
 Model matching is the process of matching some stored representation
 to some observed data. In the case discussed here, we assume that
@@ -1944,90 +1942,6 @@ the mean square error between point pairs in ${\cal C}$.
 
 \end{enumerate}
 \end{enumerate}
-
-
-\subsection{Maximum Likelihood Registration} \index{Maximum Likelihood Registration}
-
-One popular technique for range scan matching, especially in the 2D
-case, uses maximum likelihood as the criterion for match goodness.
-This technique also takes into account a probabilistic model of the
-range readings.  Let $r$ be a range reading of a sensor scan at
-position $s$, and $\bar r$ the distance to the nearest object along
-the path of $r$ (which depends on $s$).  Then a model of the sensor
-reading is the probability $p(r|\bar r)$.  Typically the model has a
-gaussian shape around the correct range, with an earlier
-false-positive region and a missed reading region at the end (see Figure
-\ref{prob.ch31}).  
-
-\begin{figure}[htb]
-{\epsfxsize = 0.48\textwidth \epsfbox{BOOKFIGS/prob.eps}}
-\caption{Probability profile $p(r|\bar r)$ for a laser sensor reading
-(from \cite{thrun05}.  The gaussian peak occurs at the distance $\bar
-r$ of the obstacle. 
-\label{prob.ch31}}
-\end{figure}
-
-
-A scan is matched when its position produces a maximum likelihood
-result for all the readings, based on a reference scan.  Assuming
-independence of the readings, from Bayes' rule we get:
-
-$$ {\bf max}_s p(s | {\bf r}) = {\bf max}_s \prod_i p(r_i | \bar
-r_i).$$
-
-The maximum likelihood scan location can be found by hill-climbing or
-exhaustive search from a good starting point.  Figure
-\ref{scanmatch.ch31} shows the results of maximum likelihood for
-aligning a scan against several reference scans.  In this 2D case, the
-reference scans are put into an occupancy grid for computing $\bar r$
-\cite{haehnel02b}.  A widespread modification for efficiency is to compute $\bar
-r$ by a smearing operation on the occupancy grid, ignoring
-line-of-sight information \cite{konolige99}.  In the 3D case, trianglulated
-surfaces are more appropriate than voxels \cite{haehnel02}.
-
-\begin{figure}[htb]
-{\epsfxsize = 0.5\textwidth \epsfbox{BOOKFIGS/scanmatch.eps}}
-\caption{Scan match by maximum likelihood against several reference
-scans in an occupancy grid (from \cite{haehnel02b}).
-\label{scanmatch.ch31}}
-\end{figure}
-
-\subsection{Multiple Scan Registration}
-
-In the previous subsection, multiple reference scans could be used to
-form an occupancy grid or surface triangles for matching.  In general,
-scan matching between sets of scans produces a network of constraints
-among the scans, for example, in going around a loop, successive scans
-form a chain of constraints, and the first and last scans form a
-closed loop of constraints.  Globally consistent registration of scans
-is a part of SLAM (Chapter 37).
-
-If the individual constraints have covariance estimates, then maximum
-likelihood techniques can be used to find a globally consistent
-estimate for all the scans \cite{lu97}.  This global registration
-is among the scan {\em poses}, and doesn't involve the scans
-themselves - all information has been abstracted to constraints among
-the poses.  Let $\bar{s}_{ij}$ be the scan-matched pose difference
-between scans $s_i$ and $s_j$, with covariance $\Gamma_{ij}$.  The
-maximum likelihood estimate for all $s$ is given by the nonlinear
-least-squares system
-
-\begin{equation}
-\min_s \sum_{ij} (s_{ij}-\bar{s}_{ij})^T \Gamma_{ij} (s_{ij}-\bar{s}_{ij}),
-\label{eq31.multiple_reg}
-\end{equation}
-
-\noindent which can be solved efficiently using iterative least
-squares techniques, e.g., Levenberg-Marquadt or conjugate gradient
-methods \cite{konolige04,kelly03}.
-
-A complication is that the system of constraints is calculated based
-on an initial set of poses $s$.  Given a re-positioning of $s$ from
-(\ref{eq31.multiple_reg}), redoing the scan matching will give a
-different set of constraints, in general.  Iterating the registration
-process with new constraints is not guaranteed to lead to a global
-minimum; in practice, with a good initial estimate, convergence is
-often rapid and robust.
 
 
 \subsection{Relative Pose Estimation\label{pose23}} \index{Pose Estimation}
@@ -2538,6 +2452,11 @@ Proc. Int. Symp. on Robotics Research, Hidden Valley, 1993.
 D. Borrmann, J. Elseberg, A. N{\"u}chter, K. Lingemann,
 ``The 3D Hough Transform for Plane Detection in Point Clouds -- A Review and A new Accumulator Design'',
 Journal of 3D Research, 2(2):1-13, 2011.
+
+\bibitem{RAS2007}
+D. Borrmann, J. Elseberg, K. Lingemann, A. N{\"u}chter, J. Hertzberg,
+``Globally consistent 3d mapping with scan matching'',
+J. Robotics and Autonomous Systems, 56(2):130–142, 2008.
 
 \bibitem{chen2}
 Y. Chen, G. Medioni,
