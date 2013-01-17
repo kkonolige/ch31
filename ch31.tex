@@ -1,5 +1,7 @@
 \documentclass[twocolumn,oneside]{book}
 
+\usepackage{refcheck}
+
 \usepackage{epsf}
 \usepackage{amsmath}
 \usepackage{amstext}
@@ -1071,12 +1073,12 @@ translation) which minimizes the cost function. Feature based
 registration extracts distinguishing features of the range images and
 uses corresponding features for calculating the alignment.
 
-\subsection{The ICP Algorithm}
+\subsection{The ICP Algorithm}\label{sec:icp6D}
 
 The following method is used for registration of point sets. The
 complete algorithm was invented at the same time in 1991 by Besl and
-McKay~\cite{Besl_1992}, by Chen and Medioni~\cite{Chen_1991} and by
-Zhang~\cite{Zhang_1992}. The method is called Iterative Closest Points
+McKay~\cite{besl2}, by Chen and Medioni~\cite{chen2} and by
+Zhang~\cite{zhang2}. The method is called Iterative Closest Points
 (ICP) algorithm. It is the de-facto standard for registration of point
 sets, but is also applicable to 3D shapes, if one samples them.
 
@@ -1097,21 +1099,22 @@ $E(\M R, \V t)$ on the basis of the corresponding points. The ICP
 algorithm uses closest points as corresponding points. A sufficiently
 good starting guess enables the ICP algorithm to converge to the
 correct minimum. Fig.~\ref{fig:icp} shows two 3D point clouds, their
-initial registration and after a few ICP iterations.
+initial alignment and the final registration after a few ICP
+iterations.
 \begin{figure}
   \centering
 \includegraphics[width=0.75\linewidth]{BOOKFIGS/start_1}\\
 \includegraphics[width=0.75\linewidth]{BOOKFIGS/final_1}
 \caption{Initial alignment of two 3D pint clouds (top) and after
-  optimization with ICP (bottom).}
+  optimization with ICP (bottom).}\label{fig:icp}
 \end{figure}  
 
-Although, implementations of ICP (cf. algorithm~\ref{algo:ICP})
-use a maximal distance for closest points to handle partially
-overlapping point sets. In this case, the proof about ICP's monotonic
-cnvergance in~\cite{Besl_1992} no longer holds, since the number of
-points as well as the value of $E(\M R, \V t)$ might increase after
-applying a transformation.
+Implementations of ICP (cf. algorithm~\ref{algo:ICP}) use a maximal
+distance for closest points to handle partially overlapping point
+sets. In this case, the proof about ICP's monotonic convergance
+in~\cite{besl2} no longer holds, since the number of points as well as
+the value of $E(\M R, \V t)$ might increase after applying a
+transformation.
 
 \begin{algorithm}[H]
 \caption{The ICP algorithm.}\label{algo:ICP}
@@ -1149,10 +1152,10 @@ normals and meshes in a pre-processing step.
 The computation of closest points is the crucial step of the ICP
 algorithm. A naive implementation examines all points in $M$ and the
 resulting computation time for ICP is $O(|D|\,|M|)$, i.e.,
-$O(n^2)$. Note: $N$ can be very large; advanced high-precise 3D
-laser scanners such as the Zoller+Fr\"ohlich yield a data rate up to
-1.000.000 3D points per second~\cite{Zoller}. An efficient tree data
-structure, a $k$-d tree is widely used to speed-up the closest point
+$O(n^2)$. Note: $N$ can be very large; advanced high-precise 3D laser
+scanners such as the Zoller+Fr\"ohlich yield a data rate up to
+1.000.000 3D points per second. An efficient tree data structure, a
+$k$-d tree, is widely used to speed-up the closest point
 computation. Every node of the $k$-d tree represents a partition of
 the point set into two distinct sets, the successor nodes. The root of
 the tree represents the whole point set. The leaves of the tree are
@@ -1166,15 +1169,15 @@ $k$-dimensional space. The data are partitioned according to their
 position to the hyperplane into the successor nodes. The $k$-d tree is
 constructed until the number of points in the nodes falls below a
 threshold $b$ (bucket size). Only the leaves of the tree contain the
-data points. Searching in $k$-d trees is done recursively. A given 3D point $\V
-p_q$ needs to be compared to the separating plane (splitting dimension
-and splitting value) in order to decide on which side the search must
-continue. This procedure is executed until the leaves are
+data points. Searching in $k$-d trees is done recursively. A given 3D
+point $\V p_q$ needs to be compared to the separating plane (splitting
+dimension and splitting value) in order to decide on which side the
+search must continue. This procedure is executed until the leaves are
 reached. There, the algorithm has to evaluate all bucket
 points. However, the closest point may be in a different bucket, iff
 the distance $d$ of the query point $\V p_q$ to the limits is smaller
-than the one to the closest point in the bucket $\V p_b$.
-In this case backtracking has to be performed. The test is known as
+than the one to the closest point in the bucket $\V p_b$.  In this
+case backtracking has to be performed. The test is known as
 Ball-Within-Bounds test~\cite{Bentley_1975, Friedman_1977,
   Greenspan_2003}. The optimized $k$-d tree choses the split dimension
 and split value~\cite{Friedman_1977}, such that the expected amount of
@@ -1196,7 +1199,7 @@ the point clouds with similar performance.
 
 In each ICP iteration, the transformation can be calculated in $O(N)$
 by any of these four methods: (1) a singular value decomposition (SVD)
-based method by Arun et al.~\cite{Arun_1987}, (2) a quaternion based
+based method by Arun et al.~\cite{arun}, (2) a quaternion based
 method by Horn~\cite{Horn_1988}, (3) an algorithm using orthonormal
 matrices by Horn et al.~\cite{Horn_1987}, and (4) a calculation based
 on dual quaternions by Walker et al.~\cite{Walker_1991}. Besides these
@@ -1230,9 +1233,9 @@ location. Iterations are no longer required, but possible a
 verification with the RANSAC algorithm. The RANSAC algorithm is a
 general, randomized procedure that iteratively finds an accurate model
 for observed data that may contain a large number of
-outliers~\cite{Fischler:1981}.
+outliers~\cite{ransac}.
 
-\subsubsection{3D Feature Representations}
+\subsubsection{3D Feature Representations and Extraction}\label{3d_feature_extraction.ch31}
 
 There are many representations available for encoding 3D scene
 structure and model representations, but the following representations
@@ -1275,7 +1278,7 @@ models.
   e = \sum_{i=1}^k (\V p_i \V n - d)\label{eq:normal}
 \end{align}  
   The basic method for normal estimation from the neighboring points
-  using a fitting a plane is the Principal Component Analysis (CA).
+  using a fitting a plane is the Principal Component Analysis (PCA).
   PCA is the eigenvalue decomposition of the data covariance (or
   correlation) matrix or singular value decomposition of a data
   matrix, usually after mean centering (and normalizing) the data
@@ -1293,7 +1296,7 @@ models.
 
   For equirectangular range images, i.e., spherical coordinates, a
   fast algorithm has been developed in~\cite{Badino_2011} that avoids
-  computing eigenvalues. Dividing \eqref{eq:normal} by $d^2$ yiled a
+  computing eigenvalues. Dividing \eqref{eq:normal} by $d^2$ gives a
   simplified function and further division by the squared range
   $\rho^2$ yields
 \begin{align*}
@@ -1308,8 +1311,8 @@ models.
 \end{align*}  
   Therefore, a solution for $\V n$ is given as:
 \begin{align*}
-  \V n = \M M^{-1} b \quad \text{where} \ M = \sum_{i=1}^{k}\V p_i \V p_i^T,
-  b = \sum_{i=1}^{k} \frac{\V p_i}{\rho_i}.
+  \V n = \M M^{-1} \V b \quad \text{where} \ \M M = \sum_{i=1}^{k}\V p_i \V p_i^T,
+  \V b = \sum_{i=1}^{k} \frac{\V p_i}{\rho_i}.
 \end{align*}
   This way the computation of eigenvalues is avoided and the matrix
   $\M M$ can be precomputed for the desired image coordinates as it
@@ -1333,7 +1336,7 @@ models.
   
 \item {\bf 3D Point Features \index{Point Features}}:
 
-  This is a set $\{ {\bf \it p}_i = (X_i,Y_i,Z_i)\}$ of 3D points that
+  This is a set $\{ \V p_i = (x_i,y_i,z_i)\}$ of 3D points that
   describe some salient and identifiable points in the scene. They
   might be the centers of spheres (often used as markers), corners
   where 3 planes intersect, or the extrema of some protrusion or
@@ -1364,8 +1367,9 @@ models.
   \begin{figure}
     \centering
     \includegraphics[width=0.75\linewidth]{BOOKFIGS/spinimage}
-    \caption{Definition of a spin image.}
-  \end{figure}  
+    \caption{Definition of a spin image.}\label{fig:spinimage}
+  \end{figure}
+
   The term spin-map originates from the cylindrical symmetry of the
   oriented point basis; the basis can spin about its axis with no
   effect on the coordinates of points with respect to the
@@ -1375,7 +1379,7 @@ models.
   to the basis.
  
   Seminal work on 3D point features are the Point Feature Histograms
-  (PFH) descriptors. They encode a point’s k-neighborhood geometrical
+  (PFH) descriptors. They encode a point's $k$-neighborhood geometrical
   properties by generalizing the mean curvature around the point using
   a multi-dimensional histogram of values~\cite{RaduPhD}. This highly
   dimensional hyperspace aims at providing an informative signature
@@ -1386,7 +1390,7 @@ models.
 
   To formulate the new feature space, the concept of a dual-ring
   neighborhood is first introduced.  Following the notation and the
-  text of \cite{RaduPhD} let $P$ be a set of 3D points with $x_i, y_i,
+  text of~\cite{RaduPhD} let $P$ be a set of 3D points with $x_i, y_i,
   z_i$ the geometric coordinates. A point $\V p_i$ of $P$ is said to
   have a dual-ring neighborhood if:
   \begin{align*}
@@ -1419,10 +1423,9 @@ models.
   \end{figure}  
 
   In addition to 3D structural features, 3D features derived from
-  texture, e.g., co-registered color images or scan reflectivity, are
-  widely used for
-  registration~\cite{Boehm_2007,Weinmann_2011_RegistrationOfTLS,FIXME}.
-  Fig.~\ref{fig:scansift} shows SIFT features extracted for a 3D
+  texture, e.g., co-registered color images or scan reflectivities,
+  are widely used for registration~\cite{Boehm_2007,rgbdslam}.
+  Fig.~\ref{fig:scansift} shows SIFT features extracted from a 3D
   scanner with calibrated reflectivity values.
   \begin{figure}
     \centering
@@ -1436,10 +1439,10 @@ models.
   A planar surface may only be described by the infinite surface as
   given by the equation, but it may also include a description of the
   boundary of the surface patch. Convenient representations for
-  robotics applications are lists of the 3D points $\{(X_i,Y_i,Z_i)\}$
+  robotics applications are lists of the 3D points $\{(x_i,y_i,z_i)\}$
   that form the patch boundary, or polylines, which represent the
   boundary by a set of connected line segments. A polyline is
-  represented by the sequence of 3D points $\{(X_i,Y_i,Z_i)\}$ that
+  represented by the sequence of 3D points $\{(x_i,y_i,z_i)\}$ that
   form the vertices that join the line segments.
 
   Plane extraction, or plane fitting, is the problem of modeling a
@@ -1469,7 +1472,7 @@ models.
   A further standard method for plane detection is region growing,
   based on a seed patch. When the scene largely consists of planes, a
   particularly simple approach is based on selecting a previously
-  unused point and the set of points $\{\V p_i = (X_i,Y_i,Z_i)\}$ in
+  unused point and the set of points $\{\V p_i = (x_i,y_i,z_i)\}$ in
   its neighborhood. A plane is fit to these points using the least
   square method (cf. normal computation).  This hypothesized plane
   then needs to be tested for reasonableness by 1) examining the
@@ -1579,7 +1582,7 @@ models.
   that the triangulation algorithms produce patch sets that, if
   completely connected at the edges, implicitly bound all real scene
   surfaces. Figure~\ref{timmesh} shows an example of a triangulated
-  surface over the original point cloud.
+  surface and the original point cloud.
 \begin{figure}
     \includegraphics[width=0.5\textwidth]{BOOKFIGS/kinect_fusion}
 \caption{Left: image acquired with a kinect-like sensor.
@@ -1595,7 +1598,7 @@ models.
   patterns are given in Fig.~\ref{fig:patterns}. To interpolate the
   intersections, implicit continuous surface representations like
   planes or splines are fitted to the local data using least squares
-  fits~\cite{alexa02computing, hoppe92surface}.
+  fits~\cite{alexa02computing,hoppe}.
   %
   % FIXME More about Hoopes distance function
   %
@@ -1618,7 +1621,7 @@ models.
   The kinect fusion approach modifies Hoppe's distance
   function~\cite{kinectfusion}. It exploits the properties of the
   depth image (rectangular) to calculate normals and the associated
-  planes. The mathod is massively parallelized by a GPU implementation
+  planes. The method is massively parallelized by a GPU implementation
   and can reconstruct and register meshes in real-time.
 
 \item {\bf 3D lines}:
@@ -1660,53 +1663,150 @@ models.
   mixed depends on the sensor used, however, if no 3D data points are
   located in the volume of a voxel, then it is likely to be empty.
   Similarly, if many 3D points are present, then the voxel is likely
-  to be full.  The remaining voxels can be considered to be mixed.
-  More details of a voxelization algorithm can be found in
-  \cite{Curless}.
+  to be full. Currently, many implementations using octrees for range
+  data are available~\cite{ISPRS2013,Hornung_2013}. Furthermore, these
+  voxel representations are the basis of surface/mesh reconstruction
+  algorithms as describes earlier.
 \begin{figure}
-{\epsfxsize = 0.48\textwidth \epsfbox{BOOKFIGS/octree.eps}}
-\caption{Recursive space decomposition and a portion of the corresponding octree.
+    \includegraphics[width=0.4\textwidth]{BOOKFIGS/octree}
+\caption{Top: Spatial subdivisions of an octree up to level
+  3. Occupied leaf nodes are shaded grey.  Bottom: The corresponding
+  tree structure of the sparse data structure. 
 \label{octree}}
 \end{figure}
 
-For the purpose of robot navigation, localization or grasping, only the
-surface and \index{free space voxels} free space voxels need to be marked accurately.
-The interior of objects and scene structure are largely irrelevant.
+  For the purpose of robot navigation, localization or grasping, only
+  the surface and \index{free space voxels} free space voxels need to
+  be marked accurately. The interior of objects and scene structure
+  are largely irrelevant.
 
 \item {\bf Straight lines}: 
 
-While straight lines are common in man-made scenes, direct extraction
-from 3D datasets is not easy.
-The main source of the difficulty is 3D sensors often do not acquire good
-responses at edges of surfaces: 1) the sensor beam will be sampling from two
-different surfaces and 2) laser based sensors produce somewhat unpredictable
-effects.
-For this reason, most 3D line detection algorithms are indirect,
-whereby planes are first detected, {\it e.g.} using the method
-of the previous section, and then adjacent planes are intersected.
-Adjacency can be tested by finding paths of connected pixels that lead
-from one plane to the other.
-If planes 1 and 2 contains points ${\bf \it p}_1$ and ${\bf \it p}_2$ 
-and have surface normals ${\bf \it n}_1$ and ${\bf \it n}_2$
-respectively, then the resulting intersection line has equation
-${\bf \it x} = {\bf \it a} + \lambda {\bf \it d}$ where 
-${\bf \it a}$ is a point on the line and
-${\bf \it d} = \frac{{\bf \it n}_1  \times {\bf \it n}_2}{\mid\mid {\bf \it n}_1  \times {\bf \it n}_2 \mid\mid}$ is the line direction.
-There are an infinite number of possible points ${\bf \it a}$, which can be 
-found by solving the equations 
-${\bf \it a}'{\bf \it n}_1 = {\bf \it p}_1'{\bf \it n}_1$
-and ${\bf \it a}'{\bf \it n}_2 = {\bf \it p}_2'{\bf \it n}_2$.
-A reasonable third constraint that obtains a point near to ${\bf \it p}_2$ is
-the equation ${\bf \it a}'{\bf \it d} = {\bf \it p}_2'{\bf \it d}$.
-This gives us an infinite line.
-Most practical applications require a finite segment.
-The endpoints can be estimated by 1) finding the points on the line that
-lie close to observed points in both planes and then 2) finding the two
-extremes of those points.
-On the other hand, finding straight 3D lines can be easier with a stereo 
-sensor, as these result from matching 2 straight 2D image lines.
+  While straight lines are common in man-made scenes, direct
+  extraction from 3D datasets is not easy.  The main source of the
+  difficulty is 3D sensors often do not acquire good responses at
+  edges of surfaces.
+% -> Modern FWA scanners can do this!!!
+% 1) the sensor beam will be sampling from two different surfaces and
+% 2) laser based sensors produce somewhat unpredictable effects.
+%
+  For this reason, most 3D line detection algorithms are indirect,
+  whereby planes are first detected, {\it e.g.} using the method of
+  the previous section, and then adjacent planes are intersected.
+  Adjacency can be tested by finding paths of connected pixels that
+  lead from one plane to the other.
+%
+  If planes 1 and 2 contains points $\V p_1$ and $\V p_2$ and have
+  surface normals $\V n_1$ and $\V n_2$ respectively, then the
+  resulting intersection line has equation $\V x = \V a + \lambda \V
+  d$ where $\V a$ is a point on the line and $\V d = \frac{\V n_1
+    \times \V n_2} {\mid\mid \V n_1 \times \V n_2 \mid\mid}$ is the
+  line direction.
+
+  There are an infinite number of possible points $\V a$, which can be
+  found by solving the equations $\V a' \V n_1 = \V p_1' \V n_1$ and
+  $\V a' \V n_2 = \V p_2'\V n_2$. A reasonable third constraint that
+  obtains a point near to $\V p_2$ is the equation $\V a' \V d = \V
+  p_2' \V d$. This gives us an infinite line. Most practical
+  applications require a finite segment. The endpoints can be
+  estimated by 1) finding the points on the line that lie close to
+  observed points in both planes and then 2) finding the two extremes
+  of those points.  On the other hand, finding straight 3D lines can
+  be easier with a stereo sensor, as these result from matching 2
+  straight 2D image lines.
 
 \end{itemize}
+
+\subsection{Multiple-View Registration\label{match31}}\index{Multiple-View Registration}
+
+A globally consistent representation of a robot's environment is
+crucial for many robotic applications. Equipped with a 3D
+depth-perceiving sensor, many mobile systems gather spatial
+information about their local 3D environments. Any iterative
+application of matching algorithms leads to inconsistencies due to
+sensing errors and to the inaccuracies in the matching procedures
+itself. To avoid these problems, global matching algorithms are
+needed, taking global correspondences between range sensor data into
+account. Simultaneous localization and mapping (SLAM) algorithms as
+discussed in chapter FIXME solve a very similar problem. In addition
+to registering multiple views, they estimate a map.  Multiple-View
+Registration also relates to Bundle adjustment in the photogrammetry
+community and structure from motion (SFM).
+
+If $n$-views have to be registered, any sequential application of ICP
+will accumulate errors, and therefore the ICP algorithm
+(cf. section~\ref{sec:icp6D}) has to be extended. The global error
+function becomes  
+\begin{align}
+E & =  \sum_{l \to k} \sum_{i} \norm{(\M R_l \V m_{l,i} + \V t_l) - (\M R_k \V d_{k,i}
+ + \V t_k)}^2, \label{DMinGlobal}
+\end{align}
+where all views have their unique pose $(\M R, \V t)$. After the point
+pairs for all overlapping views have been found,
+Eq.~\eqref{DMinGlobal} is minimized. Unfortunately, a closed-form
+solution for minimizing Eq.~\eqref{DMinGlobal} is not know, but a
+small angle approximation or the helix transform yield a system of
+linear equations that can be solved by Choleskey
+decomposition~\cite{CVIU2010}. In an ICP-like fashion after every
+transformation new point pairs have to be found.
+%
+\begin{algorithm}[H]
+\caption{The globally consistent ICP algorithm.}\label{algo:gICP}
+\begin{algorithmic}[1]
+\vspace*{2mm}
+\FOR {$i = 0$ to \textit{maxIterations}}
+   \STATE {find the closest point within a range $d_\text{max}$ of
+      every pair of overlapping 3D point clouds $(l,k)$.}
+ 
+  \STATE {Calculate $n$ transformations ($\M R, \V t$) that minimizes the
+    error function Eq. (\ref{DMinGlobal})}
+
+  \STATE  Apply the $n$ transformations found in step 4 to all data sets.
+
+  \STATE Compute the difference of the quadratic error, i.e., compute
+  the difference of the value $\norm{E_{i-1} - E_i}$ before and after
+  the application of the transformation. If this difference falls
+  below a threshold $\varepsilon$, terminate.  \ENDFOR
+\vspace*{2mm}
+\end{algorithmic}
+\end{algorithm}
+%
+
+-------
+
+the probabilistic approach first proposed in \cite{Lu1997a} to
+6\,DoF. For a more detailed description of the extension refer to
+\cite{RAS2007}
+
+For each pose ${\V X}$, the term
+$\bar{\V X}$ denotes a pose estimate, and $\Delta {\V X}$ is the pose error.
+
+The positional error of two poses ${\V X}_j$ and
+${\V X}_k$ is described by:
+\begin{align*}
+E_{j,k} &= \sum^m_{i=1} \norm{ {\V X}_j \oplus {\V d}_i - {\V X}_k \oplus
+{\V m}_i }^2 = \sum^m_{i=1} \norm{ {\V Z}_i ({\V X_j}, \V X_k) }^2.
+\end{align*}
+Here, $\oplus$ is the compounding operation that transforms a point
+into the global coordinate system.  For small pose differences,
+$E_{j,k}$ can be linearized by use of a Taylor expansion:
+
+With the linearized
+error metric ${\V E}'_{j,k}$ and the Gaussian distribution $(\bar{\V E}_{j,k}, {\M
+C}_{j,k})$ a Mahalanobis distance that describes the global error of all the
+poses is constructed:
+\begin{align}
+{\M W} &= \sum_{j \rightarrow k} (\bar{\V E}_{j,k} - {\V E}'_{j,k})^{T} {\M C}^{-1}_{j,k}
+(\bar{\V E}'_{j,k} - {\V E}'_{j,k}) \nonumber \\
+&=  \sum_{j \rightarrow k}
+\bigl(\bar{\V E}_{j,k} - ({\V X}'_j - {\V X}'_k)\bigr)
+{\M C}^{-1}_{j,k} \bigl(\bar{\V E}'_{j,k} - ({\V X}'_j - {\V X}'_k)\bigr).\label{eq:u1}
+\end{align}
+
+
+
+
+
 
 \subsection{Model Matching and Multiple-View Registration\label{match31}} \index{Multiple-View Registration}
 
@@ -2352,6 +2452,11 @@ M. Agrawal, K. Konolige, L. Iocchi,
 ``Real-time detection of independent motion using stereo'', 
 IEEE workshop on Motion, 2005, Breckenridge, Colorado, pp 207 - 214.
 
+\bibitem{alexa02computing}
+M. Alexa, J. Behr, D. Cohen-Or, S. Fleishman, D. Levin,  C. T. Silva,
+``Computing and Rendering Point Set Surfaces'',
+IEEE Trans. on Vis. and Comp. Graph. 9(1):3-15, 2003
+
 \bibitem{anderson}
 D. Anderson, H. Herman, and A. Kelly,
 ``Experimental Characterization of Commercial Flash Ladar Devices'',
@@ -2367,6 +2472,11 @@ N. Ayache,
 {\underline {Artificial Vision for Mobile Robots:}}\\{\underline {Stereo Vision and Multi sensory Perception}},
 MIT Press, Cambridge, 1991.
 
+\bibitem{Badino_2011}
+H. Badino, D. Huber, Y. Park, T. Kanade,
+``Fast and Accurate Computation of Surface Normals from Range Images'',
+Proc. ICRA, pp 3084-3091, Shanghai, China 2011,
+
 \bibitem{Baribeau}
 R. Baribeau, M. Rioux, and G. Godin, 
 ``Color Reflectance Modeling Using a Polychromatic Laser Range Sensor'',
@@ -2377,6 +2487,12 @@ S. Barnard, M. Fischler,
 ``Computational stereo''.
 ACM Computing Surveys, 14(4), pp 553-572, 1982.
 
+\bibitem{Bauer:2008}
+U.~Bauer and K.~Polthier.
+``Detection of Planar Regions in Volume Data for Topology Optimization'',
+Proc. 5th Int. Conf. on Advances in geometric modeling and processing
+Hangzhou, China, 2008.
+
 \bibitem{bellutta00}
 P. Bellutta, R. Manduchi, L. Matthies, K. Owens, A. Rankin, 
 ``Terrain Perception for Demo III'', 
@@ -2385,7 +2501,12 @@ Proc. of the 2000 IEEE Intelligent Vehicles Conf., pp 326-331, Dearborn, 2000.
 \bibitem{benko}
 P. Benko, G. Kos, T. Varady, L. Andor, and R.R. Martin.
 ``Constrained fitting in reverse engineering''. 
-Computer Aided Geometric Design, 19:173-- 205, 2002.
+Computer Aided Geometric Design, 19:173-205, 2002.
+
+\bibitem{Bentley_1975}
+J.~L. Bentley.
+``Multidimensional binary search trees used for associative searching''.
+Communications of the ACM, 18(9):509-517, 1975.
 
 \bibitem{besl}
 P. J. Besl,
@@ -2402,10 +2523,21 @@ F. Blais,
 ``Review of 20 years of range sensor development'',
 J. of Electronic Imaging, 13(1), pp 231-240, Jan 2004.
 
+\bibitem{Boehm_2007}
+J.~B{\"o}hm and S.~Becker,
+``Automatic marker-free registration of terrestrial laser scans using reflectance features'',
+Proc. of 8th Conf. on Optical 3D Measurement
+  Techniques, pp 338-344, Zurich, 2007.
+
 \bibitem{bolles93}
 R. Bolles, J. Woodfill, 
 ``Spatiotemporal consistency checking of passive range data'',  
 Proc. Int. Symp. on Robotics Research, Hidden Valley, 1993.
+
+\bibitem{Borrmann_2011}
+D. Borrmann, J. Elseberg, A. N{\"u}chter, K. Lingemann,
+``The 3D Hough Transform for Plane Detection in Point Clouds -- A Review and A new Accumulator Design'',
+Journal of 3D Research, 2(2):1-13, 2011.
 
 \bibitem{chen2}
 Y. Chen, G. Medioni,
@@ -2431,6 +2563,16 @@ Proc.  of Int. Conf. on Comp. Graph. and Inter. Tech. (SIGGRAPH), pp 303 - 312, 
 The DARPA Grand Challenge.
 \verb+www.darpa.mil/grandchallenge05+, accessed Nov 12, 2007.
 
+\bibitem{rgbdslam}
+N. Engelhard, F. Endres, J. Hess, J. Sturm, W. Burgard,
+``Real-time 3D visual SLAM with a hand-held camera'',
+Proc. of the RGB-D Workshop on 3D Perception in Robotics at the
+European Robotics Forum, 2011.
+
+\bibitem{ISPRS2013}
+J. Elseberg, D. Borrmann, A. N{\"u}chter,
+``One Billion Points in the Cloud -- An Octree for Efficient Processing of 3D Laser Scans'',
+ISPRS J. Photogrammetry and Remote Sensing, 2012.
 
 \bibitem{eveland98}
 C. Eveland, K. Konolige, R. Bolles,
@@ -2442,7 +2584,6 @@ O. Faugeras, B. Hotz, H. Mathieu, T. Vi\'eville, Z. Zhang, P. Fua,
 E. Th\'eron, L. Moll, G. Berry, J. Vuillemin, P. Bertin and C. Proy,
 ``Real time correlation based stereo: algorithm implementations and applications'',
 International Journal of Computer Vision, 1996.
-
 
 \bibitem{ransac}
 M. A. Fischler, R. C. Bolles,
@@ -2470,10 +2611,26 @@ J. D. Foley, A. van Dam, S. K. Feiner, J. F. Hughes,
 {\underline{Computer Graphics: principles and practice}} (second edition in C),
 Addison Wesley, Boston et al, 1996.
 
+\bibitem{Friedman_1977}
+J.~H. Friedman, J.~L. Bentley, and R.~A. Finkel,
+``An algorithm for finding best matches in logarithmic expected time''.
+ACM Trans. on Math. Software, 3(3):209-226, 1977.
+
 \bibitem{fua93}
 P. Fua,
 ``A parallel stereo algorithm that produces dense depth maps and preserves image features'',
 Machine Vision and Applications 6(1), pp. 35-49, 1993.
+
+\bibitem{garland97surface}
+M. Garland, P. Heckbert,
+``Surface Simplification Using Quadric Error Metrics'',
+Proc. of SIGGRAPH ‘97, 1997.
+
+\bibitem{Greenspan_2003}
+M.~Greenspan and M.~Yurick,
+``Approximate K-D Tree Search for Efficient ICP'',
+Proc. 4th IEEE Int. Conf. on Recent Advances in 3D Digital Imaging and Modeling,
+pp. 442-448, Banff, Canada, 2003.
 
 \bibitem{grimson}
 E. Grimson,
@@ -2528,6 +2685,42 @@ H. Hoppe,
 ``New quadric metric for simplifying meshes with appearance attributes'',
 IEEE Visualization 1999 Conference, pp 59-66, San Francisco, October, 1999.
 
+\bibitem{Horn_1987}
+B.~K.~P. Horn,
+``Closed--form solution of absolute orientation using unit quaternions'',
+J. OSA A, 4(4):629-642, 1987.
+
+\bibitem{Horn_1988}
+B.~K.~P. Horn, H.~M. Hilden, and Sh. Negahdaripour.
+``Closed--form solution of absolute orientation using orthonormal matrices''.
+J. OSA A, 5(7):1127-1135, 1988.
+
+\bibitem{Hornung_2013}
+A. Hornung, K.M. Wurm, M. Bennewitz, C. Stachniss, and W. Burgard,
+``OctoMap: An Efficient Probabilistic 3D Mapping Framework Based on Octrees''
+Autonomous Robots, 2013.
+
+\bibitem{Hough:1962}
+P.~V.~C. Hough,
+``Method and Means for Recognizing Complex Patterns'',
+US Patent 3069654, 1962.
+
+\bibitem{HuberPhD}
+D. Huber,
+``Automatic Three-dimensional Modeling from Reality'',
+PHD thesis, Robotics Institute, Carnegie Mellon University, 2002.
+
+\bibitem{Hyafil_1977}
+L.~Hyafil and R.~L. Rivest,
+''Constructing optimal binary decision trees is np-complete'',
+Inf. Proc. Letters 5, pp 15-17, May 1976.
+
+\bibitem{kinectfusion}
+S. Izadi, D. Kim, O. Hilliges, D. Molyneaux, R. Newcombe, P. Kohli,
+J. Shotton, S. Hodges, D. Freeman, A. Davison, A. Fitzgibbon,
+``KinectFusion: Real-time 3D Reconstruction and Interaction Using a Moving Depth Camera'',
+ACM Symp. on User Interface Software and Technology, October 2011.
+
 \bibitem{karto}
 KARTO: Software for robots on the move.
 \verb+www.kartorobotics.com+, accessed Nov 12, 2007.
@@ -2570,6 +2763,11 @@ Proceedings of the National Conference on AI (AAAI), pp. 457 - 463, San Jose, CA
 K. Konolige, M. Agrawal, R. C. Bolles, C. Cowan, M. Fischler, B. Gerkey,
 ``Outdoor mapping and Navigation using Stereo Vision'',
 Intl. Symp. on Experimental Robotics (ISER), Rio de Janeiro, 2006.
+
+\bibitem{Lakaemper:2006}
+R.~Lakaemper and L.~J. Latecki,
+``Extended EM for Planar Approximation of 3D Data'',
+Proc. IEEE ICRA, 2006.
 
 \bibitem{lalonde05}
 J.-F. Lalonde, N. Vandapel, M. Hebert,
@@ -2614,6 +2812,11 @@ D. Lowe,
 ``Distinctive image features from scale-invariant keypoints'',
 Int. J. Comp. Vis, 2(60), pp 91-110, 2004.
 
+\bibitem{lorensen87marching}
+W. E. Lorensen, H. E. Cline,
+``Marching Cubes: A high resolution 3D surface construction algorithm'',
+Computer Graphics, 21(4), 163-169, 1987.
+
 \bibitem{lu97}
 F. Lu, E. Milios,
 ``Globally consistent range scan alignment for environment mapping'',
@@ -2630,6 +2833,22 @@ L. Matthies,
 modeling to near realtime implementation'',
 Int. J. Comp. Vis,  8(1), pp. 71-91, 1993.
 
+\bibitem{melax98simple}
+S. Melax,
+``A Simple, Fast and Effective Polygon Reduction Algorithm'',
+GameDeveloper, November, 1998
+
+\bibitem{Mitra_2003}
+N.~J. Mitra, An Nguyen,
+``Estimating surface normals in noisy point cloud data'',
+Proc. SCG, pp 322-328, New York, USA, 2003.
+  
+\bibitem{Mitra_2004}
+N.~J. Mitra, N. Gelfand, H. Pottmann, L. Guibas. 
+``Registration of point cloud data from a geometric optimization perspective'',
+Proc. Eurographics/ACM SIGGRAPH Symp. on Geometry processing, pp 22-31,
+Nice, France, 2004.
+
 \bibitem{moravec79}
 H. Moravec, 
 ``Visual mapping by a robot rover'',
@@ -2639,6 +2858,17 @@ Proc. Int. Joint Conf. on AI (IJCAI), Tokyo, pp. 598-600, 1979.
 S. K. Nayar, Y. Nakagawa, 
 ``Shape from Focus'',
 IEEE Trans Pat. Anal. and Mach. Intel. 16(8), pp. 824-831, August 1994.
+
+\bibitem{CVIU2010}
+A. N{\"u}chter, J. Elseberg, P. Schneider, D. Paulus,
+``Study of Parameterizations for the Rigid Body Transformations of The Scan Registration Problem'',
+J. CVIU, 114(8):963-980, 2010
+
+\bibitem{3DIM_2007}
+A. N{\"u}chter, K. Lingemann, J. Hertzberg,
+``Cached $k$-d tree search for ICP Algorithms'',
+Proc. 6th IEEE Int. Conf. on Recent Advances in 3D Digital Imaging and Modeling,
+pp 419-426, Montreal, Canada, 2007
 
 \bibitem{okutomi93}
 M. Okutomi, T. Kanade,
@@ -2653,6 +2883,10 @@ M. Ollis, T. Williamson,
 Perception for Humanoid Robots.
 \verb+www.ri.cmu.edu/projects/project_595.html+, accessed Nov 12, 2007.
 
+\bibitem{pointclouds.org}
+Point Cloud Library (PCL),
+\verb+pointclouds.org+, accessed Jan 17, 2013.
+
 \bibitem{ptgrey}
 Point Grey Research Inc.,
 \verb+www.ptgrey.com+, accessed Nov 12, 2007.
@@ -2661,6 +2895,17 @@ Point Grey Research Inc.,
 M. Pollefeys, R. Koch, L. Van Gool,
 ``Self-Calibration and Metric Reconstruction Inspite of Varying and Unknown Intrinsic Camera Parameters'',
 Int. J. of Computer Vision, 32(1), pp 7-25, 1999.
+
+\bibitem{Rusi_2001}
+S.~Rusinkiewicz and M.~Levoy.
+``Efficient variants of the {ICP} algorithm'',
+Proc. of the 3rd Int. Conf. on 3D Digital Imaging and Modellling, pp 145-152,
+Quebec City, 2001.
+
+\bibitem{RaduPhD}
+R. B. Rusu,
+``Semantic 3D Object Maps for Everyday Manipulation in Human Living Environments'',
+PhD Thesis, TU Munich, 2009.
 
 \bibitem{scharstein02taxonomy}
 D. Scharstein, R. Szeliski, R. Zabih,
@@ -2672,6 +2917,11 @@ D. Scharstein, R. Szeliski,
 ``Middlebury College Stereo Vision Research Page'',
 \verb+vision.middlebury.edu/stereo+, accessed Nov 12, 2007.
 
+\bibitem{Schnabel:2007}
+R.~Schnabel, R.~Wahl, and R.~Klein,
+``Efficient RANSAC for Point-Cloud Shape Detection'',
+Computer Graphics Forum, 2007.
+
 \bibitem{Schroeder}
 W. J. Schroeder, J. A. Zarge, W. E. Lorensen,
 ``Decimation of triangle meshes''
@@ -2680,7 +2930,6 @@ Proc.  of Int. Conf. on Comp. Graph. and Inter. Tech. (SIGGRAPH), pp 65 - 70, Ch
 \bibitem{STAIR}
 The Stanford Artificial Intelligence Robot.
 \verb+www.cs.stanford.edu/group/stair+, accessed Nov 12, 2007.
-
 
 \bibitem{stamos}
 I. Stamos and P. Allen.
@@ -2735,10 +2984,26 @@ TYZX Inc.,
 Videre Design LLC,
 \verb+www.videredesign.com+, accessed Nov 12, 2007.
 
+\bibitem{Walker_1991}
+M.~W. Walker, L.~Shao, and R.~A. Volz,
+``Estimating 3-d location parameters using dual number quaternions'',
+CVGIP: Image Understanding, 54:358-367, 1991.
+
+\bibitem{Wulf:2004}
+O.~Wulf, K.~O. Arras, H.~I. Christensen, and B.~A. Wagner,
+``{2D} {M}apping of {C}luttered {I}ndoor {E}nvironments by {M}eans of
+  {3D} {P}erception'',
+Proc. ICRA, pp 4204-4209, New Orleans, USA, 2004.
+
 \bibitem{yang03multiresolution}
 R. Yang and M. Pollefeys,
 ``Multi-resolution real-time stereo on commodity graphics hardware'',
 Int. Conf. Comp. Vis and Pat. Rec, Vol 1, pp 211-217, Madison, 2003.
+
+\bibitem{Yu:2008}
+G.~Yu, M.~Grossberg, G.~Wolberg, and I.~Stamos,
+``Think Globally, Cluster Locally:A Unified Framework for Range Segmentation'',
+Proc. 4th Int. Symp. on 3DPVT, Atlanta, USA, 2008.
 
 \bibitem{zabih94}
 R. Zabih,  J. Woodfill,
@@ -2754,6 +3019,12 @@ Proc. EUROGRAPHICS, pp 227-234, Granada, 2003.
 Z. Zhang,
 ``Parameter estimation techniques: a tutorial with application to conic fitting'',
 Image and Vision Comp., Vol 15, pp 59-76, 1997.
+
+\bibitem{zhang2}
+Z. Zhang,
+``Iterative point matching for registration of free--form curves''.
+Technical Report RR-1658, INRIA--Sophia Antipolis, Valbonne Cedex, France,
+1992.
 
 \end{thebibliography}
 
