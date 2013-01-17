@@ -83,14 +83,14 @@
 
 \title{\LARGE{Handbook of Robotics\\
 ~\\
-Chapter 22 - Range Sensors}\\
+Chapter 31 - Range Sensors}\\
 ~\\
 ~}
 
-\author{Robert B. Fisher\\
-School of Informatics\\
-University of Edinburgh\\
-rbf@inf.ed.ac.uk\\
+\author{Andreas Nuechter\\
+School of Engineering and Science \\
+Jacobs University Bremen gGmbH \\
+a.nuechter@jacobs-university.de \\
 \and
 Kurt Konolige\\
 Artificial Intelligence Center\\
@@ -114,7 +114,7 @@ konolige@ai.sri.com\\
 
 \setcounter{page}{1}
 
-\setcounter{chapter}{22}
+\setcounter{chapter}{31}
 
 Range sensors are devices that capture the 3D structure of the world
 from the viewpoint of the sensor, usually measuring the depth to the
@@ -129,35 +129,32 @@ grasp objects, act on industrial parts, etc.
 This chapter introduces the main representations for range data 
 (point sets, triangulated surfaces, voxels), the main methods 
 for extracting usable features from the range data (planes, lines, triangulated surfaces),
-the main sensors for acquiring it (Section \ref{sec22.1} -
+the main sensors for acquiring it (Section \ref{sec31.1} -
 stereo and laser triangulation and ranging systems),
 how multiple observations of the scene, {\it e.g.} as if from a 
-moving robot, can be registered (Section \ref{ch22.2})
+moving robot, can be registered (Section \ref{ch31.2})
 and several indoor and outdoor robot applications where
-range data greatly simplifies the task (Section \ref{ch22.3}).
+range data greatly simplifies the task (Section \ref{ch31.3}).
 
-\section{Range sensing basics \label{sec22.1}}
+\section{Range sensing basics \label{sec31.1}}
 
-Here we present: 1) the basic representations used for range image data,
-2) a brief introduction to the main 3D sensors that are less commonly used
-in robotics applications and 3) a detailed presentation of the more common 
-laser-baser range image sensors.
+Here we present the basic representations used for range image data,
+and discuss some issues relating to representations and robotics
+applications. 
 
-\subsection{Range images and point sets} \label{sec22.1.1}
+\subsection{Range images and point sets} \label{sec31.1.1}
 
-\index{Range data} Range data is a $2\frac{1}{2}{\rm D}$ or 3D representation of the scene
-around the robot.
-The 3D aspect arises because we are measuring the $(X,Y,Z)$ coordinates
-of one or more points in the scene.
-Often only a single \index{range image} range image is used at each time instance.
-This means that we only observe the front sides of objects - the
-portion of the scene visible from the robot.
-In other words, we don't have a full 3D observation of all sides of
-a scene.
-This is the origin of the term $2\frac{1}{2}{\rm D}$.
-Figure \ref{fig23.1}a shows a sample range image and (b) shows a 
-\index{registered reflectance image} registered reflectance image, where each pixel records the level of reflected 
-infrared light.
+\index{Range data} Range data is a $2\frac{1}{2}{\rm D}$ or 3D
+representation of the scene around the robot.  The 3D aspect arises
+because we are measuring the $(X,Y,Z)$ coordinates of one or more
+points in the scene.  Often only a single \index{range image} range
+image is used at each time instance.  This means that we only observe
+the front sides of objects - the portion of the scene visible from the
+robot.  In other words, we don't have a full 3D observation of all
+sides of a scene.  This is the origin of the term $2\frac{1}{2}{\rm
+  D}$.  Figure \ref{fig23.1}a shows a sample range image and (b) shows
+a \index{registered reflectance image} registered reflectance image,
+where each pixel records the level of reflected infrared light.
 \begin{figure}
 {\epsfxsize = 0.47\textwidth \epsfbox{BOOKFIGS/inkirksmall.ps}}
 \caption{
@@ -250,16 +247,30 @@ the range data is only supplied as a list.
 Details of the precise mapping and data format are supplied with
 commercial range sensors.
 
+\section{Triangulation Sensors}
+
+[stereo; projected texture; structured light; laser]
+
+\section{LADAR Sensors}
+
+[different types of TOF sensors]
+
+\section{Others}
+
+[depth edge sensing]
+
+
 \subsection{Stereo vision}\index{Stereo vision}
 
-It is possible to acquire range information from many different sensors,
-but only a few have the reliability needed for most robotics applications.
-The more reliable ones, \index{laser based triangulation} laser based triangulation and LIDAR (laser radar)
-are discussed in the next section.
+It is possible to acquire range information from many different
+sensors, but only a few have the reliability needed for most robotics
+applications.  The more reliable ones, \index{laser based
+  triangulation} laser based triangulation and LIDAR (laser radar) are
+discussed in this and the next subsections.
 
 Realtime stereo analysis uses two or more input images to estimate the
 distance to points in a scene.  The basic concept is {\em
-triangulation}: a scene point and the two camera points form a
+  triangulation}: a scene point and the two camera points form a
 triangle, and knowing the baseline between the two cameras, and the
 angle formed by the camera rays, the distance to the object can be
 determined.
@@ -387,7 +398,7 @@ $d=x-x'$, then
 \right] 
 =
  \bf{Q} \left[ \vec{x\\ y\\ d \\ 1} \right]
-\label{reprojection.eq.ch22}
+\label{reprojection.eq.ch31}
 \end{eqnarray}
  
 \noindent where $(X/W, Y/W, Z/W)$ are the coordinates of the scene
@@ -395,24 +406,24 @@ feature, and $d = x - x'$ is the disparity.  Assuming $C_x = C'_x$,
 the $Z$ distance assumes the familiar inverse form of triangulation
 \begin{equation}
  Z = \frac{F_x T'_x}{d}.
-\label{eq22.disparity-range}
+\label{eq31.disparity-range}
 \end{equation}
 \noindent Reprojection is valid only for rectified images - for the general
 case, the projected lines do not intersect.
 The disparity $d$ is an {\em inverse depth}
 measure, and the vector $(x,y,d)$ is a perspective representation
-range image (see Section \ref{sec22.1.1}), sometimes called the {\em
+range image (see Section \ref{sec31.1.1}), sometimes called the {\em
 disparity space} representation.  The disparity space is often used in
 applications instead of 3D space, as a more efficient representation
 for determining obstacles or other features (see Section
-\ref{ch22.roughterrain}).
+\ref{ch31.roughterrain}).
 
-Equation \ref{reprojection.eq.ch22} is a homography between disparity
+Equation \ref{reprojection.eq.ch31} is a homography between disparity
 space and 3D Euclidean space.  Disparity space is also useful in
 translating between 3D frames.  Let $p_0 = [x_0,y_0,d_0,1]$ in frame
 0, with frame 1 related by the rigid motion $R,t$.  From the
 reprojection equation
-\ref{reprojection.eq.ch22} the 3D position is ${\bf Q}p_0$ Under the
+\ref{reprojection.eq.ch31} the 3D position is ${\bf Q}p_0$ Under the
 rigid motion this becomes $\left(\begin{array}{cc}R&t\\ 0 & 1
 \end{array}\right)Qp_0$, and finally applying $Q^{-1}$ yields the
 disparity representation in frame 1.  The concatenation of these
@@ -421,14 +432,14 @@ operations is the homography
 \begin{equation}
 H(R,t) = Q^{-1}\left(\begin{array}{cc}R&t
   \\ 0 & 1 \end{array}\right)Q.  
-\label{homography.eq.ch22}
+\label{homography.eq.ch31}
 \end{equation}
 
 \noindent Using the homography allows the points
 in the reference frame to be directly projected onto another frame,
 without translating to 3D points.
 
-\subsubsection{Stereo Methods}
+\subsubsection{Stereo Matching Methods}
 
 The fundamental problem in stereo analysis is matching image elements
 that represent the same object or object part in the scene.  Once the
@@ -613,7 +624,7 @@ help \cite{adan}.
 
 {\bf Range resolution.}  Unlike LADAR devices, stereo range accuracy
 is a quadratic function of distance, found by differentiating Equation
-\ref{eq22.disparity-range} with respect to disparity:
+\ref{eq31.disparity-range} with respect to disparity:
 \begin{equation}
  \delta Z = -\frac{F_x T'_x}{d^2}.
 \end{equation}
@@ -1043,9 +1054,9 @@ inspection of parts, location of dropped or bin delivered components,
 or accurate part position determination.
 
 More examples and details range sensors for robot navigation are presented
-in Section \ref{ch22.3}.
+in Section \ref{ch31.3}.
 
-\section{Registration \label{ch22.2}}
+\section{Registration \label{ch31.2}}
 
 This section introduces techniques for 3D localization of parts for
 robot manipulation, self-localization of robot vehicles and scene
@@ -1697,7 +1708,7 @@ sensor, as these result from matching 2 straight 2D image lines.
 
 \end{itemize}
 
-\subsection{Model Matching and Multiple-View Registration\label{match22}} \index{Multiple-View Registration}
+\subsection{Model Matching and Multiple-View Registration\label{match31}} \index{Multiple-View Registration}
 
 FIXME!!!
 
@@ -1846,14 +1857,14 @@ the path of $r$ (which depends on $s$).  Then a model of the sensor
 reading is the probability $p(r|\bar r)$.  Typically the model has a
 gaussian shape around the correct range, with an earlier
 false-positive region and a missed reading region at the end (see Figure
-\ref{prob.ch22}).  
+\ref{prob.ch31}).  
 
 \begin{figure}[htb]
 {\epsfxsize = 0.48\textwidth \epsfbox{BOOKFIGS/prob.eps}}
 \caption{Probability profile $p(r|\bar r)$ for a laser sensor reading
 (from \cite{thrun05}.  The gaussian peak occurs at the distance $\bar
 r$ of the obstacle. 
-\label{prob.ch22}}
+\label{prob.ch31}}
 \end{figure}
 
 
@@ -1866,7 +1877,7 @@ r_i).$$
 
 The maximum likelihood scan location can be found by hill-climbing or
 exhaustive search from a good starting point.  Figure
-\ref{scanmatch.ch22} shows the results of maximum likelihood for
+\ref{scanmatch.ch31} shows the results of maximum likelihood for
 aligning a scan against several reference scans.  In this 2D case, the
 reference scans are put into an occupancy grid for computing $\bar r$
 \cite{haehnel02b}.  A widespread modification for efficiency is to compute $\bar
@@ -1878,7 +1889,7 @@ surfaces are more appropriate than voxels \cite{haehnel02}.
 {\epsfxsize = 0.5\textwidth \epsfbox{BOOKFIGS/scanmatch.eps}}
 \caption{Scan match by maximum likelihood against several reference
 scans in an occupancy grid (from \cite{haehnel02b}).
-\label{scanmatch.ch22}}
+\label{scanmatch.ch31}}
 \end{figure}
 
 \subsection{Multiple Scan Registration}
@@ -1903,7 +1914,7 @@ least-squares system
 
 \begin{equation}
 \min_s \sum_{ij} (s_{ij}-\bar{s}_{ij})^T \Gamma_{ij} (s_{ij}-\bar{s}_{ij}),
-\label{eq22.multiple_reg}
+\label{eq31.multiple_reg}
 \end{equation}
 
 \noindent which can be solved efficiently using iterative least
@@ -1912,7 +1923,7 @@ methods \cite{konolige04,kelly03}.
 
 A complication is that the system of constraints is calculated based
 on an initial set of poses $s$.  Given a re-positioning of $s$ from
-(\ref{eq22.multiple_reg}), redoing the scan matching will give a
+(\ref{eq31.multiple_reg}), redoing the scan matching will give a
 different set of constraints, in general.  Iterating the registration
 process with new constraints is not guaranteed to lead to a global
 minimum; in practice, with a good initial estimate, convergence is
@@ -2058,7 +2069,7 @@ The key tasks in robot manipulation are:
 (4) position estimation of parts for manipulation (see Chapters 23 and 42).
 
 The key tasks in robot navigation and self-localization are:
-(5) identification of a navigable groundplane (see Section \ref{ch22.3}),
+(5) identification of a navigable groundplane (see Section \ref{ch31.3}),
 (6) identification of a collision free path (see Chapter 35),
 (7) identification of landmarks (see Chapter 36) and
 (8) estimation of vehicle location (see Chapter 40).
@@ -2084,7 +2095,7 @@ proposed trajectory of the gripper contacts or the vehicle.
 The voxel representation is good for this task.
 
 Tasks 3 \& 7 are model matching tasks and can use the methods of
-Section \ref{match22} to match observed scene features to prestored
+Section \ref{match31} to match observed scene features to prestored
 models of known parts or scene locations.
 Commonly used features are large planar surfaces, 3D edges and 3D feature
 points.
@@ -2096,7 +2107,7 @@ Again, commonly used features are large planar surfaces, 3D edges and 3D feature
 points.
 
 
-\section{Navigation and Terrain Classification  \label{ch22.3}}
+\section{Navigation and Terrain Classification  \label{ch31.3}}
 
 One of the more compelling uses for range data is for navigation of
 mobile robot vehicles.  Range data provides information about
@@ -2109,7 +2120,7 @@ representation of space, where at each cell there is information about
 the distribution of 3D points in the cell.  In its simplest
 incarnation, the elevation map just contains the mean height of range
 points above the nominal ground plane (Figure
-\ref{elevation_map.ch22}).  This representation is sufficient for some
+\ref{elevation_map.ch31}).  This representation is sufficient for some
 indoor and urban environments; more sophisticated versions that
 determine a local plane, scatter of points in the cell, etc., are
 useful for more complicated off-road driving.  Elevation maps marked
@@ -2121,7 +2132,7 @@ for the vehicle.
 \caption{Elevation map in urban terrain.  Each cell holds the height
 of the terrain at that point.  More extensive features can also be
 incorporated: slope, point variance, etc.
-\label{elevation_map.ch22}}
+\label{elevation_map.ch31}}
 \end{figure}
 
 
@@ -2141,7 +2152,7 @@ a planar or mesh reconstruction of indoor surfaces. \index{indoor surfaces}
 The latter is
 especially compelling when camera images are texture-mapped onto the
 surfaces, creating a realistic 3D model.  Figure
-\ref{indoor_3d_map.ch22} shows some results from indoor mapping using
+\ref{indoor_3d_map.ch31} shows some results from indoor mapping using
 this technique (from \cite{thrun00}).  Smoothing of surface facets can
 be used to recover planar surfaces \cite{liu01}.
 
@@ -2150,7 +2161,7 @@ be used to recover planar surfaces \cite{liu01}.
 \caption{3D indoor map from a swept vertical plane LADAR.
 Registration is from a horizontal LADAR using SLAM algorithms (from
 \cite{thrun00}). 
-\label{indoor_3d_map.ch22}}
+\label{indoor_3d_map.ch31}}
 \end{figure}
 
 
@@ -2185,14 +2196,14 @@ an obstacle if it were high enough.  One proposal is to use multiple
 elevation clusters within each cell; this technique is called a {\em
 multi-level surface map \index{surface map}} (MLS, \cite{triebel06}).
 Each cell in the map stores a set of surfaces represented by a mean
-height and variance.  Figure \ref{elev_map.ch22} shows an MLS with a
+height and variance.  Figure \ref{elev_map.ch31} shows an MLS with a
 cell size of $10 {\rm cm}^2$, with ground plane and obstacles marked.
 
 \begin{figure}[hbt]
 {\epsfxsize = 0.50\textwidth \epsfbox{BOOKFIGS/mls_map.eps}}
 \caption{Elevation map of an urban scene, using 10cm x 10cm cells.
 Obstacles in red, ground plane in green (from \cite{triebel06}).
-\label{elev_map.ch22}}
+\label{elev_map.ch31}}
 \end{figure}
 
 For dynamic objects, realtime stereo at 15 to 30 Hz can capture the
@@ -2205,12 +2216,12 @@ background of the scene.  Let $R,t$ be the motion of the rig between
 two frames, estimated by extracting features and matching them across
 the two temporal frames, using the techniques of Chapter 37.
 The homography $H(R,t)$ of Equation
-\ref{homography.eq.ch22} provides a direct projection of the disparity
+\ref{homography.eq.ch31} provides a direct projection of the disparity
 vectors $p_0 = [x_0,y_0,d_0,1]$ of the first frame to their
 correspondences $H(R,t)p_0$ under $R,t$ in the second frame.  Using
 the homography allows the points in the reference frame to be directly
 projected onto the next frame, without translating to 3D points.
-Figure \ref{ind_motion.ch22} shows the projected pixels under rigid
+Figure \ref{ind_motion.ch31} shows the projected pixels under rigid
 motion from a reference scene.  The difference between the projected
 and actual pixels gives the independently moving objects (from
 \cite{agrawal05}).
@@ -2220,11 +2231,11 @@ and actual pixels gives the independently moving objects (from
 \caption{Independent motion detection from a moving platform.
 Reference image on left is forward-projected using the motion homography to
 the center image; right image is difference with actual image.
-\label{ind_motion.ch22}}
+\label{ind_motion.ch31}}
 \end{figure*}
 
 
-\subsection{Rough Terrain} \label{ch22.roughterrain}
+\subsection{Rough Terrain} \label{ch31.roughterrain}
 
 Rough outdoor terrain presents to challenges:
 \begin{itemize}
@@ -2234,7 +2245,7 @@ driveability and obstacles.
 obstacle in range images.
 \end{itemize}
 
-Figure \ref{rough_terrain.ch22} shows a typical outdoor scene, with a
+Figure \ref{rough_terrain.ch31} shows a typical outdoor scene, with a
 small (1 meter) robot driving through vegetation and rough ground
 \cite{konolige06}.  Range data from stereo vision on the robot will
 see the top of the vegetation and some ground points below.  The
@@ -2244,7 +2255,7 @@ penetrability related to vegetation.  In \cite{ollis06}, for
 example, the set of proposed features includes:
 \begin{itemize}
 \item Major plane slope using a robust fit (Section
-\ref{3d_feature_extraction.ch22}). 
+\ref{3d_feature_extraction.ch31}). 
 \item Height difference of max and min heights.
 \item Points above the major plane.
 \item Density: ratio of points in the cell to rays that pass through
@@ -2260,7 +2271,7 @@ several other projects on off-road driving
 \begin{figure}[hbt]
 {\epsfxsize = 0.40\textwidth \epsfbox{BOOKFIGS/rough_terrain.eps}}
 \caption{Rough terrain, no ground plane, driveable vegatation.
-\label{rough_terrain.ch22}}
+\label{rough_terrain.ch31}}
 \end{figure}
 
 Elevation map cells can be characterized as obstacles or driveable
@@ -2270,7 +2281,7 @@ models with expectation-maximization learning \cite{vandapel06}.
 The latter work also includes a lower level of interpretation,
 classifying surfaces into planar patches (ground plane, solid
 obstacles), linear features (telephone wires), and scattered features
-(vegetation).  Figure \ref{point_classified.ch22} shows some results
+(vegetation).  Figure \ref{point_classified.ch31} shows some results
 from a laser-scanned outdoor scene.  Linear features such as telephone
 wires and the telephone pole are accurately determined, as well as
 vegetation with high penetrability.
@@ -2280,7 +2291,7 @@ vegetation with high penetrability.
 \caption{Classification using point statistics, from
 \cite{vandapel06}.  Red is planar surface, blue is thin linear
 surface, green is scattered penetrable surface.
-\label{point_classified.ch22}}
+\label{point_classified.ch31}}
 \end{figure}
 
 Some additional problems occur in \index{rough-terrain navigation} rough-terrain navigation.  For
