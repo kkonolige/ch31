@@ -1728,10 +1728,10 @@ sensing errors and to the inaccuracies in the matching procedures
 itself. To avoid these problems, global matching algorithms are
 needed, taking global correspondences between range sensor data into
 account. Simultaneous localization and mapping (SLAM) algorithms as
-discussed in chapter FIXME solve a very similar problem. In addition
-to registering multiple views, they estimate a map.  Multiple-View
-Registration also relates to Bundle adjustment in the photogrammetry
-community and structure from motion (SFM).
+discussed in chapter \ref{FIXME} solve a very similar problem. In
+addition to registering multiple views, they estimate a map.
+Multiple-View Registration also relates to Bundle adjustment in the
+photogrammetry community and structure from motion (SFM).
 
 If $n$-views have to be registered, any sequential application of ICP
 will accumulate errors, and therefore the ICP algorithm
@@ -1808,73 +1808,36 @@ scans has been extended to to 6DoF in~\cite{RAS2007}.
 
 \subsection{Model Matching}
 
-FIXME
-
 Model matching is the process of matching some stored representation
-to some observed data. In the case discussed here, we assume that
-both are 3D representations.
-Furthermore, we assume that the representations being matched are both of
-the same type, {\it e.g.} 3D model and scene lines).
-(While different types of data can also be matched, we ignore these
-more specialized algorithms here.)
+to some observed data. In the case discussed here, we assume that both
+are 3D representations.  Furthermore, we assume that the
+representations being matched are both of the same type, {\it e.g.} 3D
+model and scene lines. (While different types of data can also be
+matched, we ignore these more specialized algorithms here.)
 
-A special case of matching is when the two structures being matched are
-both scene or model surfaces.
-This commonly occurs when attempting to produce a larger 
-representation of the scene by fusing multiple partial views of the scene.
-These partial views can be acquired as a mobile vehicle navigates
-around the scene, observing it from different places.
-The SLAM algorithm \cite{thrun} (discussed in Chapter 37) is a 
-mobile robotics algorithm for Simultaneous Localization And Mapping,
-which incrementally fuses newly observed scene structure to its
-growing scene map model, while also matching portions of that newly observed
-data to previously observed data to estimate its current location.
-One SLAM project \cite{little} used SIFT feature points for 3D modelling and map construction.
-
-The algorithm used for matching depends on the complexity
-the structures being matched.
-If the structures being matched are extended geometric entities such as
+A special case of matching is when the two structures being matched
+are both scene or model surfaces. The algorithm used for matching
+depends on the complexity the structures being matched.  If the
+structures being matched are extended geometric entities such as
 planes or 3D lines, then a discrete matching algorithm like the
-Interpretation Tree algorithm \cite{grimson} can be used.
-Alternatively, if the structures are low-level, such as 3D points 
-or triangles, then a point set alignment algorithm like the 
-\index{Iterated Closest Point (ICP)} Iterated Closest Point (ICP) algorithm \cite{besl2} can be used.
-Both of these are described in more detail below.
-
-After structures have been matched, then most common next step is
-to estimate the transformation (rotation plus translation) linking the
-two datasets. This process is described in the next section.
-%The transformation can be encoded as a homogeneous matrix {\bf \it T}.
-With the transformation, we can then transform the data into the
-same coordinate system and fuse (combine) the datasets.
-If the structures being fused are points, then the result is a
-larger point set formed from the combination of the two (or more) 
-original datasets.
-Sets of planes and lines can also be simply added together, subject to
-representing the matched members of the two datasets only once.
-Triangulated surfaces require a more complex merging, in that we require
-a topologically correct triangulated mesh to be the result.
-The zippering algorithm \cite{turk} is a well-known triangulated 
-mesh merging algorithm.
-
-The Interpretation Tree algorithm \cite{grimson} is suitable for matching
-small numbers ({\it e.g.} less than about 20-30) discrete objects, such
-as vertical edges seen in 2D or 3D. If there are $M$ model and $D$ data 
-objects, then potentially there are $M^D$ different matches. 
-The key to efficient matching is to identify pairwise constraints that
-eliminate unsuitable matches.
-Constraints between pairs of model features and pairs of data
-features also greatly reduce the matching space. If the constraints
-eliminate enough features, a polynomial time algorithm results.
-The core of the algorithm is defined as follows.
-Let $\{m_i\}$ and $\{d_j\}$ be the sets po model and data features to
-be matched, $u(m_i,d_j)$ is true if $m_i$ and $d_j$ are compatible
-features, $b(m_i,m_j,d_k,d_l)$ is true if the four model and data features
-are compatible and $T$ is the minimum number of matched features before
-a successful match is declared.
-\verb+Pairs+ is the set of successfully matched features.
-The function \verb+truesizeof+ counts the number of actual matches in the
-set, disregarding matches with the wildcard * which matches anything.
+Interpretation Tree algorithm \cite{grimson} can be used. It is
+suitable for matching small numbers ({\it e.g.} less than about 20-30)
+discrete objects, such as vertical edges seen in 2D or 3D. If there
+are $M$ model and $D$ data objects, then potentially there are $M^D$
+different matches. The key to efficient matching is to identify
+pairwise constraints that eliminate unsuitable matches. Constraints
+between pairs of model features and pairs of data features also
+greatly reduce the matching space. If the constraints eliminate enough
+features, a polynomial time algorithm results.  The core of the
+algorithm is defined as follows.  Let $\{m_i\}$ and $\{d_j\}$ be the
+sets po model and data features to be matched, $u(m_i,d_j)$ is true if
+$m_i$ and $d_j$ are compatible features, $b(m_i,m_j,d_k,d_l)$ is true
+if the four model and data features are compatible and $T$ is the
+minimum number of matched features before a successful match is
+declared.  \verb+Pairs+ is the set of successfully matched features.
+The function \verb+truesizeof+ counts the number of actual matches in
+the set, disregarding matches with the wildcard * which matches
+anything.
 %!!! get algorithm on 1 page !!!
 \begin{verbatim}
 pairs=it(0,{})
@@ -1900,164 +1863,84 @@ function pairs=it(level,inpairs)
   it(level+1,union(inpairs,(m_level,*)))
 \end{verbatim}
 
-When the data being matched are sets of points or triangles,
-then the ICP algorithm \cite{besl2} is more commonly used.
-This algorithm estimates the pose transformation that aligns the
-two sets to a minimum distance.
-With this transformation, then the two sets can be represented in the
-same coordinate system and treated as a larger single set (perhaps
-with some merging of overlapping data).
-
-Here we give the algorithm for point matching, but this can be
-easily adapted for other sets of features.
-This algorithm is iterative, so may not always converge quickly, but
-often several iterations is sufficient.
-However, ICP can produce a bad alignment of the data sets.
-Best results arise with a good initial alignment, such as from
-odometry or previous positions.
-The ICP algorithm can be extended to include other properties when
-matching, such as color or local neighborhood structure.
-A good spatial indexing algorithm ({\it e.g.} k-d trees) 
-is necessary for efficient matching
-in the closest point function (CP) below.
-
-Let ${\cal S}$ be a set of $N_s$ points $\{ {\bf \it s}_1, \dots, {\bf \it s}_{N_s} \}$
-and ${\cal M}$ be the model.
-Let $ \mid\mid {\bf \it s} - {\bf \it m} \mid\mid $ be the Euclidean distance
-between point ${\bf \it s} \in {\cal S}$ and 
-${\bf \it m} \in {\cal M}$.
-Let CP(${\bf \it s},{\cal M}$) be the closest point (Euclidean distance)
-in ${\cal M}$ to the scene point ${\bf \it s}$.
-\begin{enumerate}
-\item Let ${\bf \it T}^{[0]}$ be an initial estimate of the rigid transformation aligning the two sets.
-\item Repeat for $k = 1 .. k_{\rm max}$ or until convergence:
-\begin{enumerate}
-
-\item Compute the set of correspondences 
-${\cal C} = \bigcup_{i=1}^{N_s} \{ ( {\bf \it s}_i,
-CP({\bf \it T}^{[k-1]}({\bf \it s}_i),{\cal M})) \}$.
-
-\item Compute the new Euclidean transformation ${\bf \it T}^{[k]}$ that minimizes
-the mean square error between point pairs in ${\cal C}$.
-
-\end{enumerate}
-\end{enumerate}
-
-
 \subsection{Relative Pose Estimation\label{pose23}} \index{Pose Estimation}
 
 Central to many tasks is the estimation of the coordinate system
-relative position or pose transformation between two coordinate systems.
-For example, this might be the pose of a scanner mounted on
-a mobile vehicle relative to scene landmarks.
-Or, it might be the relative pose of some scene features as observed in
-two views taken from different positions.
+relative position or pose transformation between two coordinate
+systems.  For example, this might be the pose of a scanner mounted on
+a mobile vehicle relative to scene landmarks.  Or, it might be the
+relative pose of some scene features as observed in two views taken
+from different positions.
 
-We present here three algorithms that cover most instances of 
-the pose estimation process,
-which differ slightly based on the type of feature being matched.
+We present here three algorithms that cover most instances of the pose
+estimation process, which differ slightly based on the type of feature
+being matched.
 
 \ \\
 \noindent
 {\bf Point set relative pose estimation}
 
-The first algorithm matches point sets. Assume that $N$ 3D points
-$\{ {\bf \it m}_i\}$ in one structure or coordinate system 
-are matched to points $\{ {\bf \it d}_i\}$ in a different coordinate system.
-The matching might be found as part of the alignment process in the
-ICP algorithm just described or they might be observed triangle vertices
-matched to a previously constructed triangulated scene model, for example.
-The desired pose is the rotation matrix {\bf \it R} and translation vector
-${\bf \it t}$ that minimizes $\sum_i \mid\mid {\bf \it R}{\bf \it m}_i + {\bf \it t} - {\bf \it d}_i \mid\mid^2$.
-Compute the mean vectors ${\bf \it \mu}_m$ and ${\bf \it \mu}_d$ of the two sets.
-Compute the centralized point sets by
-${\bf \it a}_i = {\bf \it m}_i - {\bf \it \mu}_m$ and
-${\bf \it b}_i = {\bf \it d}_i - {\bf \it \mu}_d$.
-Construct the $3 \times N$ matrix {\bf \it A} that consists
-of the vectors $\{ {\bf \it a}_i \}$ stacked up.
-Construct the $3 \times N$ matrices {\bf \it B} in a similar way from the
-vectors $\{ {\bf \it b}_i \}$.
-Compute the singular value decomposition svd(${\bf \it B}{\bf \it A'}$) = 
-${\bf \it U'}{\bf \it D}{\bf \it V'}$ \cite{arun}.
-Compute the rotation matrix\footnote{If the data points are nearly planar
-then this calculation can introduce a mirror image transformation.
-This can be checked with the vector triple product and,
-if mirrored, the diagonal correction matrix C(1,1,-1) can be used in
-{\bf \it R} = ${\bf \it V}{\bf \it C}{\bf \it U'}$.}
-${\bf \it R} = {\bf \it V}{\bf \it U'}$.
-Finally, compute the translation vector ${\bf \it t} = {\bf \it \mu}_d - {\bf \it R}{\bf \it \mu}_m$.
-With these least square estimates of the transformation, a point ${\bf \it m}_i$
-transforms to point ${\bf \it R}{\bf \it m}_i + {\bf \it t}$, which should
-be near to point ${\bf \it d}_i$.
+The ICP algorithm can be used relative pose estimation as well
+(cf.~\ref{sec:icp6D}).
 
 \ \\
 \noindent
 {\bf Straight line relative pose estimation}
 
-If 3D lines are the features that are extracted, then
-the relative pose transformation can be estimated as follows.
-Assume $N$ paired lines. 
-The first set of lines is described by
-direction vectors $\{{\bf \it e}_i\}$ and a point on each line $\{{\bf \it a}_i\}$.
-The second set of lines is described by
-direction vectors $\{{\bf \it f}_i\}$ and a point on each line $\{{\bf \it b}_i\}$.
-In this algorithm, we assume that the direction vectors on the
-matched segments always point the same direction ({\it i.e.} are not inverted).
-This can be achieved by exploiting some scene constraints, or trying all 
-combinations and eliminating inconsistent solutions.
-The points ${\bf \it a}_i$ and ${\bf \it b}_i$ need not correspond to the same point
-after alignment.
-The desired rotation matrix {\bf \it R}
- minimizes $\sum_i \mid\mid {\bf \it R}{\bf \it e}_i - {\bf \it f}_i \mid\mid^2$.
-Construct the $3 \times N$ matrices {\bf \it E} that consists
-of the vectors $\{ {\bf \it e}_i \}$ stacked up.
-Construct the $3 \times N$ matrices {\bf \it F} in a similar way from the
-vectors $\{ {\bf \it f}_i \}$.
-Compute the singular value decomposition svd(${\bf \it F}{\bf \it E'}$) = 
-${\bf \it U'}{\bf \it D}{\bf \it V'}$.
-Compute the rotation matrix\footnotemark[1] {\bf \it R} = ${\bf \it V}{\bf \it U'}$.
-The translation estimate ${\bf \it t}$
-minimizes the sum of the square of the distances $\lambda_i$
-between the rotated points ${\bf \it a}_i$ and corresponding line $({\bf \it f}_i,{\bf \it b}_i)$.
-Define matrix ${\bf \it L} = \sum_i (I - {\bf \it f}_i{\bf \it f}_i')'(I - {\bf \it f}_i{\bf \it f}_i')$.
-Define the vector ${\bf \it n} = 
-\sum_i (I - {\bf \it f}_i{\bf \it f}_i')'(I - {\bf \it f}_i{\bf \it f}_i') 
-({\bf \it R}{\bf \it a}_i - {\bf \it b}_i)$.
-Then the translation is ${\bf \it t}= - {\bf \it L}^{-1}{\bf \it n}$.
+If 3D lines are the features that are extracted, then the relative
+pose transformation can be estimated as follows.  Assume $N$ paired
+lines.  The first set of lines is described by direction vectors $\{\V
+e_i\}$ and a point on each line $\{\V a_i\}$.  The second set of lines
+is described by direction vectors $\{\V f_i\}$ and a point on each
+line $\{\V b_i\}$.  In this algorithm, we assume that the direction
+vectors on the matched segments always point the same direction ({\it
+  i.e.} are not inverted). This can be achieved by exploiting some
+scene constraints, or trying all combinations and eliminating
+inconsistent solutions. The points $\V a_i$ and $\V b_i$ need not
+correspond to the same point after alignment. The desired rotation
+matrix $\M R$ minimizes $\sum_i \mid\mid \M R \V e_i - \V f_i
+\mid\mid^2$.  Construct the $3 \times N$ matrices $\M E$ that consists
+of the vectors $\{ \V e_i \}$ stacked up. Construct the $3 \times N$
+matrices $\M F$ in a similar way from the vectors $\{ \V f_i \}$.
+Compute the singular value decomposition svd($\M F \M E'$) =
+$\M U' \M D \M V'$. Compute the rotation
+matrix\footnotemark[1] $\M R = \M V \M U'$. The
+translation estimate $\V t$ minimizes the sum of the square of
+the distances $\lambda_i$ between the rotated points $\V a_i$
+and corresponding line $(\V f_i, \V b_i)$.  Define matrix
+$\M L = \sum_i (\M I - \V f_i \V f_i')'(\M I - \V f_i')$.
+Define the vector $\V n = \sum_i (\M I -\V f_i \V f_i')' (\M I -
+\V f_i \V f_i') (\M R \V a_i - \V b_i)$.  Then the translation is
+$\V t = - \V L^{-1}\V n$.
 
 \ \\
 \noindent
 {\bf Plane relative pose estimation}
 
 Finally, if planes are the 3D features extracted for matching, then
-the relative pose transformation can be estimated as follows.
-Assume $N$ paired planes. 
-The first set of planes is described by
-surface normals $\{{\bf \it e}_i\}$ and a point on each plane $\{{\bf \it a}_i\}$.
-The second set of planes is described by
-surface normals $\{{\bf \it f}_i\}$ and a point on each plane $\{{\bf \it b}_i\}$.
-Here we assume that the surface normals always point outward from the surface.
-The points ${\bf \it a}_i$ and ${\bf \it b}_i$ need not correspond to the same point
-after alignment.
-The desired rotation matrix {\bf \it R}
- minimizes $\sum_i \mid\mid {\bf \it R}{\bf \it e}_i - {\bf \it f}_i \mid\mid^2$.
-Construct the $3 \times N$ matrices {\bf \it E} that consists
-of the vectors $\{ {\bf \it e}_i \}$ stacked up.
-Construct the $3 \times N$ matrices {\bf \it F} in a similar way from the
-vectors $\{ {\bf \it f}_i \}$.
-Compute the singular value decomposition svd(${\bf \it F}{\bf \it E'}$) = 
-${\bf \it U'}{\bf \it D}{\bf \it V'}$.\cite{arun}
-Compute the rotation matrix\footnotemark[1] {\bf \it R} = ${\bf \it V}{\bf \it U'}$.
-The translation estimate ${\bf \it t}$
-minimizes the sum of the square of the distances $\lambda_i$
-between the rotated point ${\bf \it a}_i$ and the corresponding plane $({\bf \it f}_i,{\bf \it b}_i)$.
-Define matrix ${\bf \it L} = \sum_i {\bf \it f}_i{\bf \it f}_i'$.
-Define the vector ${\bf \it n}= \sum_i {\bf \it f}_i{\bf \it f}_i' ({\bf \it R}{\bf \it a}_i - {\bf \it b}_i)$.
-Then the translation is ${\bf \it t}= - {\bf \it L}^{-1}{\bf \it n}$.
+the relative pose transformation can be estimated as follows.  Assume
+$N$ paired planes.  The first set of planes is described by surface
+normals $\{ \V e_i \}$ and a point on each plane $\{\V a_i\}$.  The
+second set of planes is described by surface normals $\{ \V f_i\}$ and
+a point on each plane $\{ \V b_i\}$.  Here we assume that the surface
+normals always point outward from the surface. The points $\V a_i$ and
+$\V b_i$ need not correspond to the same point after alignment.  The
+desired rotation matrix $\M R$ minimizes $\sum_i \mid\mid \M R \V e_i
+- \V f_i \mid\mid^2$. Construct the $3 \times N$ matrices $\M E$ that
+consists of the vectors $\{ \V e_i \}$ stacked up.  Construct the $3
+\times N$ matrices $\M F$ in a similar way from the vectors $\{ \V f_i
+\}$. Compute the singular value decomposition svd($ \M F \M E'$) = $\M
+U' \M D \M V'$~\cite{arun}. Compute the rotation
+matrix\footnotemark[1] $\M R$ = $\M V \M U'$.  The translation
+estimate ${\bf \it t}$ minimizes the sum of the square of the
+distances $\lambda_i$ between the rotated point $\V a_i$ and the
+corresponding plane $(\V f_i, \V b_i)$. Define matrix $\M L = \sum_i
+\V f_i \V f_i'$.  Define the vector $\V n= \sum_i \V f_i \V f_i' (\M R
+\V a_i - \V b_i)$. Then the translation is $\V t= - \M L^{-1}\V n$.
 
 In all of the calculations described above, we assumed normally distributed
 errors. For techniques to robustify these sorts of calculations, see
-Zhang \cite{zhang}.
+Zhang~\cite{zhang}.
 
 \subsection{3D Applications \label{3dapp}}
 
