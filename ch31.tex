@@ -154,14 +154,15 @@ image is used at each time instance.  This means that we only observe
 the front sides of objects - the portion of the scene visible from the
 robot.  In other words, we don't have a full 3D observation of all
 sides of a scene.  This is the origin of the term $2\frac{1}{2}{\rm
-  D}$.  Figure \ref{fig23.1}a shows a sample range image and (b) shows
+  D}$.  Figure \ref{fig23.1} shows a sample range image and shows
 a \index{registered reflectance image} registered reflectance image,
 where each pixel records the level of reflected infrared light.
 \begin{figure}
-{\epsfxsize = 0.47\textwidth \epsfbox{BOOKFIGS/inkirksmall.ps}}
-\caption{
-Above: Registered infrared reflectance image.
-Below: Range image where closer is darker.
+  \includegraphics[width=\linewidth]{BOOKFIGS/scan007_EQUIRECTANGULAR}\\[1ex]
+  \includegraphics[width=\linewidth]{BOOKFIGS/scan007_EQUIRECTANGULAR_depth_1}
+  \caption{3D laser scan with a field of view of 360 deg. $\times$ 100 deg.
+    Above: Registered infrared reflectance image.
+    Below: Range image where closer is darker.
 \label{fig23.1}}
 \end{figure}
 
