@@ -148,109 +148,119 @@ use light.
 
 \subsection{Range images and point sets} \label{sec31.1.1}
 
-\index{Range data} Range data is a $2\frac{1}{2}{\rm D}$ or 3D
-representation of the scene around the robot.  The 3D aspect arises
-because we are measuring the $(X,Y,Z)$ coordinates of one or more
-points in the scene.  Often only a single \index{range image} range
-image is used at each time instance.  This means that we only observe
-the front sides of objects - the portion of the scene visible from the
-robot.  In other words, we don't have a full 3D observation of all
-sides of a scene.  This is the origin of the term $2\frac{1}{2}{\rm
-  D}$.  Figure \ref{fig23.1} shows a sample range image and shows
-a \index{registered reflectance image} registered reflectance image,
-where each pixel records the level of reflected infrared light.
+\index{Range data} Range data is a $2\frac{1}{2}$ or 3D representation
+of the scene around the robot. The 3D aspect arises because we are
+measuring the $(X,Y,Z)$ coordinates of one or more points in the
+scene.  Often only a single \index{range image} range image is used at
+each time instance.  This means that we only observe the front sides
+of objects - the portion of the scene visible from the robot.  In
+other words, we don't have a full 3D observation of all sides of a
+scene.  This is the origin of the term
+$2\frac{1}{2}D$. Figure~\ref{fig23.1} shows a sample range image and
+shows a \index{registered reflectance image} registered reflectance
+image, where each pixel records the level of reflected infrared light.
 \begin{figure}
   \includegraphics[width=\linewidth]{BOOKFIGS/scan007_EQUIRECTANGULAR}\\[1ex]
   \includegraphics[width=\linewidth]{BOOKFIGS/scan007_EQUIRECTANGULAR_depth_1}
-  \caption{3D laser scan with a field of view of 360 deg. $\times$ 100 deg.
-    Above: Registered infrared reflectance image.
-    Below: Range image where closer is darker.
+  \caption{3D laser scan with a field of view of 360 deg. $\times$ 100
+    deg. acquired in an urban environment (Bremen downtown).  Above:
+    Registered infrared reflectance image.  Below: Range image where
+    closer is darker.
 \label{fig23.1}}
 \end{figure}
 
-There are two standard formats for representing range data.
-The first is an image $d(i,j)$, which records the distance $d$ to the
+There are two standard formats for representing range data.  The first
+is an image $d(i,j)$, which records the distance $d$ to the
 corresponding scene point $(X,Y,Z)$ for each image pixel $(i,j)$.
 There are several common mappings from $(i,j,d(i,j))$ to $(X,Y,Z)$,
-usually arising from the geometry of the range sensor.
-The most common image mappings are illustrated in Figures \ref{rngmapa} and
-\ref{rngmapb}.
-In the formulas given here,
-$\alpha$ and $\beta$ are calibrated values specific to the sensor.
-\begin{figure}[htb]
-{\epsfxsize = 0.47\textwidth \epsfbox{BOOKFIGS/ortho.eps}}
-a) Orthographic\\
-\ \\
-{\epsfxsize = 0.47\textwidth \epsfbox{BOOKFIGS/persp.eps}}\\
-b) Perspective
-\caption{Different range image mappings: a) orthographic, b) perspective.
-\label{rngmapa}}
+usually arising from the geometry of the range sensor or from the
+application needs. The most common image mappings are illustrated in
+Figure~\ref{llmap}. Range scanners with rotating mirrors sample in
+sperical coordinates, i.e., $(\theta,\phi,d)$. Figure~\ref{sphere}
+shows a sphere as longitude and latitude mesh and superimposed with
+the reflectance values of Figure~\ref{fig23.1}. The most natural
+range image representation is to put $(\theta,\phi)$ on the
+$(i,j)$-axis of the range image, i.e.,
+\begin{align*}
+ i & = \theta \\
+ j & = \phi
+\end{align*}  
+where the longitude $\theta$ and the latitude $\phi$ are the spherical
+coordinates. This is a projection of the samples sphere to a 2D
+image, which includes a distortion.
+%
+\begin{figure}
+  \includegraphics[width=0.485\linewidth]{BOOKFIGS/partial-sphere}
+  \includegraphics[width=0.485\linewidth]{BOOKFIGS/scan007_sphere}
+  \caption{Left: Mesh showing the rasterization of a 3D range scanner
+    using rotating mirrors and axis. Right: Sphere with superimposed
+    reflectance values.}
+\label{sphere}
+\end{figure}
+%
+\begin{figure}
+  \includegraphics[width=\linewidth]{BOOKFIGS/EQprojection-mesh}\\[1ex]
+  \includegraphics[width=\linewidth]{BOOKFIGS/REprojection-mesh}
+  \caption{Above: Equirectangular projection of a spherical range
+    scan.  Latidute and longitude mesh is shown. Below: Rectilinear
+    projection with three images compined to unwrap a scanning
+    sphere.}
+\label{llmap}
+\end{figure}
+The conversion between $(i,j,d) = (\theta, \phi, d)$ to $(x,y,z)$
+proceedins as follows:
+\begin{align*}
+  d    &= \sqrt{x^2+y^2+z^2} \\
+\theta &= \arccos \left(\frac{z}{r}\right) \\
+\phi   &= \text{atan2} \left(y, x \right). 
+\end{align*}
+Conversely, the Cartesian coordinates may be retrieved from the
+spherical coordinates by
+\begin{align*}
+    x &= d \, \sin \theta \, \cos \phi \\
+    y &= d \, \sin \theta \, \sin \phi \\
+    z &= d \, \cos \theta \\
+\end{align*}
+%
+The further common projection is the perspective one, usually called
+rectilinear projection. It is also called ``gnomonic'' or
+``tangent-plane'' projection. The include range images produced by
+kinect-like devices. Here the range values are assumes to be projected
+in a pinhole camera like fashion. The primary advantage of the
+rectilinear projection is that it maps straight lines in 3D space to
+straight lines in the 2D image. Its disadvantage is the smaller field
+of view. The projection is stretched towards the corners and the
+distortion grow with larger fields of view. Furthermore, large field
+of views are often not realizable by the hardware. The projection
+proceeds as
+\begin{align*}
+i &= \frac{\cos \varphi \sin \left( \theta - \theta_0 \right)}{\sin \varphi_1 \sin \varphi + \cos \varphi_1 
+\cos \varphi \cos \left(\theta - \theta_0  \right)}
+\\
+j &= \frac{\cos \varphi_1 \sin \varphi - \sin \varphi_1 \cos \varphi  \cos \left(\theta - \theta_0 \right)}
+{\sin \varphi_1 \sin \varphi + \cos \varphi_1\cos \varphi \cos \left(\theta - \theta_0  \right)}
+\end{align*}
+where $\theta_0$ and $\varphi_1$ are the central longitude and central
+latitude.
+%
+\begin{figure}
+  \includegraphics[width=\linewidth]{BOOKFIGS/scan007_RECTILINEAR_depth_1}
+  \caption{3D range scan as three rectilinear projections (cf. Fig.~\ref{fig23.1}).}
+\label{rectilinear}
 \end{figure}
 
-\begin{figure}[htb]
-{\epsfxsize = 0.44\textwidth \epsfbox{BOOKFIGS/cylp.eps}}
-c) Cylindrical\\
-\ \\
-{\epsfxsize = 0.44\textwidth \epsfbox{BOOKFIGS/spher2.eps}}\\
-d) Spherical
-\caption{Different range image mappings: c) cylindrical and d) spherical.
-\label{rngmapb}}
-\end{figure}
-\begin{enumerate}
+Further common projections are the isogonic Mercator projection, the
+cylindrical projection, Pannini projection, and the stereographic. All
+these projections are used to unwrap the scanning sphere to a 2D array
+representation. In some applications orthographic projections are
+processed from 3D point cloud data. Some range sensors only record
+distances in a slice, so the scene $(x,z)$ is represented by the
+linear image $d(i)$ for each pixel $i$.
 
-\item {\bf Orthographic}: 
-Here $(X,Y,Z) = (\alpha i, \beta j, d(i,j))$.
-These images often arise from range sensors that
-  scan by translating in the $x$ and $y$ directions.
-(See Figure \ref{rngmapa}a.)
-
-\item {\bf Perspective}:
-Here $d(i,j)$ is the distance along the line of sight of the ray through 
-pixel $(i,j)$ to point $(x,y,z)$. Treating the range sensor focus
-as the origin $(0,0,0)$ and assuming that its optical axis is the
-$Z$ axis and $(X,Y)$ axes are parallel to the image $(i,j)$ axes, then 
-$(X,Y,Z) = \frac{d(i,j)}{\sqrt{\alpha^2 i^2 + \beta^2 j^2 + f^2}}
-(\alpha i, \beta j, f)$, where $f$ is the `focal length' of the system.
-These images often arise from sensor equipment that incorporates a normal
-intensity camera.
-(See Figure \ref{rngmapa}b.)
-
-\item {\bf Cylindrical}:
-Here, $d(i,j)$ is the distance along the line of sight of the ray through 
-pixel $(i,j)$ to point $(X,Y,Z)$. In this case, the sensor usually rotates
-to scan in the $x$ direction, and translates to scan in the $y$ direction.
-Thus, \\
-$(X,Y,Z) = (d(i,j) \sin(\alpha i), \beta j, d(i,j) \cos(\alpha i))$ 
-is the usual conversion.
-(See Figure \ref{rngmapb}c.)
-
-\item {\bf Spherical}:
-Here, $d(i,j)$ is the distance along the line of sight of the ray through 
-pixel $(i,j)$ to point $(X,Y,Z)$. In this case, the sensor usually rotates
-to scan in the $x$ direction, and, once each $x$ scan, also rotates
-in the $y$ direction. Thus $(i,j)$ are the azimuth and elevation of the
-line of sight.
-Here \\
-$(X,Y,Z) =\\ d(i,j) (
-\cos(\beta j) \sin(\alpha i),
-\sin(\beta j),
-\cos(\beta j) \cos(\alpha i))$.
-(See Figure \ref{rngmapb}d.)
-
-
-\end{enumerate}
-
-Some sensors only record distances in a plane, so the scene $(x,z)$ is
-represented by the linear image $d(i)$ for each pixel $i$.
-The orthographic, perspective and cylindrical projection options
-listed above still apply in simplified form.
-
-The second format is as a list $\{(X_i,Y_i,Z_i)\}$ of 3D data points,
+The second format is as a list $\{(x_i,y_i,z_i)\}$ of 3D data points,
 but this format can be used with all of the mappings listed above.
-Given the conversions from image data $d(i,j)$ to $(X,Y,Z)$ 
-the range data is only supplied as a list.
-Details of the precise mapping and data format are supplied with
-commercial range sensors.
+Given the conversions from image data $d(i,j)$ to $(x,y,z)$ the range
+data is only supplied as a list, that is usually called point cloud.
 
 \section{Sensor Technologies}
 
@@ -1132,7 +1142,8 @@ automatic scanning.
 \begin{figure}[htb]
 {\epsfxsize = 0.47\textwidth \epsfbox{BOOKFIGS/lineing.eps}}
 \caption{Plot of ideal 1D range image of sample distance versus angle of measurement.
-\label{lineing}}
+%\label{lineing}
+}
 \end{figure}
 
 Typical ground-based time of flight sensors suitable for robotics
@@ -1303,12 +1314,12 @@ translation) which minimizes the cost function. Feature based
 registration extracts distinguishing features of the range images and
 uses corresponding features for calculating the alignment.
 
-\subsection{The ICP Algorithm}
+\subsection{The ICP Algorithm}\label{sec:icp6D}
 
 The following method is used for registration of point sets. The
 complete algorithm was invented at the same time in 1991 by Besl and
-McKay~\cite{Besl_1992}, by Chen and Medioni~\cite{Chen_1991} and by
-Zhang~\cite{Zhang_1992}. The method is called Iterative Closest Points
+McKay~\cite{besl2}, by Chen and Medioni~\cite{chen2} and by
+Zhang~\cite{zhang2}. The method is called Iterative Closest Points
 (ICP) algorithm. It is the de-facto standard for registration of point
 sets, but is also applicable to 3D shapes, if one samples them.
 
