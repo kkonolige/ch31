@@ -89,16 +89,16 @@ Chapter 31 - Range Sensors}\\
 ~\\
 ~}
 
-\author{Andreas Nuechter\\
-School of Engineering and Science \\
-Jacobs University Bremen gGmbH \\
-a.nuechter@jacobs-university.de \\
-\and
+\author{ % alphabetical order please
 Kurt Konolige\\
 Artificial Intelligence Center\\
 SRI International\\
 konolige@ai.sri.com\\
-\\
+\and\\
+Andreas N{\"u}chter\\
+School of Engineering and Science \\
+Jacobs University Bremen gGmbH \\
+a.nuechter@jacobs-university.de \\
 \\
 \\
 \\
@@ -171,7 +171,7 @@ image, where each pixel records the level of reflected infrared light.
 
 There are two standard formats for representing range data.  The first
 is an image $d(i,j)$, which records the distance $d$ to the
-corresponding scene point $(X,Y,Z)$ for each image pixel $(i,j)$.
+corresponding scene point $(x,y,z)$ for each image pixel $(i,j)$.
 There are several common mappings from $(i,j,d(i,j))$ to $(X,Y,Z)$,
 usually arising from the geometry of the range sensor or from the
 application needs. The most common image mappings are illustrated in
@@ -241,21 +241,24 @@ j &= \frac{\cos \varphi_1 \sin \varphi - \sin \varphi_1 \cos \varphi  \cos \left
 {\sin \varphi_1 \sin \varphi + \cos \varphi_1\cos \varphi \cos \left(\theta - \theta_0  \right)}
 \end{align*}
 where $\theta_0$ and $\varphi_1$ are the central longitude and central
-latitude.
+latitude. Figure~\ref{rectilinear} shows a 360 deg. scan composed of
+three rectilinear range images.
 %
 \begin{figure}
   \includegraphics[width=\linewidth]{BOOKFIGS/scan007_RECTILINEAR_depth_1}
-  \caption{3D range scan as three rectilinear projections (cf. Fig.~\ref{fig23.1}).}
+  \caption{3D range scan represented with three rectilinear
+    projections (cf. Figure~\ref{fig23.1}).}
 \label{rectilinear}
 \end{figure}
 
 Further common projections are the isogonic Mercator projection, the
-cylindrical projection, Pannini projection, and the stereographic. All
-these projections are used to unwrap the scanning sphere to a 2D array
-representation. In some applications orthographic projections are
-processed from 3D point cloud data. Some range sensors only record
-distances in a slice, so the scene $(x,z)$ is represented by the
-linear image $d(i)$ for each pixel $i$.
+cylindrical projection, Pannini projection, and the
+stereographic~\cite{Houshiar2013}. All these projections are used to
+unwrap the scanning sphere to a 2D array representation. In some
+applications orthographic projections are processed from 3D point
+cloud data. Some range sensors only record distances in a slice, so
+the scene $(x,z)$ is represented by the linear image $d(i)$ for each
+pixel $i$.
 
 The second format is as a list $\{(x_i,y_i,z_i)\}$ of 3D data points,
 but this format can be used with all of the mappings listed above.
@@ -1666,8 +1669,8 @@ models.
   In addition to 3D structural features, 3D features derived from
   texture, e.g., co-registered color images or scan reflectivities,
   are widely used for registration~\cite{Boehm_2007,rgbdslam}.
-  Fig.~\ref{fig:scansift} shows SIFT features extracted from a 3D
-  scanner with calibrated reflectivity values.
+  Fig.~\ref{fig:scansift} shows SIFT features~{lowe} extracted from a
+  3D scanner with calibrated reflectivity values.
   \begin{figure}
     \centering
     \includegraphics[width=0.8\linewidth]{BOOKFIGS/scansift}
@@ -2505,10 +2508,10 @@ K. S. Arun, T. S. Huang, S. D. Blostein,
 ``Least-Squares Fitting of Two 3-D Point Sets'', 
 IEEE Trans. Pat. Anal. and Mach. Intel, 9(5), pp 698-700, 1987.
 
-\bibitem{ayache}
-N. Ayache,
-{\underline {Artificial Vision for Mobile Robots:}}\\{\underline {Stereo Vision and Multi sensory Perception}},
-MIT Press, Cambridge, 1991.
+%\bibitem{ayache}
+%N. Ayache,
+%{\underline {Artificial Vision for Mobile Robots:}}\\{\underline {Stereo Vision% and Multi sensory Perception}},
+%MIT Press, Cambridge, 1991.
 
 \bibitem{Badino_2011}
 H. Badino, D. Huber, Y. Park, T. Kanade,
@@ -2546,10 +2549,10 @@ J.~L. Bentley.
 ``Multidimensional binary search trees used for associative searching''.
 Communications of the ACM, 18(9):509-517, 1975.
 
-\bibitem{besl}
-P. J. Besl,
-{\underline{Analysis and Interpretation of Range}}\\{\underline {Images}},
-Springer, Berlin-Heidelberg-New York, 1990.
+%\bibitem{besl}
+%P. J. Besl,
+%{\underline{Analysis and Interpretation of Range}}\\{\underline {Images}},
+%Springer, Berlin-Heidelberg-New York, 1990.
 
 \bibitem{besl2}
 P. J. Besl, N. D. McKay,
@@ -2587,20 +2590,20 @@ Y. Chen, G. Medioni,
 ``Object modeling by registration of multiple range images'',
 Image and Vision Comp., 10(3), pp. 145-155, 1992.
 
-\bibitem{collins96}
-R. T. Collins,
-``A space-sweep approach to true multi-image matching'', 
-Proc. Int. Conf. on Computer Vision and Pattern Recog, pp. 358-363, San Francisco, 1996.
+%\bibitem{collins96}
+%R. T. Collins,
+%``A space-sweep approach to true multi-image matching'', 
+%Proc. Int. Conf. on Computer Vision and Pattern Recog, pp. 358-363, San Francisco, 1996.
 
-\bibitem{criminisi}
-A.  Criminisi, J. Shotton, A. Blake, C. Rother and P. H. S. Torr,
-``Efficient Dense Stereo with Occlusions for New View Synthesis by Four State Dynamic Programming'', 
-Int. J. of Computer Vision, 71(1), pp 89 - 110, 2007.
+%\bibitem{criminisi}
+%A.  Criminisi, J. Shotton, A. Blake, C. Rother and P. H. S. Torr,
+%``Efficient Dense Stereo with Occlusions for New View Synthesis by Four State Dynamic Programming'', 
+%Int. J. of Computer Vision, 71(1), pp 89 - 110, 2007.
 
-\bibitem{Curless}
-B. Curless, M. Levoy,
-``A Volumetric Method for Building Complex Models from Range Images'',
-Proc.  of Int. Conf. on Comp. Graph. and Inter. Tech. (SIGGRAPH), pp 303 - 312, New Orleans, 1996.
+%\bibitem{Curless}
+%B. Curless, M. Levoy,
+%``A Volumetric Method for Building Complex Models from Range Images'',
+%Proc.  of Int. Conf. on Comp. Graph. and Inter. Tech. (SIGGRAPH), pp 303 - 312, New Orleans, 1996.
 
 \bibitem{GrandChallenge}
 The DARPA Grand Challenge.
@@ -2640,10 +2643,10 @@ R. B. Fisher, D. K. Naidu,
 in Sanz (ed.) {\underline {Image Technology}},
 Springer-Verlag, Heidelberg, 1996.
 
-\bibitem{awf}
-A. W. Fitzgibbon,
-``Simultaneous Linear Estimation of Multiple View Geometry and Lens Distortion'',
-Proc. Int. Conf. on Computer Vision and Pattern Recog, Vol I, pp 125-132, Kauai, Hawaii, 2001.
+%\bibitem{awf}
+%A. W. Fitzgibbon,
+%``Simultaneous Linear Estimation of Multiple View Geometry and Lens Distortion'',
+%Proc. Int. Conf. on Computer Vision and Pattern Recog, Vol I, pp 125-132, Kauai, Hawaii, 2001.
 
 \bibitem{focusrobotics}
 Focus Robotics Inc.,
@@ -2680,16 +2683,16 @@ E. Grimson,
 {\underline {Object Recognition by Computer:}}\\{\underline {The role of geometric constraints}},
 MIT Press, London, 1990.
 
-\bibitem{haehnel02}
-D. Haehnel, W. Burgard,
-``Probabilistic Matching for 3D Scan Registration'',
-Proc. of the VDI-Conference Robotik 2002 (Robotik), Ludwigsburg, 2002.
+%\bibitem{haehnel02}
+%D. Haehnel, W. Burgard,
+%``Probabilistic Matching for 3D Scan Registration'',
+%Proc. of the VDI-Conference Robotik 2002 (Robotik), Ludwigsburg, 2002.
 
-\bibitem{haehnel02b}
-D. Haehnel, D. Schulz, W. Burgard,
-``Mapping with mobile robots in populated environments'',
-in Proc. of the IEEE/RSJ Int. Conf. on Intelligent
-Robots and Systems (IROS), Vol 1, pp 496- 501, Lausanne, 2002.
+%\bibitem{haehnel02b}
+%D. Haehnel, D. Schulz, W. Burgard,
+%``Mapping with mobile robots in populated environments'',
+%in Proc. of the IEEE/RSJ Int. Conf. on Intelligent
+%Robots and Systems (IROS), Vol 1, pp 496- 501, Lausanne, 2002.
 
 \bibitem{ollis06}
 M. Happold, M. Ollis, N. Johnson,
@@ -2706,10 +2709,10 @@ A. Hertzmann, S. M. Seitz,
 ``Example-Based Photometric Stereo: Shape Reconstruction with General, Varying BRDFs'',
 IEEE Trans. Pat. Anal. and Mach. Intel., 27(8), pp. 1254-1264, August 2005.
 
-\bibitem{hilton2}
-A. Hilton, A. Stoddart, J. Illingworth, T. Windeatt.
-``Implicit surface-based geometric fusion'',
-Comp. Vis. and Image Under., 69(3), pp 273-291, March 1998.
+%\bibitem{hilton2}
+%A. Hilton, A. Stoddart, J. Illingworth, T. Windeatt.
+%``Implicit surface-based geometric fusion'',
+%Comp. Vis. and Image Under., 69(3), pp 273-291, March 1998.
 
 \bibitem{hoover}
 A. Hoover, G. Jean-Baptiste, X. Jiang, P. J. Flynn,
@@ -2723,10 +2726,10 @@ H. Hoppe, T. DeRose, T. Duchamp, J. McDonald, W. Stuetzle,
 ``Surface reconstruction from unorganized points'',
 Comp. Graphics, 26(2), pp 71-78, 1992.
 
-\bibitem{hoppe2}
-H. Hoppe,	
-``New quadric metric for simplifying meshes with appearance attributes'',
-IEEE Visualization 1999 Conference, pp 59-66, San Francisco, October, 1999.
+%\bibitem{hoppe2}
+%H. Hoppe,	
+%``New quadric metric for simplifying meshes with appearance attributes'',
+%IEEE Visualization 1999 Conference, pp 59-66, San Francisco, October, 1999.
 
 \bibitem{Horn_1987}
 B.~K.~P. Horn,
@@ -2735,18 +2738,24 @@ J. OSA A, 4(4):629-642, 1987.
 
 \bibitem{Horn_1988}
 B.~K.~P. Horn, H.~M. Hilden, and Sh. Negahdaripour.
-``Closed--form solution of absolute orientation using orthonormal matrices''.
+``Closed--form solution of absolute orientation using orthonormal matrices'',
 J. OSA A, 5(7):1127-1135, 1988.
 
 \bibitem{Hornung_2013}
 A. Hornung, K.M. Wurm, M. Bennewitz, C. Stachniss, and W. Burgard,
-``OctoMap: An Efficient Probabilistic 3D Mapping Framework Based on Octrees''
+``OctoMap: An Efficient Probabilistic 3D Mapping Framework Based on Octrees'',
 Autonomous Robots, 2013.
 
 \bibitem{Hough:1962}
 P.~V.~C. Hough,
 ``Method and Means for Recognizing Complex Patterns'',
 US Patent 3069654, 1962.
+
+\bibitem{Houshiar2013}
+H. Houshiar, J. Elseberg, D. Borrmann, and A.N{\"u}chter.
+``A Study of Projections for Key Point Based Registration of Panoramic Terrestrial 3D Laser Scans'',
+Journal of Geo-spatial Information Science, 2013.
+
 
 \bibitem{HuberPhD}
 D. Huber,
@@ -2768,7 +2777,6 @@ ACM Symp. on User Interface Software and Technology, October 2011.
 KARTO: Software for robots on the move.
 \verb+www.kartorobotics.com+, accessed Nov 12, 2007.
 
-
 \bibitem{kelly03}
 A. Kelly, R. Unnikrishnan,
 ``Efficient Construction of Globally Consistent Ladar Maps using Pose Network Topology
@@ -2781,10 +2789,10 @@ T. Pilarski, P. Rander, S. Thayer, N. Vallidis, R. Warner,
 ``Toward Reliable Off Road Autonomous Vehicles Operating in Challenging Environments'',
 Int. J. of Robotics Research, Vol. 25, No. 5-6, 449-483, 2006.
 
-\bibitem{koninckx}
-T. P. Koninckx, L. J. Van Gool,
-``Real-Time Range Acquisition by Adaptive Structured Light'',
-IEEE Trans Pat. Anal. and Mach. Intel. 28(3), pp. 432-445, March 2006. 
+%\bibitem{koninckx}
+%T. P. Koninckx, L. J. Van Gool,
+%``Real-Time Range Acquisition by Adaptive Structured Light'',
+%IEEE Trans Pat. Anal. and Mach. Intel. 28(3), pp. 432-445, March 2006. 
 
 \bibitem{konolige97}
 K. Konolige,
@@ -2792,10 +2800,10 @@ K. Konolige,
 in Proc. Int. Symp. on Robotics Research, pages 111--116,
 Hayama, Japan, 1997.
 
-\bibitem{konolige99}
-K. Konolige, K. Chou,
-``Markov localization using correlation'',
-Proc. Int. Joint Conf. on AI (IJCAI), pp 1154 - 1159, Stockholm, 1999.
+%\bibitem{konolige99}
+%K. Konolige, K. Chou,
+%``Markov localization using correlation'',
+%Proc. Int. Joint Conf. on AI (IJCAI), pp 1154 - 1159, Stockholm, 1999.
 
 \bibitem{konolige04}
 K. Konolige,
@@ -2834,10 +2842,10 @@ M. Levoy, K. Pulli, B. Curless, S. Rusinkiewicz, D. Koller, L. Pereira, M. Ginzt
 Proc. 27th Conf. on Computer graphics and interactive techniques
 (SIGGRAPH), pp 131 - 144, New Orleans, July 2000.
 
-\bibitem{little}
-J. Little, S. Se, D. Lowe,
-``Vision based mobile robot localization and mapping using scale-invariant features",
-Proc. IEEE Inf. Conf. on Robotics and Automation, pp 2051-2058, Seoul, 2001.
+%\bibitem{little}
+%J. Little, S. Se, D. Lowe,
+%``Vision based mobile robot localization and mapping using scale-invariant features",
+%Proc. IEEE Inf. Conf. on Robotics and Automation, pp 2051-2058, Seoul, 2001.
 
 \bibitem{liu01}
 Y. Liu, R. Emery, D. Chakrabarti, W. Burgard, S. Thrun, 
@@ -2918,9 +2926,9 @@ M. Okutomi, T. Kanade,
 ``A multiple-baseline stereo'',
 IEEE Trans Pat. Anal. and Mach. Intel., 15(4), pp. 353-363, 1993.
 
-\bibitem{ollis}
-M. Ollis, T. Williamson,
-``The Future of 3D Video'', Computer, 34(6), pp. 97-99, June 2001.
+%\bibitem{ollis}
+%M. Ollis, T. Williamson,
+%``The Future of 3D Video'', Computer, 34(6), pp. 97-99, June 2001.
 
 \bibitem{cmu-humanoid}
 Perception for Humanoid Robots.
@@ -2966,9 +2974,9 @@ R.~Schnabel, R.~Wahl, and R.~Klein,
 Computer Graphics Forum, 2007.
 
 \bibitem{Schroeder}
-W. J. Schroeder, J. A. Zarge, W. E. Lorensen,
-``Decimation of triangle meshes''
-Proc.  of Int. Conf. on Comp. Graph. and Inter. Tech. (SIGGRAPH), pp 65 - 70, Chicago, 1992.
+%W. J. Schroeder, J. A. Zarge, W. E. Lorensen,
+%``Decimation of triangle meshes''
+%Proc.  of Int. Conf. on Comp. Graph. and Inter. Tech. (SIGGRAPH), pp 65 - 70, Chicago, 1992.
 
 \bibitem{STAIR}
 The Stanford Artificial Intelligence Robot.
@@ -2995,14 +3003,14 @@ S. Thrun, W. Burgard, D. Fox,
 multi-robot and 3D mapping'',  
 Proc. IEEE Inf. Conf. on Robotics and Automation, pp 321-328, San Francisco, 2000.
 
-\bibitem{thrun}
-S. Thrun, 
-``A probabilistic online mapping algorithm for teams of mobile robots'',
-Int. J. of Robotics Research, 20(5), pp 335-363, 2001.
+%\bibitem{thrun}
+%S. Thrun, 
+%``A probabilistic online mapping algorithm for teams of mobile robots'',
+%Int. J. of Robotics Research, 20(5), pp 335-363, 2001.
 
-\bibitem{thrun05}
-S. Thrun, W. Burgard, and D. Fox. 
-{\em Probabilistic Robotics}, MIT Press, Cambridge, MA, 2005.
+%\bibitem{thrun05}
+%S. Thrun, W. Burgard, and D. Fox. 
+%{\em Probabilistic Robotics}, MIT Press, Cambridge, MA, 2005.
 
 \bibitem{thrun06}
 S. Thrun, M. Montemerlo, H. Dahlkamp, et al.,
@@ -3014,10 +3022,10 @@ R. Triebel, P. Pfaff, W. Burgard,
 ``Multi-level surface maps for outdoor terrain mapping and loop closing'',
 Proc. of the IEEE Int. Conf. on Intel. Robots and Systems (IROS), Beijing, 2006.
 
-\bibitem{turk}
-G. Turk, M. Levoy,
-``Zippered Polygon Meshes from Range Images'',
-Proc.  of Int. Conf. on Comp. Graph. and Inter. Tech. (SIGGRAPH), pp 311-318, Orlando, 1994.
+%\bibitem{turk}
+%G. Turk, M. Levoy,
+%``Zippered Polygon Meshes from Range Images'',
+%Proc.  of Int. Conf. on Comp. Graph. and Inter. Tech. (SIGGRAPH), pp 311-318, Orlando, 1994.
 
 \bibitem{tyzx}
 TYZX Inc.,
