@@ -363,11 +363,12 @@ readings for time-series and scanning sensors, although very fast
 projectors and cameras can alleviate this problem for the former.
 
 \subsection{Time of Flight}
+\index{Time of flight range sensors} 
 
 The principle behind time-of-flight sensors is like that of radar:
 measure the time it takes for light to be projected out to an object
 and return.  Because light travels about 0.3 m per nanosecond, very
-precise timers are required for direct TOF measurement; and
+precise timers are required for direct TOF measurement; an
 alternative is indirect methods, typically phase difference with a
 modulated reference beam.
 
@@ -379,16 +380,13 @@ triangulation sensors for close objects, and hence are not used in
 close-range metrology applications, such as small object
 reconstruction or parts quality measurements.
 
-\index{Time of flight range sensors} Time of flight range sensors are exactly that: they compute distance
-by measuring the time that a pulse of light takes to travel from the 
-source to the observed target and then to the detector (usually colocated
-with the source).
-In a sense, they are radar sensors that are based on light.
-The travel time multiplied by the speed of light (in the given medium - space,
-air or water and adjusted for the density and temperature of the medium) gives the
-distance.
-Laser-based time of flight range sensors are also caller LIDAR
-(LIght Detection And Ranging) or LADAR (LAser raDAR) sensors.
+\subsubsection{Direct Time of Flight}
+In direct TOF sensors, the travel time is measured by a high-speed
+chronometer.  The travel time multiplied by the speed of light (in the
+given medium - space, air or water and adjusted for the density and
+temperature of the medium) gives the distance.  Laser-based direct TOF
+range sensors are also caller LIDAR (LIght Detection And Ranging) or
+LADAR (LAser raDAR) sensors.
 
 Limitations on the accuracy of these sensors is based on the minimum 
 observation time (and thus the minimum distance observable),
@@ -417,19 +415,17 @@ On smooth surfaces, such as a ground plane or road, an unwinding algorithm
 can recover the true depth by assuming that the distances should be changing
 smoothly.
 
-Most time of flight sensors transmit only a single beam, thus range measurements
-are only obtained from a single surface point.
-Robotics applications usually need more information, so the range data 
-is usually supplied as a vector of range to surfaces lying in a plane
+Most time of flight sensors transmit only a single beam, thus range
+measurements are only obtained from a single surface point.  Robotics
+applications usually need more information, so the range data is
+usually supplied as a vector of range to surfaces lying in a plane
 (see Figure \ref{lineing}) or as an image (see Figure \ref{fig23.1}).
-To obtain these denser representations, the laser beam is swept across the
-scene.
-Normally the beam is swept by a set of mirrors rather than moving 
-the laser and detector themselves (mirrors are lighter and less prone 
-to motion damage).
-The most common technologies for this are using a stepper motor (for
-program-based range sensing) or rotating or oscillating mirrors for
-automatic scanning.
+To obtain these denser representations, the laser beam is swept across
+the scene.  Normally the beam is swept by a set of mirrors rather than
+moving the laser and detector themselves (mirrors are lighter and less
+prone to motion damage).  The most common technologies for this are
+using a stepper motor (for program-based range sensing) or rotating or
+oscillating mirrors for automatic scanning.
 \begin{figure}[htb]
 {\epsfxsize = 0.47\textwidth \epsfbox{BOOKFIGS/lineing.eps}}
 \caption{Plot of ideal 1D range image of sample distance versus angle of measurement.
@@ -443,33 +439,47 @@ mirrors and the pulse rate, but 1-25K points per second are typical.
 Manufacturers of these sensors include Acuity, Sick, Mensi,
 DeltaSphere and Cyrax.
 
-Recently, a type of time-of-flight range sensor called the ``Flash LADAR''
-has been developed.
-The key innovation has been the inclusion of VLSI timing circuits at each
-pixel of the sensor chip.
-Thus, each pixel can measure the time at which a light pulse is observed
-from the line of sight viewed by that pixel.
-This allows simultaneous calculation of the range values at each pixel.
-The light pulse now has to cover to whole portion of the scene that is
-observed, so sensors typically use an array of infrared laser LEDs.
-While spatial resolution is smaller than current cameras ({\it e.g.}
-$64\times 64$, $160\times 124$, $128\times 128$), the data can be acquired
-at video rates (30-50 fps), which provides considerable information 
-usable for robot feedback.
-Different sensor ranges have been reported, such as up to 5m \cite{anderson}
-(with on the order of 5-50 cm standard deviation depending on
-target distance and orientation)
-or at 1.1 km \cite{stettner} (no standard deviation reported).
+Multiple-beam scanning LIDARs can increase the amount of information
+available.  Velodyne \cite{} makes two devices, with 32 and 64 beams
+arranged vertically, that acquire point data at rates of up to 15
+scans/s (1.3 MPixel/s), with a full 360 degree horizontal scan and a
+27 degree vertical FOV from the laser array.  The laser pulses are 5
+ns long, and depth precision is approximately 2 cm.  These devices are
+typically used in autonomous driving, for environment reconstruction
+and obstacle avoidance \cite{}.
+
+In contrast to scanning devices, a {\em flash LIDAR} has a 2D detector
+array (also called a {\em focal plane array} similar to a camera
+imager, but where each pixel incorporates timing circuitry to measure
+TOF of a laser pulse.  Instead of a single or multiple laser beams, a
+light source pulse (LED or laser) is shaped to cover a large area.
+All pixels have their timers started when the pulse is initiated, and
+measure the time it takes to receive the backscattered light.
+Typically some tens of samples are captured and averaged, to reduce
+noise in the measurements -- the amount of energy received is quite
+small, since the laser is not focused into a beam.  As might be
+expected, the detector array pixels are quite large because of the
+timing electronics; a typical device from ASC \cite{} has 128x128
+pixels, and can capture data at rates up to 60 Hz (~1 MPixel/s,
+similar to the Velodyne).  These devices are expensive, and not used
+in consumer applications.
+
+Different sensor ranges have been reported, such as up to 5m
+\cite{anderson} (with on the order of 5-50 cm standard deviation
+depending on target distance and orientation) or at 1.1 km
+\cite{stettner} (no standard deviation reported).  
+
+{\bf TODO: ASC data}
 
 \subsection{Modulation Range Sensors}
+\index{Modulation-based range sensors} 
 
-\index{Modulation-based range sensors} Modulation-based range sensors are commonly of two types, where a
+Modulation-based range sensors are commonly of two types, where a
 continuous laser signal is either amplitude or frequency modulated.
 By observing the phase shift between the outgoing and return signals,
-the signal transit time is estimated and from this the target distance.
-As the signal phase repeats every $2 \pi$, these sensors also have
-an ambiguity interval.
-
+the signal transit time is estimated and from this the target
+distance.  As the signal phase repeats every $2 \pi$, these sensors
+also have an ambiguity interval.
 
 These sensors also produce a single beam that must be swept.
 Scan ranges are typically 20-40m and accuracy of 5mm.
