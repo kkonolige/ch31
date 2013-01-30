@@ -1,0 +1,271 @@
+\subsection{Laser-based Range Sensors} \index{Laser-based Range Sensors}
+
+There are three types of laser based range sensors in common use:
+\begin{enumerate}
+\item triangulation sensors,
+\item phase modulation sensors and
+\item time of flight sensors.
+\end{enumerate}
+These are discussed in more detail below.
+There are also doppler and interference laser-based range
+sensors, but these seem to not be in general use at the moment so we 
+skip them here.
+An excellent recent review of range sensors is by Blais  \cite{blais}.
+
+The physical principles behind the three types of sensors discussed below do
+not intrinsically depend on the use of a laser - for the most part any light 
+source would work.
+However, lasers are traditional because: 
+1) they can easily generate bright beams with lightweight sources,
+2) infrared beams can be used inobtrusively, 
+3) they focus well to give narrow beams, 
+4) single frequency sources allow easier rejection filtering of unwanted frequencies,
+5) single frequency sources do not disperse from refraction as much as
+   full spectrum sources,
+6) semiconductor devices can more easily generate short pulses, etc.
+
+One advantage of all three sensor types is that it is often
+possible to acquire a
+reflectance image registered with the range image.
+By measuring the amount that the laser beam strength has reduced after
+reflection from the target, one can estimate the reflectance of the
+surface. This is only the reflectance at the single spectral frequency of the
+laser, but, nonetheless, this gives useful information about the appearance
+of the surface (as well as the shape as given by the range measurement).
+(Three color laser systems \cite{Baribeau} similarly give registered RGB color 
+images.)
+Figure \ref{fig23.1} shows registered range and reflectance images from the same scene.
+
+One disadvantage of all three sensor types is specular reflections.
+The normal assumption is that the observed light is a diffuse reflection
+from the surface.
+If the observed surface is specular, such as polished metal or water, then
+the source illumination may be reflected in unpredictable directions.
+If any light eventually is detected by the receiver, then it is likely to
+cause incorrect range measurements.
+Specular reflections are also likely at the fold edges of surfaces.
+
+A second problem is the laser `footprint'.
+Because the laser beam has a finite width, when it strikes at the edge
+of a surface, part of the beam may be actually lie on a more distant surface.
+The consequences of this will depend on the actual sensor, but it commonly
+results in range measurements that lie between the closer and more distant
+surfaces.
+These measurements thus suggest that there is surface where there really is 
+empty space.
+Some noise removal is possible in obvious empty space, but there may be
+erroneous measurements that are so close to the true surface that they
+are difficult to eliminate.
+
+\subsection{Time of Flight Range Sensors}
+
+\index{Time of flight range sensors} Time of flight range sensors are exactly that: they compute distance
+by measuring the time that a pulse of light takes to travel from the 
+source to the observed target and then to the detector (usually colocated
+with the source).
+In a sense, they are radar sensors that are based on light.
+The travel time multiplied by the speed of light (in the given medium - space,
+air or water and adjusted for the density and temperature of the medium) gives the
+distance.
+Laser-based time of flight range sensors are also caller LIDAR
+(LIght Detection And Ranging) or LADAR (LAser raDAR) sensors.
+
+Limitations on the accuracy of these sensors is based on the minimum 
+observation time (and thus the minimum distance observable),
+the temporal accuracy (or quantization) of the receiver and the temporal
+width of the laser pulse.
+%A minimum pulse width sensor \cite{} uses single photons and very sensitive
+%detectors to get a range accuracy of xxx mm with an stand-off distance 
+%of xxx cm. Multiple photon transmissions ({\it e.g.} 1000) are sampled to get 
+%accurate measurements.
+
+Many time of flight sensors used for local measurements have what is 
+called an ``ambiguity interval'', for example 20 meters.
+The sensor emits pulses of light periodically, and computes an average
+target distance from the time of the returning pulses. 
+To limit noise from reflections and simplify the detection electronics,
+many sensors only accept signals that arrive within time $\Delta t$,
+but this time window might also observe previous pulses reflected by 
+more distant surfaces.
+This means that a measurement $Z$ is ambiguous to the multiple of
+$\frac{1}{2}c\Delta t$ because surfaces that are further away ({\it e.g.} $z$) than 
+$\frac{1}{2}c\Delta t$ are recorded as $z {\rm mod} \frac{1}{2}c\Delta t$.
+Thus distances on smooth surfaces can increase until they reach
+$c\frac{\Delta t}{2}$ and then they become 0.
+Typical values for $c\frac{\Delta t}{2}$ are 20-40m.
+On smooth surfaces, such as a ground plane or road, an unwinding algorithm
+can recover the true depth by assuming that the distances should be changing
+smoothly.
+
+Most time of flight sensors transmit only a single beam, thus range measurements
+are only obtained from a single surface point.
+Robotics applications usually need more information, so the range data 
+is usually supplied as a vector of range to surfaces lying in a plane
+(see Figure \ref{lineing}) or as an image (see Figure \ref{fig23.1}).
+To obtain these denser representations, the laser beam is swept across the
+scene.
+Normally the beam is swept by a set of mirrors rather than moving 
+the laser and detector themselves (mirrors are lighter and less prone 
+to motion damage).
+The most common technologies for this are using a stepper motor (for
+program-based range sensing) or rotating or oscillating mirrors for
+automatic scanning.
+\begin{figure}[htb]
+{\epsfxsize = 0.47\textwidth \epsfbox{BOOKFIGS/lineing.eps}}
+\caption{Plot of ideal 1D range image of sample distance versus angle of measurement.
+%\label{lineing}
+}
+\end{figure}
+
+Typical ground-based time of flight sensors suitable for robotics
+applications have a range of 10-100m, and an accuracy of 5-10mm.
+The amount of the scene scanned will depend on the sweep rate of the 
+mirrors and the pulse rate, but 1-25K points per second are typical.
+Manufacturers of these sensors include Acuity, Sick, Mensi,
+DeltaSphere and Cyrax.
+
+Recently, a type of time-of-flight range sensor called the ``Flash LADAR''
+has been developed.
+The key innovation has been the inclusion of VLSI timing circuits at each
+pixel of the sensor chip.
+Thus, each pixel can measure the time at which a light pulse is observed
+from the line of sight viewed by that pixel.
+This allows simultaneous calculation of the range values at each pixel.
+The light pulse now has to cover to whole portion of the scene that is
+observed, so sensors typically use an array of infrared laser LEDs.
+While spatial resolution is smaller than current cameras ({\it e.g.}
+$64\times 64$, $160\times 124$, $128\times 128$), the data can be acquired
+at video rates (30-50 fps), which provides considerable information 
+usable for robot feedback.
+Different sensor ranges have been reported, such as up to 5m \cite{anderson}
+(with on the order of 5-50 cm standard deviation depending on
+target distance and orientation)
+or at 1.1 km \cite{stettner} (no standard deviation reported).
+
+\subsection{Modulation Range Sensors}
+
+\index{Modulation-based range sensors} Modulation-based range sensors are commonly of two types, where a
+continuous laser signal is either amplitude or frequency modulated.
+By observing the phase shift between the outgoing and return signals,
+the signal transit time is estimated and from this the target distance.
+As the signal phase repeats every $2 \pi$, these sensors also have
+an ambiguity interval.
+
+
+These sensors also produce a single beam that must be swept.
+Scan ranges are typically 20-40m and accuracy of 5mm.
+Figure \ref{fig23.1} was captured with a modulation sensor.
+
+\subsection{Triangulation Range Sensors}
+
+
+\index{Triangulation range sensors} Triangulation range sensors \cite{LeMoigne} are based on principles similar to the
+stereo sensors discussed previously.
+The key concept is illustrated in Figure \ref{lasertri}: a laser beam is projected
+from one position onto the observed surface.
+The light spot that this creates is observed by a sensor from a second
+position.
+Knowing the relative positions and orientations of the laser and sensor,
+plus some simple trigonometry allows calculation of the 3D position
+of the illuminated surface point.
+The triangulation process is more accurate when the laser spot's
+position is accurately estimated. About 0.1 pixel accuracy can be
+normally achieved \cite{naidu}.
+\begin{figure}[htb]
+{\epsfxsize = 0.47\textwidth \epsfbox{BOOKFIGS/lastri.eps}}
+\caption{Triangulation using a laser spot.
+\label{lasertri}}
+\end{figure}
+
+Because the laser illumination can be controlled, this gives a number
+of practical advantages:
+\begin{enumerate}
+
+\item A laser of known frequency ({\it e.g.} 733 nm) can be matched with
+a very selective spectral filter of the same frequency ({\it e.g.} 5 
+nm half width). This normally allows unique identification of the 
+light spot as the filtering virtually eliminates all other bright
+light, leaving the laser spot as the brightest spot in the image.
+
+\item The laser spot can be reshaped with lenses or mirrors to create
+multiple spots or stripes, thus allowing a measurement of multiple
+3D points simultaneously. Stripes are commonly used because these can
+be swept across the scene (see Fig \ref{swept} for an example) to observe a full
+scene.
+Other illumination patterns are also commonly used, such
+as parallel lines, concentric circles, cross hairs and dot grids.
+Commercial structured light pattern generators are available from
+{\it e.g.} Lasiris or Edmunds Optics.
+
+\begin{figure}[htb]
+{\epsfxsize = 0.47\textwidth \epsfbox{BOOKFIGS/swept.eps}}
+\caption{Swept laser plane covers a larger scene.
+\label{swept}}
+\end{figure}
+
+
+\item The laser light ray can be positioned by mirrors under computer
+control to selectively observe a given area, such as around a doorway
+or potential obstacle, or an object that might be grasped.
+
+\end{enumerate}
+
+
+
+Disadvantages include:
+
+\begin{enumerate}
+
+\item Potential eye safety risks from the power of lasers, particularly
+when invisible laser frequencies are used (commonly infrared).
+
+\item Specular reflections from metallic and polished objects, which may cause
+incorrect calculation of where the laser spot is illuminating, as in Figure 
+\ref{specular} where the hypothesized surface lies behind the true surface.
+
+\end{enumerate}
+\begin{figure}
+{\epsfxsize = 0.47\textwidth \epsfbox{BOOKFIGS/specular.eps}}
+\caption{Incorrect estimated depths on specular surfaces
+\label{specular}}
+\end{figure}
+
+\subsection{Example Sensors}
+
+A typical phase modulation based range sensor is the Zohler and Frohlich 25200.
+This is an expensive spherical scan sensor, observing a full 360 degrees
+horizontally and 155 vertically. Each scan can acquire up to 20,000 3D points
+horizontally and 8000 points vertically in about 100 seconds.
+The accuracy of the scan depends on the distance to the target, but
+4 mm is typical, with samples every 0.01 degrees (which samples every
+1.7 mm at 10m distance).
+The densely sensed data is typically used for 3D scene survey, modelling and
+virtual reality reconstruction.
+
+An example of a laser sensor that has been commonly used for robot navigation
+is the SICK LMS 200.
+This sensor sweeps a laser ray in a horizontal plane through an arc of 180
+degrees, acquiring 720 range measurements in a plane in 0.05 seconds.
+While a plane might seem limiting, the observed 3D data can be easily matched
+to a stored (or previously learned) model of the environment at the
+height of the scan.
+This allows accurate estimation of the sensor's position in the scene
+(and thus a mobile vehicle that carries the sensor).
+Of course, this requires an environment without overhanging structures
+that are not detectable at the scan height.
+Another common configuration is to mount the sensor high on the vehicle 
+with the scan plane tilted downwards. In this configuration the ground
+in front of the vehicle is progressively scanned as the vehicle moves forward,
+thus allowing detection of potential obstacles.
+
+The Minolta 910 is a small triangulation scanner with accuracy of about 0.01 mm
+in a range of up to 2m, for about $500^2$ points in 2.5 seconds.
+It has commonly been used for small region scanning, such as for inspection
+or part modelling, but can also be mounted in a fixed location to scan
+a robot workcell. 
+Observation of the workcell allows a variety of actions, such as
+inspection of parts, location of dropped or bin delivered components,
+or accurate part position determination.
+
+More examples and details range sensors for robot navigation are presented
+in Section \ref{ch31.3}.
