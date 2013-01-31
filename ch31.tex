@@ -1987,7 +1987,7 @@ Again, commonly used features are large planar surfaces, 3D edges and 3D feature
 points.
 
 
-\section{Navigation and Terrain Classification  \label{ch31.3}}
+\section{Navigation and Terrain Classification and Mapping  \label{ch31.3}}
 
 One of the more compelling uses for range data is for navigation of
 mobile robot vehicles.  Range data provides information about
@@ -2015,34 +2015,99 @@ incorporated: slope, point variance, etc.
 \label{elevation_map.ch31}}
 \end{figure}
 
+\subsection{Mobile Mapping}
 
-\subsection{Indoor Reconstruction}
+Laser range scanning provides an efficient way to actively acquire
+accurate and dense 3D point clouds of object surfaces or
+environments. Mobile scanning is currently used for modeling in
+architecture and agriculture as well as urban and regional planning.
+Modern systems like the Riegl VMX-450 and the Lynx Mobile Mapper as
+produced by Optech work along the same basic principal. They combine a
+highly accurate GPS, a high precision Inertial Measurement Unit (IMU)
+and the odometry of the vehicle to compute the fully timestamped
+trajectory.  Using a process called motion compensation this
+trajectory is then used to ``unwind'' the laser range measurements
+that were acquired by the 2D laser scanner also mounted on the
+vehicle.  The quality of the resulting point cloud depends on several
+factors:
+\begin{itemize}
+  \item The calibration of the entire system, i.e., the accuracy to
+    which the position and orientation of each individual sensor in
+    relation to the vehicle has been determined.
+  \item The accuracy of the external positioning sensors, i.e., the
+    GPS, IMU and odometry.
+  \item The availability of the GPS, as it may suffer temporary
+    blackouts under bridges, in tunnels and between high-rises.
+  \item The accuracy of the laser scanner itself.
+\end{itemize}
+The movement of the mobile laser scanner between time $t_0$ and $t_n$
+creates a trajectory $T = \{ \V V_0, \dots, \V V_n\}$, where $\V V_i=
+(t_{x,i}, t_{y,i}, t_{z,i}, \theta_{x,i}, \theta_{y,i}, \theta_{z,i})$
+is the 6 DoF pose of the vehicle at time $t_i$ with $t_0 \leq t_i \leq
+t_n$.  Using the trajectory of the vehicle a 3D representation of the
+environment can be obtained by ``unwinding'' the laser measurements
+$M$ to create the final map $P$. However, sensor errors in odometry,
+IMU and GPS as well as systematic calibration errors and the
+accumulation of pose errors during temporary GPS outages degrade the
+accuracy of the trajectory and therefore the point cloud
+quality. Furthermore, please note that modern systems easily create
+thouthands of 3D scan slices.
 
-SLAM algorithms (Chapter 37) using 2D laser rangefinders can
-reconstruct floor plans with centimeter precision.  Some research has
-extended this work to 3D reconstruction, using 2D lasers that are
-swept along as the robot moves \cite{thrun00}.  The resultant point
-cloud is typically registered using the pose of the robot as corrected
-by the 2D SLAM algorithm, rather than any of the 3D registration
-techniques covered in this chapter, because the laser is swept using
-robot motion.
+These mobile mapping systems extend the early work on 3D
+reconstruction with two 2D lasers under exploitation of the robot
+motion~\cite{thrun00}. One laser scanner is looking horizontal, one is
+mounted vertically. The resultant point cloud is typically registered
+using the pose of the robot as corrected by the 2D SLAM algorithm,
+rather than any of the 3D registration techniques covered in this
+chapter. The current state of the art developed by Bosse et
+al. \cite{Bosse:2012} for improving overall map quality of mobile
+mappers in the robotics community is to coarsely discretize the
+time. This results in a partition of the trajectory into subscans that
+are treated rigidly. Then rigid registration algorithms like the ICP
+and other solutions to the SLAM problem are employed.
 
-The raw points can be presented as a 3D image, or triangulated to give
-a planar or mesh reconstruction of indoor surfaces. \index{indoor surfaces}
-The latter is
-especially compelling when camera images are texture-mapped onto the
-surfaces, creating a realistic 3D model.  Figure
-\ref{indoor_3d_map.ch31} shows some results from indoor mapping using
-this technique (from \cite{thrun00}).  Smoothing of surface facets can
-be used to recover planar surfaces \cite{liu01}.
-
-\begin{figure}[hbt]
-{\epsfxsize = 0.5\textwidth \epsfbox{BOOKFIGS/thrun-3d-indoor.eps}}
-\caption{3D indoor map from a swept vertical plane LADAR.
-Registration is from a horizontal LADAR using SLAM algorithms (from
-\cite{thrun00}). 
-\label{indoor_3d_map.ch31}}
+Fig.~\ref{fig:mm} shows a car equipped with the Riegl VMX-450 mobile
+mapping system and the Zebedee handhald mapper. The bottom part of the
+Fig. presents the resulting 3D maps.
+%
+\begin{figure}
+  \centering
+  \includegraphics[width=0.545\linewidth]{BOOKFIGS/riegl_car}
+  \includegraphics[width=0.435\linewidth]{BOOKFIGS/zebedee}
+  \includegraphics[width=0.95\linewidth]{BOOKFIGS/wien}
+  \includegraphics[width=0.95\linewidth]{BOOKFIGS/zebedee_map}
+  \caption{FIXME.}
+  \label{fig:mm}
 \end{figure}
+
+
+%\subsection{Indoor Reconstruction}
+%
+%SLAM algorithms (Chapter 37) using 2D laser rangefinders can
+%reconstruct floor plans with centimeter precision.  Some research has
+%extended this work to 3D reconstruction, using 2D lasers that are
+%swept along as the robot moves \cite{thrun00}.  The resultant point
+%cloud is typically registered using the pose of the robot as corrected
+%by the 2D SLAM algorithm, rather than any of the 3D registration
+%techniques covered in this chapter, because the laser is swept using
+%robot motion.
+%
+%The raw points can be presented as a 3D image, or triangulated to give
+%a planar or mesh reconstruction of indoor surfaces. \index{indoor surfaces}
+%The latter is
+%especially compelling when camera images are texture-mapped onto the
+%surfaces, creating a realistic 3D model.  Figure
+%\ref{indoor_3d_map.ch31} shows some results from indoor mapping using
+%this technique (from \cite{thrun00}).  Smoothing of surface facets can
+%be used to recover planar surfaces \cite{liu01}.
+%
+%\begin{figure}[hbt]
+%{\epsfxsize = 0.5\textwidth \epsfbox{BOOKFIGS/thrun-3d-indoor.eps}}
+%\caption{3D indoor map from a swept vertical plane LADAR.
+%Registration is from a horizontal LADAR using SLAM algorithms (from
+%\cite{thrun00}). 
+%\label{indoor_3d_map.ch31}}
+%\end{figure}
 
 
 
@@ -2318,6 +2383,12 @@ Proc. Int. Symp. on Robotics Research, Hidden Valley, 1993.
 D. Borrmann, J. Elseberg, A. N{\"u}chter, K. Lingemann,
 ``The 3D Hough Transform for Plane Detection in Point Clouds -- A Review and A new Accumulator Design'',
 Journal of 3D Research, 2(2):1-13, 2011.
+
+\bibitem{Bosse:2012}
+M. Bosse, R. Zlot, P. Flick,
+``Zebedee: Design of a Spring-Mounted 3-D Range
+Sensor with Application to Mobile Mapping'',
+IEEE Transactions on Robotics, Vol. 28, No 5, October 2012.
 
 \bibitem{RAS2007}
 D. Borrmann, J. Elseberg, K. Lingemann, A. N{\"u}chter, J. Hertzberg,
