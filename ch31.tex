@@ -8,6 +8,7 @@
 \usepackage{amssymb}
 \usepackage{science}
 \usepackage{graphicx}
+\usepackage{bbm}
 \bibliographystyle{handbook}
 
 %\setlength{\textwidth}{86mm}
@@ -94,7 +95,7 @@ Kurt Konolige\\
 Artificial Intelligence Center\\
 SRI International\\
 konolige@ai.sri.com\\
-\and\\
+\and
 Andreas N{\"u}chter\\
 School of Engineering and Science \\
 Jacobs University Bremen gGmbH \\
@@ -1518,7 +1519,7 @@ models.
     %\psfrag{theta}{$\theta$}
     %
     \includegraphics[width=0.4\textwidth]{BOOKFIGS/Hough}
-    \caption{Transformation of three points from $R$ to % FIXME mathbbm R
+    \caption{Transformation of three points from $\mathbbm{R}$ to
       Hough space ($\theta,\varphi,\rho$). The intersection of the
       curves (marked in black) depicts the plane spanned by the three
       points.}
@@ -2055,11 +2056,11 @@ thouthands of 3D scan slices.
 
 These mobile mapping systems extend the early work on 3D
 reconstruction with two 2D lasers under exploitation of the robot
-motion~\cite{thrun00}. One laser scanner is looking horizontal, one is
-mounted vertically. The resultant point cloud is typically registered
-using the pose of the robot as corrected by the 2D SLAM algorithm,
-rather than any of the 3D registration techniques covered in this
-chapter. The current state of the art developed by Bosse et
+motion~\cite{thrun00}. One laser scanner is scanning horizontal, one
+is mounted vertically. The resultant point cloud is typically
+registered using the pose of the robot as corrected by the 2D SLAM
+algorithm, rather than any of the 3D registration techniques covered
+in this chapter. The current state of the art developed by Bosse et
 al. \cite{Bosse:2012} for improving overall map quality of mobile
 mappers in the robotics community is to coarsely discretize the
 time. This results in a partition of the trajectory into subscans that
@@ -2067,8 +2068,9 @@ are treated rigidly. Then rigid registration algorithms like the ICP
 and other solutions to the SLAM problem are employed.
 
 Fig.~\ref{fig:mm} shows a car equipped with the Riegl VMX-450 mobile
-mapping system and the Zebedee handhald mapper. The bottom part of the
-Fig. presents the resulting 3D maps.
+mapping system of the company Riegl Laser Measurement Systems and the
+Zebedee handhald mapper from CSIRO. The Fig. shows typical resulting
+3D point clouds as well.
 %
 \begin{figure}
   \centering
@@ -2076,7 +2078,9 @@ Fig. presents the resulting 3D maps.
   \includegraphics[width=0.435\linewidth]{BOOKFIGS/zebedee}
   \includegraphics[width=0.95\linewidth]{BOOKFIGS/wien}
   \includegraphics[width=0.95\linewidth]{BOOKFIGS/zebedee_map}
-  \caption{FIXME.}
+  \caption{Above: Mobile mapping car (left) and Zedebee handheld
+    mapper (right). Middle: 3D point cloud acquired with the Riegl
+    VMX-250 system. Below: 3D point cloud from Zedebee.}
   \label{fig:mm}
 \end{figure}
 
@@ -2108,8 +2112,6 @@ Fig. presents the resulting 3D maps.
 %\cite{thrun00}). 
 %\label{indoor_3d_map.ch31}}
 %\end{figure}
-
-
 
 \subsection{Urban Navigation}
 
@@ -2384,16 +2386,16 @@ D. Borrmann, J. Elseberg, A. N{\"u}chter, K. Lingemann,
 ``The 3D Hough Transform for Plane Detection in Point Clouds -- A Review and A new Accumulator Design'',
 Journal of 3D Research, 2(2):1-13, 2011.
 
-\bibitem{Bosse:2012}
-M. Bosse, R. Zlot, P. Flick,
-``Zebedee: Design of a Spring-Mounted 3-D Range
-Sensor with Application to Mobile Mapping'',
-IEEE Transactions on Robotics, Vol. 28, No 5, October 2012.
-
 \bibitem{RAS2007}
 D. Borrmann, J. Elseberg, K. Lingemann, A. N{\"u}chter, J. Hertzberg,
 ``Globally consistent 3d mapping with scan matching'',
 J. Robotics and Autonomous Systems, 56(2):130–142, 2008.
+
+\bibitem{Bosse:2012}
+M. Bosse, R. Zlot, P. Flick,
+``Zebedee: Design of a Spring-Mounted 3-D Range
+Sensor with Application to Mobile Mapping'',
+IEEE Transactions on Robotics, 28(5), October 2012.
 
 \bibitem{chen2}
 Y. Chen, G. Medioni,
