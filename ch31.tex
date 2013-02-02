@@ -92,10 +92,9 @@ Chapter 31 - Range Sensors}\\
 
 \author{ % alphabetical order please
 Kurt Konolige\\
-Kurt Konolige\\
 Industrial Perception, Inc.\\
 konolige@industrial-perception.com\\
-\and\\
+\and
 Andreas N{\"u}chter\\
 School of Engineering and Science \\
 Jacobs University Bremen gGmbH \\
@@ -379,10 +378,10 @@ projectors and cameras can alleviate this problem for the former.
 \subsection{Time of Flight}
 \index{Time of flight range sensors} 
 
-The principle behind time-of-flight sensors is like that of radar:
-measure the time it takes for light to be projected out to an object
-and return.  Because light travels about 0.3 m per nanosecond, very
-precise timers are required for direct TOF measurement; an
+The principle behind time-of-flight (TOF) sensors is like that of
+radar: measure the time it takes for light to be projected out to an
+object and return.  Because light travels about 0.3 m per nanosecond,
+very precise timers are required for direct TOF measurement; an
 alternative is indirect methods, typically phase difference with a
 modulated reference beam.
 
@@ -395,41 +394,31 @@ close-range metrology applications, such as small object
 reconstruction or parts quality measurements.
 
 \subsubsection{Direct Time of Flight}
+
+{\bf TODO: minimum range, ambiguity interval, accuracy based on
+  multiple readings, beam size, scanning rates, multiple reflections,
+  obscurants} 
+
 In direct TOF sensors, the travel time is measured by a high-speed
-chronometer.  The travel time multiplied by the speed of light (in the
-given medium - space, air or water and adjusted for the density and
-temperature of the medium) gives the distance.  Laser-based direct TOF
-range sensors are also caller LIDAR (LIght Detection And Ranging) or
-LADAR (LAser raDAR) sensors.
+chronometer.  Laser-based direct TOF range sensors are also called
+LIDAR (LIght Detection And Ranging) or LADAR (LAser raDAR) sensors.
+The travel time multiplied by the speed of light (in the given medium
+- space, air or water and adjusted for the density and temperature of
+the medium) gives the distance:
+ %
+\begin{equation}
+  2d = ct,
+\end{equation}
+ % 
+where $d$ is the distance to the object, $c$ is the speed of light,
+and $t$ is the measured travel time.  Error in measuring the time $t$
+gives rise to a proportional distance error.  In practice, one tries
+to measure the peak of the output pulse, which has a finite extent;
+weak reflections from distant objects make it harder to measure this
+peak and hence the error tends to increase with distance.  Averaging
+multiple readings can reduce the random error in these readings.
 
-Limitations on the accuracy of these sensors is based on the minimum 
-observation time (and thus the minimum distance observable),
-the temporal accuracy (or quantization) of the receiver and the temporal
-width of the laser pulse.
-%A minimum pulse width sensor \cite{} uses single photons and very sensitive
-%detectors to get a range accuracy of xxx mm with an stand-off distance 
-%of xxx cm. Multiple photon transmissions ({\it e.g.} 1000) are sampled to get 
-%accurate measurements.
-
-Many time of flight sensors used for local measurements have what is 
-called an ``ambiguity interval'', for example 20 meters.
-The sensor emits pulses of light periodically, and computes an average
-target distance from the time of the returning pulses. 
-To limit noise from reflections and simplify the detection electronics,
-many sensors only accept signals that arrive within time $\Delta t$,
-but this time window might also observe previous pulses reflected by 
-more distant surfaces.
-This means that a measurement $Z$ is ambiguous to the multiple of
-$\frac{1}{2}c\Delta t$ because surfaces that are further away ({\it e.g.} $z$) than 
-$\frac{1}{2}c\Delta t$ are recorded as $z {\rm mod} \frac{1}{2}c\Delta t$.
-Thus distances on smooth surfaces can increase until they reach
-$c\frac{\Delta t}{2}$ and then they become 0.
-Typical values for $c\frac{\Delta t}{2}$ are 20-40m.
-On smooth surfaces, such as a ground plane or road, an unwinding algorithm
-can recover the true depth by assuming that the distances should be changing
-smoothly.
-
-Most time of flight sensors transmit only a single beam, thus range
+The simplest TOF sensors transmit only a single beam, thus range
 measurements are only obtained from a single surface point.  Robotics
 applications usually need more information, so the range data is
 usually supplied as a vector of range to surfaces lying in a plane
@@ -440,6 +429,18 @@ moving the laser and detector themselves (mirrors are lighter and less
 prone to motion damage).  The most common technologies for this are
 using a stepper motor (for program-based range sensing) or rotating or
 oscillating mirrors for automatic scanning.
+
+Scanning or averaging requires multiple TOF pulses at perhaps high
+repetition rates, which can give rise to ambiguity about which pulse is
+actually being received.  If $\delta t$ is the time between pulses, then
+the ``ambiguity interval'' for the device is  $1/2 c \delta t$, e.g.,
+for a pulse repetition rate of 100 Khz, the ambiguity interval is 1500
+m.  If an object is further than this, it will be seen as within the
+interval, with distance $z mod 1/2 c \delta t$.  An {\em unwinding
+  algorithm} can recover the true depth, if range values for the
+scanning system change slowly, and start within the ambiguity
+interval. 
+
 \begin{figure}[htb]
 {\epsfxsize = 0.47\textwidth \epsfbox{BOOKFIGS/lineing.eps}}
 \caption{Plot of ideal 1D range image of sample distance versus angle of measurement.
@@ -449,8 +450,8 @@ oscillating mirrors for automatic scanning.
 Typical ground-based time of flight sensors suitable for robotics
 applications have a range of 10-100m, and an accuracy of 5-10mm.
 The amount of the scene scanned will depend on the sweep rate of the 
-mirrors and the pulse rate, but 1-25K points per second are typical.
-Manufacturers of these sensors include Acuity, Sick, Mensi,
+mirrors and the pulse rate, but 1k-25k points per second are typical.
+Manufacturers of these sensors include Acuity, Hokuyo, Sick, Mensi,
 DeltaSphere and Cyrax.
 
 Multiple-beam scanning LIDARs can increase the amount of information
@@ -461,6 +462,8 @@ scans/s (1.3 MPixel/s), with a full 360 degree horizontal scan and a
 ns long, and depth precision is approximately 2 cm.  These devices are
 typically used in autonomous driving, for environment reconstruction
 and obstacle avoidance \cite{}.
+
+\subsubsection{Flash LIDAR}
 
 In contrast to scanning devices, a {\em flash LIDAR} has a 2D detector
 array (also called a {\em focal plane array} similar to a camera
@@ -475,17 +478,43 @@ small, since the laser is not focused into a beam.  As might be
 expected, the detector array pixels are quite large because of the
 timing electronics; a typical device from ASC \cite{} has 128x128
 pixels, and can capture data at rates up to 60 Hz (~1 MPixel/s,
-similar to the Velodyne).  These devices are expensive, and not used
-in consumer applications.
+similar to the Velodyne).  These devices are expensive, and hence not
+used in consumer applications.
 
-Different sensor ranges have been reported, such as up to 5m
-\cite{anderson} (with on the order of 5-50 cm standard deviation
-depending on target distance and orientation) or at 1.1 km
-\cite{stettner} (no standard deviation reported).  
+Both near and far range devices are available commercially.  The table
+below lists two example sensors with differing characteristics, one
+for short range, one for longer range.  Note that, because of the
+precision timing mentioned earlier, the repeatability is on the order
+of centimeters for these devices.
 
-{\bf TODO: ASC data}
+\begin{table}
+\begin{tabular}{|l|c|c|c|}
+\hline
+Manuf. / & Resolution & Max  & Repeatability \\
+Model  & & Range & \\
+\hline
+ASC, Inc. & 128x128 & 60 - & 0.04 m @ 60 m \\
+TigerEye & & 1,100 m & \\
+\hline
+SoftKinetic & 160x120 & 4.5 m & 0.03 m @ 3 m \\
+DS311 & & &\\
+\hline
+\end{tabular}
+\end{table}
 
-\subsection{Modulation Range Sensors}
+%% Different sensor ranges have been reported, such as up to 5m 
+%% \cite{anderson} (with on the order of 5-50 cm standard deviation
+%% depending on target distance and orientation) or at 1.1 km
+%% \cite{stettner} (no standard deviation reported).  
+
+\subsubsection{Indirect Time of Flight Sensors}
+
+Indirect TOF sensors measure distance by inferring transit times from
+particular properties of a propagating beam.  The two main methods are
+based on {\em modulation and phase differences} and {\em gated
+  intensity}. 
+
+\subsubsection{Modulation-based TOF}
 \index{Modulation-based range sensors} 
 
 Modulation-based range sensors are commonly of two types, where a
@@ -498,22 +527,6 @@ also have an ambiguity interval.
 These sensors also produce a single beam that must be swept.
 Scan ranges are typically 20-40m and accuracy of 5mm.
 Figure \ref{fig23.1} was captured with a modulation sensor.
-
-
-
-
- 
-\section{Triangulation Sensors}
-
-[stereo; projected texture; structured light; laser]
-
-\section{TOF Sensors}
-
-[different types of TOF sensors]
-
-\section{Others}
-
-[depth edge sensing]
 
 
 \subsection{Stereo vision}\index{Stereo vision}
@@ -1039,6 +1052,8 @@ The surface normals can then be integrated to
 give an estimate of the relative surface depth.
 
 \end{itemize}
+
+\subsection{Structured Light Stereo}
 
 
 
