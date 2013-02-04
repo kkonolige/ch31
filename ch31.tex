@@ -267,12 +267,12 @@ data is only supplied as a list, that is usually called point cloud.
 
 \section{Sensor Technologies}
 
-Here we describe the two main technologies for range sensing:
-triangulation and time-of-flight.  There are many variations of each
-of these, with different strengths and weaknesses.  Here we briefly
-describe the basic concepts, and summarize the characteristics of the
-main types of sensors.  More detailed descriptions are given in
-subsequent sections.
+There are two main technologies for range sensing: triangulation and
+time-of-flight.  There are many variations of each of these, with
+different strengths and weaknesses.  Here we briefly describe the
+basic concepts, and summarize the characteristics of the main types of
+sensors.  More detailed descriptions of stereo and structured light
+sensors are given in subsequent sections.
 
 \subsection{Triangulation}
 
@@ -479,7 +479,9 @@ expected, the detector array pixels are quite large because of the
 timing electronics; a typical device from ASC \cite{} has 128x128
 pixels, and can capture data at rates up to 60 Hz (~1 MPixel/s,
 similar to the Velodyne).  These devices are expensive, and hence not
-used in consumer applications.
+used in consumer applications.  Alternative, indirect ways of
+measuring TOF have simpler per-pixel electronics -- see the next
+subsection. 
 
 Both near and far range devices are available commercially.  The table
 below lists two example sensors with differing characteristics, one
@@ -521,28 +523,120 @@ Modulation-based range sensors are commonly of two types, where a
 continuous laser signal is either amplitude or frequency modulated.
 By observing the phase shift between the outgoing and return signals,
 the signal transit time is estimated and from this the target
-distance.  As the signal phase repeats every $2 \pi$, these sensors
-also have an ambiguity interval.
+distance.  
 
-These sensors also produce a single beam that must be swept.
-Scan ranges are typically 20-40m and accuracy of 5mm.
-Figure \ref{fig23.1} was captured with a modulation sensor.
+{\em Amplitude modulation} works by varying the intensity of a light
+signal $s(t) = \sin(2\pi f t)$ with frequence $f$.  The signal
+reflected from an object has a phase shift $\phi$, and the returned
+signal is 
+ %
+\begin{equation}
+\begin{array}{lcl}
+r(t) &=& R \sin(2\pi f t -\phi) = R \sin(2\pi f (t - 2d/c)) \\
+d &=& c\phi / 4\pi f
+\end{array}
+\end{equation}
+ %
+with $c$ the speed of light, $d$ the distance to the object, and $R$
+the reflected amplitude.  Measuring the phase shift yields the
+distance; note because phase shift wraps around at $2\pi$, the
+ambiguity interval is $c/2f$.  For a modulation of 10 MHz, the
+interval is 15m.
+
+To measure the phase difference, the returned signal is mixed with the
+original reference signal and a 90 degree shifted version, then
+low-pass filtered.  Comparing the two mixed signals gives both the
+phase difference and the intensity:
+ %
+{\epsfxsize = 0.47\textwidth \epsfbox{BOOKFIGS/phase-filter.eps}}
+ % 
+There are commercial devices using single-beam and planar array
+versions of amplitude modulation.  The planar arrays take advantage of
+CMOS integration to implement the full signal comparison at each
+pixel, in a compact sensor \cite{CanestaXXX,SwissRangerXXX}.  Because
+the SNR depends on the amplitude of the returned signal, these devices
+typically have a depth resolution that falls off as $d^2$, comparable
+to triangulation devices.  Typical repeatability is about 3 cm at 0.5
+m, significantly less than triangulation devices; the arrays are up to 
+200x200 pixels.  The attraction of the planar array is that it is a
+single-chip ranging device, simple and potentially cheap to produce.
+They also have good ambient light rejection, and potentially can be
+used outdoors.
+
+{\em Frequency modulation}, also called Frequency Modulation
+Continuous Wave (FMCW), modulates a laser frequency with a sawtooth
+ramp of period $t_m$, where the maximum frequency spread is $\Delta
+f$.  The outgoing and incoming signals are mixed to give a signal
+difference $f_i$, which is measured by frequency counting.  The
+distance is calculated as $d = f_i c t_m / 2 \Delta f$.  Since the
+frequency difference can be measured very accurately, this technique
+can yield excellent depth precision, on the order of 5 mm at 2 m
+\cite{wongIROSxxx}.  The electronics required for mixing and frequency
+counting, as well as the difficulty of linear laser frequency
+modulation, have restricted this technique to high-end single-beam
+devices \cite{FaroPhotonXXX}.
+
+\subsubsection{Range-gated intensity}
+
+Another indirect method for measuring TOF of a pulse is to measure the
+amount of the pulse that gets returned within a precise time period.
+If a pulse of width $w$ is emitted, a detector will start to receive
+the pulse reflected from an object of distance d at $t_0 = 2d/c$, and
+finish receiving it at $t_w = (w+2d)/c$.  If the detector is ``open''
+for a precise amount of time $t$, then the amount of the reflected
+signal it receives, relative to the full pulse reflection, is a linear
+measure of the distance $d$.  Thus, by comparing two returns, one with
+a large open time to measure the full pulse, and one with a smaller
+open time, $d$ can be determined.  A planar array CMOS device can be
+fabricated to measure the two pulse returns sequentially, as long as
+each pixel can be triggered to be photo-sensitive for a precise amount
+of time.  Commercial devices using this principle have precision on
+the order of a few cm at 1 m, with arrays up to 128x96
+\cite{zcamXXX,tridicamXXX}. 
+
+\subsection{Comparison of methods}
+
+An useful overall summary of different types of range-sensing
+technology is in reference \cite{wongIROSXXX}.  The two main
+parameters are spatial precision and depth precision.  In Figure
+\ref{fig31.range-summary}, available sensors are classified along
+these two dimensions.  The direct TOF laser scanners (LMS, UT devices)
+cluster around 0.5 - 1 cm in both spatial and range precision.  The
+Photon80 device uses FMCW modulation with outstanding spatial and
+range precision; it is also a scanning device.  
+
+Triangulation devices (stereo, Kinect, and structured light in
+general) have less favorable characteristics.  However, the
+target is at 2 m, and with triangulation precision falling with $d^2$,
+the comparison is  biased.  All these devices would be better than the
+TOF devices at 0.5 m in terms of range error.  The stereo sensors can
+also exhibit much better spatial density in different configurations,
+i.e., higher resolution sensors, larger baseline, smaller correlation
+window.  In general, we would expect the triangulation sensors to
+outperform TOF sensors at shorter distances.
+
+Finally, a single-chip flash LIDAR device, the IFM O3D200, uses
+amplitude-modulation, and gives characteristicly poor results relative
+to the other sensors.
+
+\begin{figure}
+    \includegraphics[width=0.5\textwidth]{BOOKFIGS/range-summary}
+\caption{Range device characteristics (from \cite{wongIROSXXX}.
+  Spatial precision is on the Y axis, depth precision on the X
+  axis.  Measurements are taken on a target at 2
+  m. \label{fig31.range-summary}}  
+\end{figure}
+
 
 
 \subsection{Stereo vision}\index{Stereo vision}
 
-It is possible to acquire range information from many different
-sensors, but only a few have the reliability needed for most robotics
-applications.  The more reliable ones, \index{laser based
-  triangulation} laser based triangulation and LIDAR (laser radar) are
-discussed in this and the next subsections.
-
-Realtime stereo analysis uses two or more input images to estimate the
-distance to points in a scene.  The basic concept is {\em
-  triangulation}: a scene point and the two camera points form a
-triangle, and knowing the baseline between the two cameras, and the
-angle formed by the camera rays, the distance to the object can be
-determined.
+This section discusses stereo analysis in more detail.  Stereo
+analysis uses two or more input images to estimate the distance to
+points in a scene.  The basic concept is {\em triangulation}: a scene
+point and the two camera points form a triangle, and knowing the
+baseline between the two cameras, and the angle formed by the camera
+rays, the distance to the object can be determined.
 
 In practice, there are many difficulties in making a stereo imaging
 system that is useful for robotics applications.  Most of these
@@ -559,6 +653,7 @@ range sensor can match.
 In this subsection we will review the basic algorithms of stereo
 analysis, and highlight the problems and potential of the method.
 For simplicity, we use binocular stereo.
+
 
 \subsubsection{Stereo image geometry}\index{Stereo}
 
@@ -888,8 +983,8 @@ approaches include multiple correlation windows and shaped windows.
 
 {\bf Dropouts.}  These are areas where no good matches can be found
 because of low texture energy.  Dropouts are a problem for indoor and
-outdoor man-made surfaces.  Projecting an infrared random texture can
-help \cite{adan}.
+outdoor man-made surfaces.  Projecting a random texture can help
+\cite{adan}.
 
 {\bf Range resolution.}  Unlike LADAR devices, stereo range accuracy
 is a quadratic function of distance, found by differentiating Equation
@@ -1054,6 +1149,50 @@ give an estimate of the relative surface depth.
 \end{itemize}
 
 \subsection{Structured Light Stereo}
+
+Recently, the Kinect range-sensing device became the fastest-selling
+consumer electronics device in history \cite{XXX}.  The Kinect uses
+a structured-light stereo technique from PrimeSense \cite{XXX} to give
+a reasonable balance of spatial and depth precision, in a
+highly-integrated device, at a very low price.
+
+The PrimeSense technology projects a strucured pattern generated from
+an IR laser and patented combination of diffractive elements (see
+Figure XXX).  The pattern consists of bright dots on a grid, with
+unique combinations of dots over a horizontal area.  A camera with
+resolution 1280x960 captures the IR image at a horizontal offset of
+7.5 cm from the projector, and correlates a 19x19 block against the
+known dot pattern for a given horizontal line.  If a match is found,
+the position of the pattern in the known projected pattern gives the
+angle subtended by the reflecting object to the projector and camera,
+and hence the distance.  A depth image is returned at a resolution of
+640x480, with 11 bits of depth precision, over a FOV of approximately
+50 degrees; the depth is interpolated to a precision of 1/8 pixel.
+
+Error characteristics for the Kinect have been studied in
+\cite{kinect-error-XXX,kinect-error2-XXX}.  Based on Equation
+\ref{XXX}, the theoretical depth precision with depth is given by the
+blue line in Figure \ref{XXX}; this curve is based on sub-pixel
+interpolation to 1/8 pixel.  Note that sub-millimeter resolution is
+possible at closer ranges.  The actual depth repeatability is somewhat
+less, and is a function of the surface reflectance and angle, among
+other factors.  On average, the standard deviation is around 3
+disparity level (at 1/8 pixel); hence, the actual depth resolution is
+closer to 3 times the theoretical one (the red line in Figure
+\ref{XXX}). 
+
+There are additional sources of error.  {\em Dropouts} occur when the
+surfaces are minimally reflective, or specular.  {\em False
+  positives}, where there are gross mismatches in the match, are very
+rare with PrimeSense technology.  {\em Spatial precision} is much
+lower than the returned 640x480 depth image would indicate, because of
+the ``smearing'' effect of block correlation.  The projected pattern
+expands and contracts based on temperature, leading to offset in
+disparities along the vertical axis.  While the projector is
+temperature-controlled via a Peltier unit, its temperature can vary.
+A temperature sensor measures this variation, and applies disparity
+steps across the image, which are apparent as vertical steps in the
+depth image.
 
 
 
