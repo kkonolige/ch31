@@ -395,9 +395,9 @@ reconstruction or parts quality measurements.
 
 \subsubsection{Direct Time of Flight}
 
-{\bf TODO: minimum range, ambiguity interval, accuracy based on
-  multiple readings, beam size, scanning rates, multiple reflections,
-  obscurants} 
+%%{\bf TODO / XXX: minimum range, ambiguity interval, accuracy based on
+%%  multiple readings, beam size, scanning rates, multiple reflections,
+%%  obscurants} 
 
 In direct TOF sensors, the travel time is measured by a high-speed
 chronometer.  Laser-based direct TOF range sensors are also called
@@ -421,14 +421,14 @@ multiple readings can reduce the random error in these readings.
 The simplest TOF sensors transmit only a single beam, thus range
 measurements are only obtained from a single surface point.  Robotics
 applications usually need more information, so the range data is
-usually supplied as a vector of range to surfaces lying in a plane
-(see Figure \ref{lineing}) or as an image (see Figure \ref{fig23.1}).
-To obtain these denser representations, the laser beam is swept across
-the scene.  Normally the beam is swept by a set of mirrors rather than
-moving the laser and detector themselves (mirrors are lighter and less
-prone to motion damage).  The most common technologies for this are
-using a stepper motor (for program-based range sensing) or rotating or
-oscillating mirrors for automatic scanning.
+usually supplied as a vector of range to surfaces lying in a plane, or
+as an image (see Figure \ref{fig23.1}).  To obtain these denser
+representations, the laser beam is swept across the scene.  Normally
+the beam is swept by a set of mirrors rather than moving the laser and
+detector themselves (mirrors are lighter and less prone to motion
+damage).  The most common technologies for this are using a stepper
+motor (for program-based range sensing) or rotating or oscillating
+mirrors for automatic scanning.
 
 Scanning or averaging requires multiple TOF pulses at perhaps high
 repetition rates, which can give rise to ambiguity about which pulse is
@@ -440,12 +440,6 @@ interval, with distance $z mod 1/2 c \delta t$.  An {\em unwinding
   algorithm} can recover the true depth, if range values for the
 scanning system change slowly, and start within the ambiguity
 interval. 
-
-\begin{figure}[htb]
-{\epsfxsize = 0.47\textwidth \epsfbox{BOOKFIGS/lineing.eps}}
-\caption{Plot of ideal 1D range image of sample distance versus angle of measurement.
-\label{lineing}}
-\end{figure}
 
 Typical ground-based time of flight sensors suitable for robotics
 applications have a range of 10-100m, and an accuracy of 5-10mm.
