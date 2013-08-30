@@ -274,7 +274,7 @@ basic concepts, and summarize the characteristics of the main types of
 sensors.  More detailed descriptions of stereo and structured light
 sensors are given in subsequent sections.
 
-{\bf Precision, repeatability, accuracy}
+%%{\bf Precision, repeatability, accuracy}
 
 \subsection{Triangulation}
 
@@ -478,20 +478,15 @@ Typically some tens of samples are captured and averaged, to reduce
 noise in the measurements -- the amount of energy received is quite
 small, since the laser is not focused into a beam.  As might be
 expected, the detector array pixels are quite large because of the
-timing electronics; a typical device from ASC \cite{} has 128x128
+timing electronics; a typical device from ASC \cite{stettner} has 128x128
 pixels, and can capture data at rates up to 60 Hz (~1 MPixel/s,
 similar to the Velodyne).  These devices are expensive, and hence not
 used in consumer applications.  Alternative, indirect ways of
 measuring TOF have simpler per-pixel electronics -- see the next
-subsection.
+subsection.  The table below lists the characteristics of one of ASC's
+devices.
 
-Both near and far range devices are available commercially.  The table
-below lists two example sensors with differing characteristics, one
-for short range, one for longer range.  Note that, because of the
-precision timing mentioned earlier, the repeatability is on the order
-of centimeters for these devices.
-
-\begin{table}
+\begin{table}[h!]
 \begin{tabular}{|l|c|c|c|}
 \hline
 Manuf. / & Resolution & Max  & Repeatability \\
@@ -499,9 +494,6 @@ Model  & & Range & \\
 \hline
 ASC, Inc. & 128x128 & 60 - & 0.04 m @ 60 m \\
 TigerEye & & 1,100 m & \\
-\hline
-SoftKinetic & 160x120 & 4.5 m & 0.03 m @ 3 m \\
-DS311 & & &\\
 \hline
 \end{tabular}
 \end{table}
@@ -555,7 +547,7 @@ phase difference and the intensity:
 There are commercial devices using single-beam and planar array
 versions of amplitude modulation.  The planar arrays take advantage of
 CMOS integration to implement the full signal comparison at each
-pixel, in a compact sensor \cite{canesta04,SwissRangerXXX}.  Because
+pixel, in a compact sensor \cite{canesta04,swissranger03}.  Because
 the SNR depends on the amplitude of the returned signal, these devices
 typically have a depth resolution that falls off as $d^2$, comparable
 to triangulation devices.  Typical repeatability is about 3 cm at 0.5
@@ -573,10 +565,10 @@ difference $f_i$, which is measured by frequency counting.  The
 distance is calculated as $d = f_i c t_m / 2 \Delta f$.  Since the
 frequency difference can be measured very accurately, this technique
 can yield excellent depth precision, on the order of 5 mm at 2 m
-\cite{wongIROSxxx}.  The electronics required for mixing and frequency
+\cite{wong11}.  The electronics required for mixing and frequency
 counting, as well as the difficulty of linear laser frequency
 modulation, have restricted this technique to high-end single-beam
-devices \cite{FaroPhotonXXX}.
+devices \cite{farophoton10}.
 
 \subsubsection{Range-gated intensity}
 
@@ -599,7 +591,7 @@ the order of a few cm at 1 m, with arrays up to 128x96
 \subsection{Comparison of methods}
 
 An useful overall summary of different types of range-sensing
-technology is in reference \cite{wongIROSXXX}.  The two main
+technology is in reference \cite{wong11}.  The two main
 parameters are spatial precision and depth precision.  In Figure
 \ref{fig31.range-summary}, available sensors are classified along
 these two dimensions.  The direct TOF laser scanners (LMS, UT devices)
@@ -623,7 +615,7 @@ to the other sensors.
 
 \begin{figure}
     \includegraphics[width=0.5\textwidth]{BOOKFIGS/range-summary}
-\caption{Range device characteristics (from \cite{wongIROSXXX}.
+\caption{Range device characteristics (from \cite{wong11}.
   Spatial precision is on the Y axis, depth precision on the X
   axis.  Measurements are taken on a target at 2
   m. \label{fig31.range-summary}}
@@ -2820,6 +2812,11 @@ Proc. 27th Conf. on Computer graphics and interactive techniques
 %``Vision based mobile robot localization and mapping using scale-invariant features",
 %Proc. IEEE Inf. Conf. on Robotics and Automation, pp 2051-2058, Seoul, 2001.
 
+\bibitem{farophoton10}
+D.~D.~Lichti,
+``A Review of Geometric Models and Self-Calibration Methods for Terrestrial Laser Scanner'',
+Bol. Ciȇnc. Geod., pp  3-19, Curitiba, 2010.
+
 \bibitem{liu01}
 Y. Liu, R. Emery, D. Chakrabarti, W. Burgard, S. Thrun,
 ``Using EM to Learn 3D Models of Indoor Environments with Mobile
@@ -2893,6 +2890,12 @@ A. N{\"u}chter, K. Lingemann, J. Hertzberg,
 ``Cached $k$-d tree search for ICP Algorithms'',
 Proc. 6th IEEE Int. Conf. on Recent Advances in 3D Digital Imaging and Modeling,
 pp 419-426, Montreal, Canada, 2007
+
+\bibitem{swissranger03}
+T. Oggier, M. Lehmann, R. Kaufmannn, M. Schweizer, M. Richter, P. Metzler, G. Lang,
+F. Lustenberger and N. Blanc,
+``An all-solid-state optical range camera for 3D-real-time imaging with sub-centimeter depth-resolution (SwissRanger)'',
+Proc.~SPIE Vol. 5249, pp. 634-545, 2003.
 
 \bibitem{okutomi93}
 M. Okutomi, T. Kanade,
@@ -3012,6 +3015,11 @@ Videre Design LLC,
 M.~W. Walker, L.~Shao, and R.~A. Volz,
 ``Estimating 3-d location parameters using dual number quaternions'',
 CVGIP: Image Understanding, 54:358-367, 1991.
+
+\bibitem{wong11}
+U.~Wong, A.~Morris, C.~Lea, J.~Lee, C.~Whittaker, B.~Garney and R.~Whittaker, Red,
+``Comparative evaluation of range sensing technologies for underground void modeling'',
+Proc.~IROS, pp 3816-3823, 2011.
 
 \bibitem{Wulf:2004}
 O.~Wulf, K.~O. Arras, H.~I. Christensen, and B.~A. Wagner,
