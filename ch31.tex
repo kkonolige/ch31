@@ -1,6 +1,6 @@
 \documentclass[twocolumn,oneside]{book}
 
-\usepackage{refcheck}
+%\usepackage{refcheck}
 
 \usepackage{epsf}
 \usepackage{amsmath}
@@ -92,13 +92,13 @@ Chapter 31 - Range Sensors}\\
 
 \author{ % alphabetical order please
 Kurt Konolige\\
-Industrial Perception, Inc.\\
-konolige@google.com\\
+Google Inc., U.S.A.\\
+\texttt{konolige@google.com}\\
 \and
 Andreas N{\"u}chter\\
 Robotics and Telematics\\
-University of W{\"u}rzburg \\
-andreas@nuechti.de \\
+University of W{\"u}rzburg, Germany \\
+\texttt{andreas@nuechti.de} \\
 \\
 \\
 \\
@@ -279,8 +279,8 @@ sensors are given in subsequent sections.
 \subsection{Triangulation}
 
 Triangulation sensors measure depth by determining the angle formed by
-the rays from a world point to two ``sensors.''  Figure XXX illustrtes
-the basic idea.  The sensors are separated by a baseline of length
+the rays from a world point to two ``sensors.''
+The sensors are separated by a baseline of length
 $b$, which forms the third segment of a triangle between the two
 sensors and the point.  For simplicity, let one of the rays form a
 right angle with the baseline.  Then the angle $\theta$ of the other
@@ -293,7 +293,7 @@ by:
 \end{equation}
  %
 An image sensor measures the angle $\theta$ by an offset on an
-image plane from the primary ray (see Figure XXX); this offset $x$ is
+image plane from the primary ray; this offset $x$ is
 called the {\em disparity}.  If we assume the image plane is parallel
 to the baseline, then $\tan(\theta) = f/x$, and we get the basic
 equation of triangulation depth sensors:
@@ -336,11 +336,10 @@ often too little texture, especially indoors, to make reliable
 matches; and the matching uses small patches, which blurs out the
 spatial resolution.  Many ingenious methods have been developed to
 deal with these issues, including painting a texture with a projector
-(not to be confused with structured light) \cite{}, using different
-kinds of support neighborhoods \cite{}, and regularization methods
-\cite{}.
+(not to be confused with structured light), using different
+kinds of support neighborhoods, and regularization methods.
 
-{\em Figure for matching patches}
+%{\em Figure for matching patches}
 
 Structured light sensors project a known pattern from one end of a
 baseline, and view the pattern with a camera from the other.  By
@@ -350,24 +349,24 @@ of projectors output a point or a line, usually with a laser; the
 decoding problem is easy, but the amount of information is restricted
 to the point or line, and must be scanned to produce a full 3D image.
 
-{\em Figure for matching projected patches}
+%{\em Figure for matching projected patches}
 
 A full-image structured light system projects a pattern covering the
 whole image, that can be decoded to get information at each pixel or
-small group of pixels.  The PrimeSense technology \cite{}, used in the
-Kinect \cite{}, projects a known pattern of dots, and decodes a small
+small group of pixels.  The PrimeSense technology, used in the
+Kinect, projects a known pattern of dots, and decodes a small
 neighborhood to find the projected coordinates; thus this sensor also
 blurs out the spatial resolution.  Other sensors project a time series
 of images with vertical structure, so that each pixel on a horizontal
 line accumulates a unique code, which is then decoded against the
-projected images.  Popular binary codes are Gray codes \cite{}, which
+projected images.  Popular binary codes are Gray codes, which
 require $N$ images if the image width is $2^N$; and sinusoidal
 phase-shifted patterns, which typically use three images and are
-decoded by determining the phase at each point \cite{}.  These
+decoded by determining the phase at each point.  These
 time-series structured light systems can produce very good spatial and
 depth resolution.
 
-{\em Figure for gray code time-series matching}
+%{\em Figure for gray code time-series matching}
 
 In general, structured light systems are not used outdoors because of
 interference from natural light, and for distant objects indoors.
@@ -397,9 +396,9 @@ reconstruction or parts quality measurements.
 
 \subsubsection{Direct Time of Flight}
 
-{\bf TODO: minimum range, ambiguity interval, accuracy based on
-  multiple readings, beam size, scanning rates, multiple reflections,
-  obscurants}
+%{\bf TODO: minimum range, ambiguity interval, accuracy based on
+%  multiple readings, beam size, scanning rates, multiple reflections,
+%  obscurants}
 
 In direct TOF sensors, the travel time is measured by a high-speed
 chronometer.  Laser-based direct TOF range sensors are also called
@@ -457,13 +456,13 @@ Manufacturers of these sensors include Acuity, Hokuyo, Sick, Mensi,
 DeltaSphere and Cyrax.
 
 Multiple-beam scanning LIDARs can increase the amount of information
-available.  Velodyne \cite{} makes two devices, with 32 and 64 beams
-arranged vertically, that acquire point data at rates of up to 15
-scans/s (1.3 MPixel/s), with a full 360 degree horizontal scan and a
-27 degree vertical FOV from the laser array.  The laser pulses are 5
-ns long, and depth precision is approximately 2 cm.  These devices are
-typically used in autonomous driving, for environment reconstruction
-and obstacle avoidance \cite{}.
+available. Velodyne \cite{velodynelidar} makes three devices, with
+16, 32 and 64 beams arranged vertically, that acquire point data at
+rates of up to 15 scans/s (1.3 MPixel/s), with a full 360 degree
+horizontal scan and a 27 degree vertical FOV from the laser array.
+The laser pulses are 5 ns long, and depth precision is approximately 2
+cm.  These devices are typically used in autonomous driving, for
+environment reconstruction and obstacle avoidance.
 
 \subsubsection{Flash LIDAR}
 
@@ -478,7 +477,7 @@ Typically some tens of samples are captured and averaged, to reduce
 noise in the measurements -- the amount of energy received is quite
 small, since the laser is not focused into a beam.  As might be
 expected, the detector array pixels are quite large because of the
-timing electronics; a typical device from ASC \cite{stettner} has 128x128
+timing electronics; a typical device from ASC \cite{stettner} has 128$\times$128
 pixels, and can capture data at rates up to 60 Hz (~1 MPixel/s,
 similar to the Velodyne).  These devices are expensive, and hence not
 used in consumer applications.  Alternative, indirect ways of
@@ -586,7 +585,7 @@ fabricated to measure the two pulse returns sequentially, as long as
 each pixel can be triggered to be photo-sensitive for a precise amount
 of time.  Commercial devices using this principle have precision on
 the order of a few cm at 1 m, with arrays up to 128x96
-\cite{zcamXXX,tridicamXXX}.
+\cite{zcam,tridicam}.
 
 \subsection{Comparison of methods}
 
@@ -615,7 +614,7 @@ to the other sensors.
 
 \begin{figure}
     \includegraphics[width=0.5\textwidth]{BOOKFIGS/range-summary}
-\caption{Range device characteristics (from \cite{wong11}.
+\caption{Range device characteristics (from \cite{wong11}).
   Spatial precision is on the Y axis, depth precision on the X
   axis.  Measurements are taken on a target at 2
   m. \label{fig31.range-summary}}
@@ -910,13 +909,14 @@ computational expenditure for multiple images is greater than for
 two.
 
 \begin{table}
-\begin{tabular}{|p{1.2in}p{2in}|l|}
+\begin{tabular}{|p{1.2in}p{1.9in}|l|}
 \hline
 Correlation surface  & \cite{matthies93}\\
 \hline
-\verb+  + peak width & wide peak indicates poor feature\\
- & localization \\
-\verb+  + peak height & small peak indicates poor match \\
+\verb+  + peak width & wide peak indicates poor \\
+& feature localization \\
+\verb+  + peak height & small peak indicates poor \\
+& match \\
 \verb+  + number of peaks  & multiple peaks indicate\\
 & ambiguity \\
 \hline
@@ -953,7 +953,7 @@ work.  Typical accuracies are $1/10$ pixel.
 
 {\epsfxsize = 0.33\textwidth \epsfbox{BOOKFIGS/garden-color.eps}}
 {\epsfxsize = 0.33\textwidth \epsfbox{BOOKFIGS/garden-3D.eps}}
-{\epsfxsize = 0.38\textwidth \epsfbox{BOOKFIGS/garden-disparity.eps}}
+~{\epsfxsize = 0.38\textwidth \epsfbox{BOOKFIGS/garden-disparity.eps}}
 %%{ \epsfbox{BOOKFIGS/StereoGeom.ps}}
 
 \caption{
@@ -982,7 +982,7 @@ outdoor man-made surfaces.  Projecting a random texture can help
 
 {\bf Range resolution.}  Unlike LADAR devices, stereo range accuracy
 is a quadratic function of distance, found by differentiating Equation
-\ref{eq31.disparity-range} with respect to disparity:
+\eqref{eq31.disparity-range} with respect to disparity:
 \begin{equation}
  \delta Z = -\frac{F_x T'_x}{d^2}.
 \end{equation}
@@ -1145,35 +1145,43 @@ give an estimate of the relative surface depth.
 \subsection{Structured Light Stereo}
 
 Recently, the Kinect range-sensing device became the fastest-selling
-consumer electronics device in history \cite{XXX}.  The Kinect uses
-a structured-light stereo technique from PrimeSense \cite{XXX} to give
-a reasonable balance of spatial and depth precision, in a
-highly-integrated device, at a very low price.
+consumer electronics device in history \cite{fastsell}.  The Kinect
+uses a structured-light stereo technique from PrimeSense (Bought out
+by Apple Inc.) to give a reasonable balance of spatial and depth
+precision, in a highly-integrated device, at a very low price.
 
 The PrimeSense technology projects a strucured pattern generated from
 an IR laser and patented combination of diffractive elements (see
-Figure XXX).  The pattern consists of bright dots on a grid, with
-unique combinations of dots over a horizontal area.  A camera with
-resolution 1280x960 captures the IR image at a horizontal offset of
-7.5 cm from the projector, and correlates a 19x19 block against the
-known dot pattern for a given horizontal line.  If a match is found,
-the position of the pattern in the known projected pattern gives the
-angle subtended by the reflecting object to the projector and camera,
-and hence the distance.  A depth image is returned at a resolution of
-640x480, with 11 bits of depth precision, over a FOV of approximately
-50 degrees; the depth is interpolated to a precision of 1/8 pixel.
+Figure \ref{fig:kinect pattern}).  The pattern consists of bright dots on
+a grid, with unique combinations of dots over a horizontal area.  A
+camera with resolution 1280$\times$960 captures the IR image at a horizontal
+offset of 7.5 cm from the projector, and correlates a 19$\times$19 block
+against the known dot pattern for a given horizontal line.  If a match
+is found, the position of the pattern in the known projected pattern
+gives the angle subtended by the reflecting object to the projector
+and camera, and hence the distance.  A depth image is returned at a
+resolution of 640$\times$480, with 11 bits of depth precision, over a FOV of
+approximately 50 degrees; the depth is interpolated to a precision of
+1/8 pixel. Error characteristics for the Kinect have been studied in
+\cite{Khoshelham}. The depth decision is limited by the resolution, similarly to \eqref{eq31.disparity-resolution}.
 
-Error characteristics for the Kinect have been studied in
-\cite{kinect-error-XXX,kinect-error2-XXX}.  Based on Equation
-\ref{XXX}, the theoretical depth precision with depth is given by the
-blue line in Figure \ref{XXX}; this curve is based on sub-pixel
-interpolation to 1/8 pixel.  Note that sub-millimeter resolution is
-possible at closer ranges.  The actual depth repeatability is somewhat
-less, and is a function of the surface reflectance and angle, among
-other factors.  On average, the standard deviation is around 3
-disparity level (at 1/8 pixel); hence, the actual depth resolution is
-closer to 3 times the theoretical one (the red line in Figure
-\ref{XXX}).
+\begin{figure}  
+{\epsfxsize = 0.49\textwidth \epsfbox{BOOKFIGS/kinect_pattern.eps}}
+\caption{The laser grid of the Kinect for calculating depth.
+\label{fig:kinect pattern}}
+\end{figure}
+
+%Error characteristics for the Kinect have been studied in
+%\cite{Khoshelham}. Based on Equation
+%\ref{XXX}, the theoretical depth precision with depth is given by the
+%blue line in Figure \ref{XXX}; this curve is based on sub-pixel
+%interpolation to 1/8 pixel.  Note that sub-millimeter resolution is
+%possible at closer ranges.  The actual depth repeatability is somewhat
+%less, and is a function of the surface reflectance and angle, among
+%other factors.  On average, the standard deviation is around 3
+%disparity level (at 1/8 pixel); hence, the actual depth resolution is
+%closer to 3 times the theoretical one (the red line in Figure
+%\ref{XXX}).
 
 There are additional sources of error.  {\em Dropouts} occur when the
 surfaces are minimally reflective, or specular.  {\em False
@@ -1744,7 +1752,7 @@ models.
   iteratively. Since after each edge removal new vertices have to be
   inserted into the mesh, the initial topology can be altered.
 \begin{figure}
-    \includegraphics[width=0.5\textwidth]{BOOKFIGS/mc_cases_corrected}
+    \includegraphics[width=0.99\linewidth]{BOOKFIGS/mc_cases_corrected}
 \caption{Pattern for meshing 3D voxels. 256 combinations are possible,
   but it is sufficient to model 16, iff symmetries are considered.
 \label{fig:patterns}}
@@ -1860,10 +1868,10 @@ sensing errors and to the inaccuracies in the matching procedures
 itself. To avoid these problems, global matching algorithms are
 needed, taking global correspondences between range sensor data into
 account. Simultaneous localization and mapping (SLAM) algorithms as
-discussed in chapter \ref{FIXME} solve a very similar problem. In
-addition to registering multiple views, they estimate a map.
-Multiple-View Registration also relates to Bundle adjustment in the
-photogrammetry community and structure from motion (SFM).
+discussed in chapter 37 solve a very similar problem. In addition to
+registering multiple views, they estimate a map.  Multiple-View
+Registration also relates to Bundle adjustment in the photogrammetry
+community and structure from motion (SFM).
 
 If $n$-views have to be registered, any sequential application of a
 two point--set registration method will accumulate errors, and
@@ -2092,16 +2100,28 @@ people for computer games and movies (see, {\it e.g.}, Cyberware's Whole Body X 
 
 
 The key tasks in robot manipulation are:
-(1) identification of grasping points (see Chapters 27 and 28),
-(2) identification of a collision free grasp (see Chapters 27 and 28),
-(3) recognition of parts to be manipulated (see Chapter 23) and
-(4) position estimation of parts for manipulation (see Chapters 23 and 42).
-
+\begin{enumerate}
+  \item
+    identification of grasping points (see Chapters 27 and 28),
+  \item
+    identification of a collision free grasp (see Chapters 27 and 28),
+  \item
+    recognition of parts to be manipulated (see Chapter 23) and
+  \item position estimation of parts for manipulation (see Chapters 23 and 42).
+\end{enumerate}
+%
 The key tasks in robot navigation and self-localization are:
-(5) identification of a navigable groundplane (see Section \ref{ch31.3}),
-(6) identification of a collision free path (see Chapter 35),
-(7) identification of landmarks (see Chapter 36) and
-(8) estimation of vehicle location (see Chapter 40).
+%
+\begin{enumerate}\setcounter{enumi}{4}
+\item
+  identification of a navigable groundplane (see Section \ref{ch31.3}),
+\item
+  identification of a collision free path (see Chapter 35),
+\item
+  identification of landmarks (see Chapter 36) and
+\item
+  estimation of vehicle location (see Chapter 40).
+\end{enumerate}
 
 The mobile and assembly robotics tasks link together rather
 naturally.
@@ -2434,7 +2454,7 @@ recognition of objects.
 
 
 \bibliographystyle{latex8}
-\begin{thebibliography}{99}
+\begin{thebibliography}{999}
 
 \bibitem{adan}
 A. Adan, F. Molina, L. Morena,
@@ -2567,7 +2587,7 @@ Image and Vision Comp., 10(3), pp. 145-155, 1992.
 
 \bibitem{GrandChallenge}
 The DARPA Grand Challenge.
-\verb+www.darpa.mil/grandchallenge05+, accessed Nov 12, 2007.
+\verb+http://archive.darpa.mil/grandchallenge05/gcorg/index.html+, accessed April 24, 2015.
 
 \bibitem{rgbdslam}
 N. Engelhard, F. Endres, J. Hess, J. Sturm, W. Burgard,
@@ -2610,7 +2630,7 @@ Springer-Verlag, Heidelberg, 1996.
 
 \bibitem{focusrobotics}
 Focus Robotics Inc.,
-\verb+www.focusrobotics.com+, accessed Nv 12, 2007.
+\verb+www.focusrobotics.com+, accessed April 24, 2015.
 
 \bibitem{foley}
 J. D. Foley, A. van Dam, S. K. Feiner, J. F. Hughes,
@@ -2732,6 +2752,10 @@ L.~Hyafil and R.~L. Rivest,
 ''Constructing optimal binary decision trees is np-complete'',
 Inf. Proc. Letters 5, pp 15-17, May 1976.
 
+\bibitem{zcam}
+G. Iddan, G. Yahav ``3D imaging in the studio (and elsewhere...)''.
+Proceedings of SPIE 4298, San Jose, April 2003.
+
 \bibitem{kinectfusion}
 S. Izadi, D. Kim, O. Hilliges, D. Molyneaux, R. Newcombe, P. Kohli,
 J. Shotton, S. Hodges, D. Freeman, A. Davison, A. Fitzgibbon,
@@ -2740,7 +2764,7 @@ ACM Symp. on User Interface Software and Technology, October 2011.
 
 \bibitem{karto}
 KARTO: Software for robots on the move.
-\verb+www.kartorobotics.com+, accessed Nov 12, 2007.
+\verb+www.kartorobotics.com+, accessed April 24, 2015.
 
 \bibitem{kelly03}
 A. Kelly, R. Unnikrishnan,
@@ -2780,6 +2804,9 @@ K. Konolige, M. Agrawal, R. C. Bolles, C. Cowan, M. Fischler, B. Gerkey,
 ``Outdoor mapping and Navigation using Stereo Vision'',
 Intl. Symp. on Experimental Robotics (ISER), Rio de Janeiro, 2006.
 
+\bibitem{Khoshelham}
+  K. Khoshelham, S. O. Elberink, ``Accuracy and Resolution of Kinect Depth Data for Indoor Mapping Applications'', in \em{Sensors}:12(5), 2012.
+
 \bibitem{Lakaemper:2006}
 R.~Lakaemper and L.~J. Latecki,
 ``Extended EM for Planar Approximation of 3D Data'',
@@ -2796,10 +2823,10 @@ J. Lalonde, N. Vandapel, D. Huber, M. Hebert,
 for ground robot mobility'',
 J. of Field Robotics, Vol. 23, No. 10 (2006).
 
-\bibitem{LeMoigne}
-J. J. LeMoigne, A. M. Waxman,
-``Structured Light Patterns for Robot Mobility'',
-Robotics and Automation Vol 4, pp. 541-548, 1988.
+%\bibitem{LeMoigne}
+%J. J. LeMoigne, A. M. Waxman,
+%``Structured Light Patterns for Robot Mobility'',
+%Robotics and Automation Vol 4, pp. 541-548, 1988.
 
 \bibitem{levoy}
 M. Levoy, K. Pulli, B. Curless, S. Rusinkiewicz, D. Koller, L. Pereira, M. Ginzton, S. Anderson, J. Davis, J. Ginsberg, J. Shade, D. Fulk.
@@ -2817,11 +2844,11 @@ D.~D.~Lichti,
 ``A Review of Geometric Models and Self-Calibration Methods for Terrestrial Laser Scanner'',
 Bol. Ciȇnc. Geod., pp  3-19, Curitiba, 2010.
 
-\bibitem{liu01}
-Y. Liu, R. Emery, D. Chakrabarti, W. Burgard, S. Thrun,
-``Using EM to Learn 3D Models of Indoor Environments with Mobile
-Robots'',
-Proc.Int. Conf. on Machine Learning, pp. 329-336, Williamstown, 2001.
+%\bibitem{liu01}
+%Y. Liu, R. Emery, D. Chakrabarti, W. Burgard, S. Thrun,
+%``Using EM to Learn 3D Models of Indoor Environments with Mobile
+%Robots'',
+%Proc.Int. Conf. on Machine Learning, pp. 329-336, Williamstown, 2001.
 
 \bibitem{Lobay}
 A. Lobay, D. A. Forsyth,
@@ -2908,15 +2935,16 @@ IEEE Trans Pat. Anal. and Mach. Intel., 15(4), pp. 353-363, 1993.
 
 \bibitem{cmu-humanoid}
 Perception for Humanoid Robots.
-\verb+www.ri.cmu.edu/projects/project_595.html+, accessed Nov 12, 2007.
+\verb+https://www.ri.cmu.edu/research_project_+
+\verb+detail.html?project_id=595+, accessed April 24, 2015.
 
 \bibitem{pointclouds.org}
 Point Cloud Library (PCL),
-\verb+pointclouds.org+, accessed Jan 17, 2013.
+\verb+pointclouds.org+, accessed April 24, 2015.
 
 \bibitem{ptgrey}
 Point Grey Research Inc.,
-\verb+www.ptgrey.com+, accessed Nov 12, 2007.
+\verb+www.ptgrey.com+, accessed April 24, 2015.
 
 \bibitem{pollefeys}
 M. Pollefeys, R. Koch, L. Van Gool,
@@ -2956,7 +2984,7 @@ Computer Graphics Forum, 2007.
 
 \bibitem{STAIR}
 The Stanford Artificial Intelligence Robot.
-\verb+www.cs.stanford.edu/group/stair+, accessed Nov 12, 2007.
+\verb+www.cs.stanford.edu/group/stair+, accessed April 24, 2015.
 
 \bibitem{stamos}
 I. Stamos and P. Allen.
@@ -2969,9 +2997,10 @@ R. Stettner, H. Bailey, and S. Silverman,
 ``Three-Dimensional Flash Ladar Focal Planes and Time-Dependent Imaging'',
 Advanced Scientific Concepts, 2006;
 Technical report at URL (February 23, 2007):
-\verb+www.advancedscientificconcepts.com/+\\
-\verb+images/Three%20Dimensional%20Flash%20Ladar+\\
-\verb+%20Focal%20Planes-ISSSR%20Paper.pdf+, accessed Nov 12, 2007.
+\verb+http://www.advancedscientificconcepts.com/+\\
+\verb+technology/documents/ThreeDimensionalFlash+\\
+\verb+LadarFocalPlanes-ISSSRPaper.pdf+,
+accessed April 24, 2015.
 
 \bibitem{thrun00}
 S. Thrun, W. Burgard, D. Fox,
@@ -2993,6 +3022,11 @@ S. Thrun, M. Montemerlo, H. Dahlkamp, et al.,
 ``Stanley: The Robot That Won The DARPA Grand Challenge'',
 Journal of Field Robotics, Vol. 23, No. 9, 2006.
 
+\bibitem{tridicam}
+  TriDiCam GmbH,
+  \verb+http://www.tridicam.de/+
+  \verb+en.html+, accessed April 24, 2015.
+
 \bibitem{triebel06}
 R. Triebel, P. Pfaff, W. Burgard,
 ``Multi-level surface maps for outdoor terrain mapping and loop closing'',
@@ -3005,7 +3039,11 @@ Proc. of the IEEE Int. Conf. on Intel. Robots and Systems (IROS), Beijing, 2006.
 
 \bibitem{tyzx}
 TYZX Inc.,
-\verb+www.tyzx.com+, accessed Nov 12, 2007.
+\verb+www.tyzx.com+, accessed April 24, 2015.
+
+\bibitem{velodynelidar}
+  Volodyne -- High definition Lidar.
+  \verb+velodynelidar.com/+, accessed April 24, 2015.
 
 \bibitem{videre}
 Videre Design LLC,
@@ -3015,6 +3053,13 @@ Videre Design LLC,
 M.~W. Walker, L.~Shao, and R.~A. Volz,
 ``Estimating 3-d location parameters using dual number quaternions'',
 CVGIP: Image Understanding, 54:358-367, 1991.
+
+\bibitem{fastsell}
+M.~W. Walker, L.~Shao, and R.~A. Volz,
+\verb+http://en.wikipedia.org/wiki/List_of_+\\
+\verb+fastest-selling_products+,
+accessed April 24, 2015.
+
 
 \bibitem{wong11}
 U.~Wong, A.~Morris, C.~Lea, J.~Lee, C.~Whittaker, B.~Garney and R.~Whittaker, Red,
